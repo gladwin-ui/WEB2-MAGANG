@@ -3,93 +3,98 @@
 @section('title', 'Tutup Laporan Bug #' . $bug->id)
 
 @section('content')
-<div style="margin-bottom: 2rem;">
-    <a href="{{ route('bugs.show', $bug) }}" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.25rem; margin-bottom: 0.75rem;">
-        <i class="bi bi-arrow-left"></i> Batal & Kembali
-    </a>
-    <h1 style="font-size: 2rem; font-weight: 800;">Tangani & Selesaikan Bug #{{ $bug->id }}</h1>
-    <p style="color: var(--text-secondary);">Isi hasil audit perbaikan fisik/software untuk dianalisis oleh AI Engine</p>
-</div>
-
-<div class="content-grid">
+<div class="space-y-6">
+    <!-- Back link -->
     <div>
-        <div class="card">
-            <form action="{{ route('bugs.close', $bug) }}" method="POST">
-                @csrf
-                
-                <div class="form-group">
-                    <label for="root_cause" class="form-label">Penyebab Utama (Root Cause) *</label>
-                    <textarea id="root_cause" name="root_cause" rows="4" placeholder="Jelaskan apa yang menyebabkan komponen ini rusak (contoh: panas berlebih karena kipas mati, korosi kelembapan posko, solderan retak di pad C5)..." required>{{ old('root_cause') }}</textarea>
-                    <small style="color: var(--text-muted); font-size: 0.8rem;">
-                        Tulis detail temuan kerusakan fisik secara objektif.
-                    </small>
-                </div>
-
-                <div class="form-group">
-                    <label for="repair_action" class="form-label">Tindakan Perbaikan (Repair Action) *</label>
-                    <textarea id="repair_action" name="repair_action" rows="4" placeholder="Jelaskan tindakan perbaikan yang telah dilakukan (contoh: resoldering pad retak, ganti modul kapasitor 10uF, lapisi resin anti lembap)..." required>{{ old('repair_action') }}</textarea>
-                    <small style="color: var(--text-muted); font-size: 0.8rem;">
-                        Tindakan teknis yang dilakukan untuk memperbaiki dan mencegah bug muncul kembali.
-                    </small>
-                </div>
-
-                <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; background-color: rgba(239, 68, 68, 0.05); padding: 0.75rem 1rem; border-radius: 0.5rem; border: 1px solid rgba(239, 68, 68, 0.1);">
-                    <input type="checkbox" id="is_rework" name="is_rework" value="1" style="width: auto;">
-                    <label for="is_rework" class="form-label" style="margin-bottom: 0; cursor: pointer; color: var(--color-critical); font-weight: 600;">
-                        Tandai sebagai Rework (Perbaikan Ulang)
-                    </label>
-                </div>
-
-                <div class="form-group" style="border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
-                    <label for="feedback_message" class="form-label">Kirim Feedback Langsung ke Reporter (Opsional)</label>
-                    <textarea id="feedback_message" name="feedback_message" rows="2" placeholder="Tulis pesan untuk dibaca oleh reporter (contoh: pastikan menutup unit dengan rapat agar air tidak masuk)...">{{ old('feedback_message') }}</textarea>
-                    <small style="color: var(--text-muted); font-size: 0.8rem;">
-                        Pesan ini akan langsung masuk ke kotak pesan/inbox komunikasi reporter untuk bug ini.
-                    </small>
-                </div>
-
-                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                    <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669)">
-                        <i class="bi bi-shield-lock-fill"></i> Simpan & Tutup Bug (Jalankan AI)
-                    </button>
-                    <a href="{{ route('bugs.show', $bug) }}" class="btn btn-secondary">Batal</a>
-                </div>
-            </form>
-        </div>
+        <a href="{{ route('bugs.show', $bug) }}" class="text-xs text-slate-400 hover:text-white font-mono tracking-wider uppercase inline-flex items-center gap-1 mb-2">
+            <i class="bi bi-arrow-left"></i> KEMBALI KE DETAIL
+        </a>
     </div>
 
+    <!-- Header -->
     <div>
-        <div class="card" style="border-top: 4px solid var(--color-major);">
-            <h2 class="card-title"><i class="bi bi-info-circle-fill" style="color: var(--color-major)"></i> Detail Laporan Bug</h2>
-            <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.9rem;">
-                <div>
-                    <span style="color: var(--text-secondary); font-size: 0.8rem; display: block;">JUDUL BUG</span>
-                    <strong>{{ $bug->title }}</strong>
-                </div>
-                <div>
-                    <span style="color: var(--text-secondary); font-size: 0.8rem; display: block;">SEVERITY LAPORAN</span>
-                    @if($bug->severity === 'Critical')
-                        <span class="badge badge-critical">{{ $bug->severity }}</span>
-                    @elseif($bug->severity === 'Major')
-                        <span class="badge badge-major">{{ $bug->severity }}</span>
-                    @else
-                        <span class="badge badge-minor">{{ $bug->severity }}</span>
-                    @endif
-                </div>
-                <div>
-                    <span style="color: var(--text-secondary); font-size: 0.8rem; display: block;">DESKRIPSI CACAT</span>
-                    <div style="background-color: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 0.375rem; font-size: 0.85rem; margin-top: 0.25rem;">
-                        {{ $bug->description }}
-                    </div>
-                </div>
-                @if($bug->reproduce_steps)
+        <h1 class="text-2xl font-black text-slate-100 tracking-tight uppercase">Selesaikan & Tutup Tiket #{{ $bug->id }}</h1>
+        <p class="text-xs text-slate-400 font-mono tracking-wider uppercase">LOG TEMUAN KERUSAKAN FISIK & TINDAKAN REPAIR PADA FLOORS PRODUKSI PT HARIFF</p>
+    </div>
+
+    <!-- Content Columns -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Form block (Left 2 columns wide) -->
+        <div class="lg:col-span-2">
+            <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-6 shadow-xl backdrop-blur-sm">
+                <form action="{{ route('bugs.close', $bug) }}" method="POST" class="space-y-6">
+                    @csrf
+                    
                     <div>
-                        <span style="color: var(--text-secondary); font-size: 0.8rem; display: block;">REPRODUCE STEPS</span>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary);">{{ $bug->reproduce_steps }}</div>
+                        <label for="root_cause" class="block text-xs font-mono tracking-wider text-slate-450 uppercase mb-2">Temuan Penyebab Utama (Root Cause) *</label>
+                        <textarea id="root_cause" name="root_cause" rows="4" class="w-full bg-slate-950 border border-slate-850 rounded-lg px-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-indigo-500 transition-all placeholder-slate-800" placeholder="Jelaskan pemicu kerusakan fisik/software (contoh: pin kapasitor C4 mengalami hubung singkat karena tegangan induksi, modul terlalu panas karena kipas radiator tersumbat dust)..." required>{{ old('root_cause') }}</textarea>
+                        <small class="block text-[10px] text-slate-500 font-mono tracking-wide mt-1.5 uppercase">Tulis laporan analisis kerusakan fisik secara objektif</small>
                     </div>
-                @endif
+
+                    <div>
+                        <label for="repair_action" class="block text-xs font-mono tracking-wider text-slate-450 uppercase mb-2">Tindakan Perbaikan (Repair Action) *</label>
+                        <textarea id="repair_action" name="repair_action" rows="4" class="w-full bg-slate-950 border border-slate-850 rounded-lg px-4 py-2.5 text-slate-200 text-sm focus:outline-none focus:border-indigo-500 transition-all placeholder-slate-800" placeholder="Langkah perbaikan yang diambil (contoh: resoldering pad PCB, mengganti modul kapasitor 10uF 25V, membersihkan saringan radiator)..." required>{{ old('repair_action') }}</textarea>
+                        <small class="block text-[10px] text-slate-500 font-mono tracking-wide mt-1.5 uppercase">Log tindakan teknis penyelesaian masalah</small>
+                    </div>
+
+                    <div class="flex items-center gap-2 p-3 bg-rose-500/5 border border-rose-500/10 rounded-lg">
+                        <input type="checkbox" id="is_rework" name="is_rework" value="1" class="rounded bg-slate-950 border-slate-850 text-indigo-650 focus:ring-0 focus:ring-offset-0">
+                        <label for="is_rework" class="text-xs text-rose-450 font-mono tracking-wider cursor-pointer uppercase select-none font-bold">
+                            TANDAI SEBAGAI REWORK (UNIT GAGAL BERULANG)
+                        </label>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-800/80">
+                        <label for="feedback_message" class="block text-xs font-mono tracking-wider text-slate-450 uppercase mb-2">Kirim Pesan Klarifikasi ke Reporter (Opsional)</label>
+                        <textarea id="feedback_message" name="feedback_message" rows="2" class="w-full bg-slate-950 border border-slate-850 rounded-lg px-4 py-2 text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-all placeholder-slate-800" placeholder="Contoh: Pastikan casing ditutup dengan sekrup kencang agar air tidak berembun kembali..."></textarea>
+                        <small class="block text-[10px] text-slate-500 font-mono tracking-wide mt-1.5 uppercase">Pesan ini akan otomatis masuk ke inbox reporter terkait tiket ini</small>
+                    </div>
+
+                    <div class="flex gap-3 pt-4 border-t border-slate-800">
+                        <button type="submit" class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg text-sm font-bold shadow-lg shadow-emerald-500/10 transition-all transform active:scale-[0.98]">
+                            <i class="bi bi-shield-lock-fill"></i> SELESAIKAN & JALANKAN AI STAGE 2
+                        </button>
+                        <a href="{{ route('bugs.show', $bug) }}" class="flex items-center gap-2 px-5 py-2.5 bg-slate-950 border border-slate-850 hover:bg-slate-900 text-slate-350 hover:text-slate-200 rounded-lg text-sm font-semibold transition-all">
+                            BATAL
+                        </a>
+                    </div>
+                </form>
             </div>
         </div>
+
+        <!-- Ticket Snapshot (Right Column) -->
+        <div class="space-y-6">
+            <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-6 shadow-xl backdrop-blur-sm">
+                <h2 class="text-xs font-mono tracking-widest text-slate-500 uppercase mb-4">Ringkasan Laporan Bug</h2>
+                
+                <div class="space-y-4 text-xs font-mono leading-relaxed">
+                    <div>
+                        <span class="text-slate-500 block">JUDUL BUG:</span>
+                        <strong class="text-slate-200 text-sm font-sans font-bold leading-tight">{{ $bug->title }}</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 block">DERAJAT KEPARAHAN:</span>
+                        @if($bug->severity === 'Critical')
+                            <span class="inline-flex text-[9px] font-bold bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded uppercase">CRITICAL</span>
+                        @elseif($bug->severity === 'Major')
+                            <span class="inline-flex text-[9px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded uppercase">MAJOR</span>
+                        @else
+                            <span class="inline-flex text-[9px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded uppercase">MINOR</span>
+                        @endif
+                    </div>
+                    <div>
+                        <span class="text-slate-500 block">SERIAL NUMBER:</span>
+                        <strong class="text-slate-200 font-mono">{{ $bug->sn_code_snapshot ?? '-' }}</strong>
+                    </div>
+                    <div class="border-t border-slate-800/80 pt-3">
+                        <span class="text-slate-500 block">DESKRIPSI:</span>
+                        <p class="text-slate-400 font-sans mt-1 leading-normal">{{ $bug->description }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 @endsection

@@ -3,90 +3,100 @@
 @section('title', 'Detail Bug #' . $bug->id)
 
 @section('content')
-<div style="margin-bottom: 2rem;">
-    <a href="{{ route('bugs.index') }}" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.25rem; margin-bottom: 0.75rem;">
-        <i class="bi bi-arrow-left"></i> Kembali ke Queue
-    </a>
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; wrap: wrap; gap: 1rem;">
+<div class="space-y-6">
+    <!-- Back arrow and Action header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4">
         <div>
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <h1 style="font-size: 2rem; font-weight: 800; line-height: 1.1;">#{{ $bug->id }} - {{ $bug->title }}</h1>
+            <a href="{{ route('bugs.index') }}" class="text-xs text-slate-400 hover:text-white font-mono tracking-wider uppercase inline-flex items-center gap-1 mb-2">
+                <i class="bi bi-arrow-left"></i> KEMBALI KE QUEUE
+            </a>
+            <div class="flex items-center gap-3">
+                <h1 class="text-2xl font-black text-slate-100 tracking-tight">TIKET DEFECT #{{ $bug->id }}</h1>
                 @if($bug->status === 'OPEN')
-                    <span class="badge badge-open">OPEN QUEUE</span>
+                    <span class="inline-flex text-[9px] font-bold font-mono bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-0.5 rounded uppercase critical-pulse">
+                        <span class="h-1.5 w-1.5 rounded-full bg-red-500"></span> OPEN QUEUE
+                    </span>
                 @else
-                    <span class="badge badge-closed">CLOSED / FIXED</span>
+                    <span class="inline-flex text-[9px] font-bold font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded uppercase">
+                        CLOSED // RESOLVED
+                    </span>
                 @endif
-                
+
                 @if($bug->is_rework)
-                    <span class="badge badge-spam">REWORK</span>
+                    <span class="inline-flex text-[9px] font-bold font-mono bg-violet-500/10 text-violet-400 border border-violet-500/20 px-2.5 py-0.5 rounded uppercase">REWORK</span>
                 @endif
             </div>
-            <p style="color: var(--text-secondary);">Dilaporkan oleh <strong style="color: var(--text-primary);">{{ $bug->reporter?->name ?? 'System' }}</strong> pada {{ $bug->created_at->format('d F Y \p\u\k\u\l H:i') }}</p>
+            <p class="text-xs text-slate-500 font-mono mt-1">DILAPORKAN OLEH: {{ strtoupper($bug->reporter?->name ?? 'System') }} // TANGGAL: {{ $bug->created_at->format('d M Y, H:i') }}</p>
         </div>
-        
+
         @if($bug->status === 'OPEN' && (auth()->user()->role === 'mekanik' || auth()->user()->role === 'admin'))
-            <a href="{{ route('bugs.close.form', $bug) }}" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669)">
-                <i class="bi bi-hammer"></i> Selesaikan & Tutup Bug
+            <a href="{{ route('bugs.close.form', $bug) }}" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-lg shadow-emerald-500/10 transform active:scale-[0.98]">
+                <i class="bi bi-hammer"></i> SELESAIKAN & TUTUP BUG
             </a>
         @endif
     </div>
-</div>
 
-<div class="content-grid">
-    <!-- Left Column: Bug Information -->
-    <div>
-        <div class="card">
-            <h2 class="card-title">Informasi Dasar & Teknis</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-                <div>
-                    <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Project</div>
-                    <div style="font-weight: 600; font-size: 1.1rem;">{{ $bug->project?->name ?? 'Project #' . $bug->project_id }}</div>
-                </div>
-                <div>
-                    <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Serial Number (Snapshot)</div>
-                    <div style="font-weight: 600; font-size: 1.1rem; font-family: monospace;">{{ $bug->sn_code_snapshot ?? '-' }}</div>
-                </div>
-                <div>
-                    <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Tipe Pelapor</div>
-                    <div style="font-weight: 600; font-size: 1.1rem; text-transform: capitalize;">{{ $bug->reporter_type }}</div>
-                </div>
-                <div>
-                    <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Versi Produk</div>
-                    <div style="font-weight: 600; font-size: 1.1rem;">{{ $bug->product_version ?? '-' }}</div>
-                </div>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <div>
-                    <h3 style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Deskripsi Kerusakan / Description</h3>
-                    <div style="background-color: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem; white-space: pre-line;">{{ $bug->description ?? 'Tidak ada deskripsi.' }}</div>
-                </div>
-
-                @if($bug->reproduce_steps)
+    <!-- Grid Columns -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left Side: Basic Info & Repair Log (2 Cols wide on desktop) -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Technical details card -->
+            <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-6 shadow-xl backdrop-blur-sm">
+                <h2 class="text-md font-bold text-slate-200 mb-6 border-b border-slate-800/60 pb-3 uppercase tracking-wide">
+                    INFORMASI FISIK & KELENGKAPAN MODUL
+                </h2>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-xs">
                     <div>
-                        <h3 style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Langkah Menimbulkan Masalah / Reproduce</h3>
-                        <div style="background-color: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem; white-space: pre-line;">{{ $bug->reproduce_steps }}</div>
+                        <span class="text-slate-500 block font-mono uppercase mb-0.5">Project</span>
+                        <strong class="text-slate-200">{{ $bug->project?->name ?? 'Project #' . $bug->project_id }}</strong>
                     </div>
-                @endif
-
-                @if($bug->expected_result)
                     <div>
-                        <h3 style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Hasil yang Diharapkan / Expected</h3>
-                        <div style="background-color: rgba(0,0,0,0.2); padding: 1rem; border-radius: 0.5rem; white-space: pre-line;">{{ $bug->expected_result }}</div>
+                        <span class="text-slate-500 block font-mono uppercase mb-0.5">Serial Number</span>
+                        <strong class="text-slate-200 font-mono">{{ $bug->sn_code_snapshot ?? '-' }}</strong>
                     </div>
-                @endif
-
-                @if($bug->environment)
                     <div>
-                        <h3 style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Kondisi Lingkungan / Environment</h3>
-                        <div style="font-weight: 500;">{{ $bug->environment }}</div>
+                        <span class="text-slate-500 block font-mono uppercase mb-0.5">Tipe Laporan</span>
+                        <strong class="text-slate-200 capitalize">{{ $bug->reporter_type }} level</strong>
                     </div>
-                @endif
-
-                @if($bug->attachment_path)
                     <div>
-                        <h3 style="font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Lampiran Dokumen/Media</h3>
+                        <span class="text-slate-500 block font-mono uppercase mb-0.5">Versi Produk</span>
+                        <strong class="text-slate-200">{{ $bug->product_version ?? '-' }}</strong>
+                    </div>
+                </div>
+
+                <div class="space-y-4 text-sm">
+                    <div>
+                        <h3 class="text-xs text-slate-400 font-mono uppercase mb-1">Deskripsi Masalah / Deskripsi Cacat:</h3>
+                        <div class="bg-slate-950/80 border border-slate-850 p-4 rounded-lg text-slate-350 leading-relaxed white-space-pre-line">{{ $bug->description ?? 'Tidak ada deskripsi.' }}</div>
+                    </div>
+
+                    @if($bug->reproduce_steps)
                         <div>
+                            <h3 class="text-xs text-slate-400 font-mono uppercase mb-1">Langkah Reproduksi:</h3>
+                            <div class="bg-slate-950/80 border border-slate-850 p-4 rounded-lg text-slate-350 leading-relaxed font-mono text-xs white-space-pre-line">{{ $bug->reproduce_steps }}</div>
+                        </div>
+                    @endif
+
+                    @if($bug->expected_result)
+                        <div>
+                            <h3 class="text-xs text-slate-400 font-mono uppercase mb-1">Ekspektasi Hasil:</h3>
+                            <div class="bg-slate-950/80 border border-slate-850 p-4 rounded-lg text-slate-350 leading-relaxed white-space-pre-line">{{ $bug->expected_result }}</div>
+                        </div>
+                    @endif
+
+                    @if($bug->environment)
+                        <div>
+                            <h3 class="text-xs text-slate-450 font-mono uppercase mb-0.5">Lingkungan Uji (Environment):</h3>
+                            <p class="font-medium text-slate-300">{{ $bug->environment }}</p>
+                        </div>
+                    @endif
+
+                    @if($bug->attachment_path)
+                        <div class="pt-2">
+                            <h3 class="text-xs text-slate-400 font-mono uppercase mb-2">Lampiran Media Bukti Fisik:</h3>
                             @php
                                 $ext = pathinfo($bug->attachment_path, PATHINFO_EXTENSION);
                                 $isImg = in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
@@ -94,189 +104,197 @@
                             @endphp
 
                             @if($isImg)
-                                <img src="{{ asset('storage/' . $bug->attachment_path) }}" alt="Lampiran" style="max-width: 100%; max-height: 400px; border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                                <img src="{{ asset('storage/' . $bug->attachment_path) }}" alt="Lampiran" class="max-w-full max-h-96 rounded-lg border border-slate-800 shadow">
                             @elseif($isVid)
-                                <video controls style="max-width: 100%; max-height: 400px; border-radius: 0.5rem; border: 1px solid var(--border-color);">
+                                <video controls class="max-w-full max-h-96 rounded-lg border border-slate-800 shadow">
                                     <source src="{{ asset('storage/' . $bug->attachment_path) }}" type="video/{{ $ext === 'mov' ? 'mp4' : $ext }}">
-                                    Browser Anda tidak mendukung pemutar video.
+                                    Browser tidak mendukung video player.
                                 </video>
                             @else
-                                <a href="{{ asset('storage/' . $bug->attachment_path) }}" target="_blank" class="btn btn-secondary btn-sm">
-                                    <i class="bi bi-file-earmark-arrow-down-fill"></i> Download Lampiran (.{{ $ext }})
+                                <a href="{{ asset('storage/' . $bug->attachment_path) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-950 border border-slate-850 hover:bg-slate-900 text-slate-350 hover:text-slate-200 rounded-lg text-xs font-mono font-bold transition-all">
+                                    <i class="bi bi-file-earmark-arrow-down-fill"></i> DOWNLOAD ATTACHMENT (.{{ $ext }})
                                 </a>
                             @endif
                         </div>
-                    </div>
-                @endif
+                    @endif
+                </div>
             </div>
+
+            <!-- Mechanic Resolution Log -->
+            @if($bug->status === 'CLOSED')
+                <div class="bg-slate-900/40 border border-emerald-500/20 rounded-xl p-6 shadow-xl backdrop-blur-sm" style="border-left-width: 4px">
+                    <h2 class="text-md font-bold text-emerald-400 mb-6 flex items-center gap-2 uppercase tracking-wide">
+                        <i class="bi bi-check-circle-fill text-emerald-500"></i> LOG TINDAKAN PERBAIKAN MEKANIK
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-xs">
+                        <div>
+                            <span class="text-slate-500 block font-mono uppercase mb-0.5">DITANGANI OLEH</span>
+                            <strong class="text-slate-200 font-bold text-sm">{{ $bug->fixer?->name ?? 'System' }}</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-500 block font-mono uppercase mb-0.5">TANGGAL SELESAI</span>
+                            <strong class="text-slate-200 font-mono text-sm">{{ $bug->closed_at ? $bug->closed_at->format('d M Y, H:i') : '-' }}</strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-500 block font-mono uppercase mb-0.5">AI DAMAGE CATEGORY</span>
+                            <strong class="inline-flex mt-0.5 text-[10px] font-bold font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded uppercase">
+                                {{ $bug->damage_category ?? 'Lain-lain' }}
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 text-sm">
+                        <div>
+                            <h3 class="text-xs text-slate-400 font-mono uppercase mb-1">Temuan Penyebab Utama (Root Cause):</h3>
+                            <div class="bg-emerald-500/5 border border-emerald-500/10 p-4 rounded-lg text-emerald-300/90 leading-relaxed white-space-pre-line">{{ $bug->root_cause }}</div>
+                        </div>
+                        <div>
+                            <h3 class="text-xs text-slate-400 font-mono uppercase mb-1">Tindakan Perbaikan yang Diambil (Repair Action):</h3>
+                            <div class="bg-emerald-500/5 border border-emerald-500/10 p-4 rounded-lg text-emerald-300/90 leading-relaxed white-space-pre-line">{{ $bug->repair_action }}</div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
         </div>
 
-        <!-- Technical Resolution Section (Only visible if closed) -->
-        @if($bug->status === 'CLOSED')
-            <div class="card" style="border-left: 4px solid var(--color-minor);">
-                <h2 class="card-title" style="color: var(--color-minor);"><i class="bi bi-check-circle-fill"></i> Detail Perbaikan / Resolution</h2>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
-                    <div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Ditangani Oleh</div>
-                        <div style="font-weight: 600;">{{ $bug->fixer?->name ?? 'System' }}</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Waktu Selesai</div>
-                        <div style="font-weight: 600;">{{ $bug->closed_at ? $bug->closed_at->format('d M Y, H:i') : '-' }}</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase;">Penyebab Kerusakan (AI)</div>
-                        <div style="font-weight: 600;"><span class="badge" style="background-color: rgba(6, 182, 212, 0.1); color: var(--color-info); border: 1px solid rgba(6, 182, 212, 0.2)">{{ $bug->damage_category ?? 'Lain-lain' }}</span></div>
-                    </div>
-                </div>
+        <!-- Right Side: AI Analytics Box & Communication inbox -->
+        <div class="space-y-6">
+            
+            <!-- AI Stage 1 box -->
+            <div class="bg-slate-900/40 border border-indigo-500/20 rounded-xl p-6 shadow-xl backdrop-blur-sm" style="border-top-width: 4px">
+                <h2 class="text-md font-bold text-indigo-400 mb-6 flex items-center gap-2 uppercase tracking-wide">
+                    <i class="bi bi-robot"></i> DIAGNOSIS AI ENGINE (STAGE 1)
+                </h2>
 
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div>
-                        <h3 style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Penyebab Utama (Root Cause)</h3>
-                        <div style="background-color: rgba(16, 185, 129, 0.05); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(16, 185, 129, 0.1); white-space: pre-line;">{{ $bug->root_cause }}</div>
-                    </div>
-                    <div>
-                        <h3 style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Tindakan Perbaikan (Repair Action)</h3>
-                        <div style="background-color: rgba(16, 185, 129, 0.05); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(16, 185, 129, 0.1); white-space: pre-line;">{{ $bug->repair_action }}</div>
-                    </div>
-                </div>
-            </div>
-        @endif
-    </div>
-
-    <!-- Right Column: AI Analysis & Feedback -->
-    <div>
-        <!-- AI Stage 1 Box -->
-        <div class="card" style="border-top: 4px solid var(--color-primary);">
-            <h2 class="card-title" style="display: flex; align-items: center; gap: 0.5rem;">
-                <i class="bi bi-robot" style="color: var(--color-primary);"></i>
-                <span>Analisis AI (Stage 1)</span>
-            </h2>
-
-            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                <!-- Severity comparison -->
-                <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
-                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Perbandingan Severity:</div>
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div>
-                            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Reporter:</span>
-                            @if($bug->severity === 'Critical')
-                                <span class="badge badge-critical">{{ $bug->severity }}</span>
-                            @elseif($bug->severity === 'Major')
-                                <span class="badge badge-major">{{ $bug->severity }}</span>
-                            @else
-                                <span class="badge badge-minor">{{ $bug->severity }}</span>
-                            @endif
-                        </div>
-                        <div style="text-align: right;">
-                            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">AI Recommendation:</span>
-                            @if($bug->severity_recommended)
-                                @if($bug->severity_recommended === 'Critical')
-                                    <span class="badge badge-critical">{{ $bug->severity_recommended }}</span>
-                                @elseif($bug->severity_recommended === 'Major')
-                                    <span class="badge badge-major">{{ $bug->severity_recommended }}</span>
+                <div class="space-y-5">
+                    <!-- Severity Audit -->
+                    <div class="border-b border-slate-800/80 pb-4">
+                        <span class="block text-xs font-mono text-slate-500 uppercase mb-2.5">Audit Derajat Keparahan:</span>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="block text-[10px] font-mono text-slate-550 uppercase mb-1">Reporter:</span>
+                                @if($bug->severity === 'Critical')
+                                    <span class="inline-flex text-[9px] font-bold font-mono bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded uppercase">CRITICAL</span>
+                                @elseif($bug->severity === 'Major')
+                                    <span class="inline-flex text-[9px] font-bold font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded uppercase">MAJOR</span>
                                 @else
-                                    <span class="badge badge-minor">{{ $bug->severity_recommended }}</span>
+                                    <span class="inline-flex text-[9px] font-bold font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded uppercase">MINOR</span>
                                 @endif
-                            @else
-                                <span style="color: var(--text-muted); font-size: 0.8rem;">Belum dianalisis</span>
-                            @endif
-                        </div>
-                    </div>
-                    @if($bug->severity_recommendation_reason)
-                        <div style="background-color: rgba(255, 255, 255, 0.02); padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.8rem; margin-top: 0.75rem; color: var(--text-secondary); border-left: 2px solid var(--color-primary);">
-                            <strong>Alasan:</strong> {{ $bug->severity_recommendation_reason }}
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Sentiment analysis -->
-                <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
-                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Analisis Sentimen Laporan:</div>
-                    @if($bug->sentiment_label)
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            @if($bug->sentiment_label === 'positive')
-                                <span class="badge badge-positive">Positif</span>
-                            @elseif($bug->sentiment_label === 'negative')
-                                <span class="badge badge-negative">Negatif</span>
-                            @elseif($bug->sentiment_label === 'spam')
-                                <span class="badge badge-spam">Spam</span>
-                            @else
-                                <span class="badge badge-neutral">Netral</span>
-                            @endif
-                            <span style="font-size: 0.85rem; color: var(--text-secondary);">Score: <strong>{{ $bug->sentiment_score }}</strong></span>
-                        </div>
-                    @else
-                        <span style="color: var(--text-muted); font-size: 0.8rem;">Belum dianalisis</span>
-                    @endif
-                </div>
-
-                <!-- Spam detection check -->
-                <div>
-                    <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Spam Check:</div>
-                    @if($bug->sentiment_label)
-                        @if($bug->is_spam)
-                            <div style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.75rem; border-radius: 0.5rem; color: var(--color-critical); font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.25rem;">
-                                <div style="font-weight: 600;"><i class="bi bi-shield-x"></i> AI Mendeteksi Spam!</div>
-                                <div style="color: var(--text-secondary); font-size: 0.8rem;">{{ $bug->spam_reason }}</div>
                             </div>
-                        @else
-                            <div style="background-color: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.5rem 0.75rem; border-radius: 0.5rem; color: var(--color-minor); font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem;">
-                                <i class="bi bi-shield-check"></i> Laporan Lolos Spam Check (Laporan Serius)
+                            <div class="text-right">
+                                <span class="block text-[10px] font-mono text-slate-550 uppercase mb-1">Rekomendasi AI:</span>
+                                @if($bug->severity_recommended)
+                                    @if($bug->severity_recommended === 'Critical')
+                                        <span class="inline-flex text-[9px] font-bold font-mono bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded uppercase">CRITICAL</span>
+                                    @elseif($bug->severity_recommended === 'Major')
+                                        <span class="inline-flex text-[9px] font-bold font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded uppercase">MAJOR</span>
+                                    @else
+                                        <span class="inline-flex text-[9px] font-bold font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded uppercase">MINOR</span>
+                                    @endif
+                                @else
+                                    <span class="text-xs text-slate-600 font-mono">N/A</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        @if($bug->severity_recommendation_reason)
+                            <div class="mt-3 p-3 bg-slate-950/80 border border-slate-850 rounded-lg text-xs text-slate-400 leading-relaxed border-l-2 border-indigo-500 font-mono">
+                                <strong>ALASAN AI:</strong> {{ $bug->severity_recommendation_reason }}
                             </div>
                         @endif
+                    </div>
+
+                    <!-- Sentiment details -->
+                    <div class="border-b border-slate-800/80 pb-4">
+                        <span class="block text-xs font-mono text-slate-500 uppercase mb-2">Sentimen Teks Deskripsi:</span>
+                        @if($bug->sentiment_label)
+                            <div class="flex items-center gap-3">
+                                @if($bug->sentiment_label === 'positive')
+                                    <span class="inline-flex text-[9px] font-bold font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded uppercase">POSITIF</span>
+                                @elseif($bug->sentiment_label === 'negative')
+                                    <span class="inline-flex text-[9px] font-bold font-mono bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded uppercase">NEGATIF</span>
+                                @elseif($bug->sentiment_label === 'spam')
+                                    <span class="inline-flex text-[9px] font-bold font-mono bg-violet-500/10 text-violet-400 border border-violet-500/20 px-2 py-0.5 rounded uppercase">SPAM</span>
+                                @else
+                                    <span class="inline-flex text-[9px] font-bold font-mono bg-slate-950 text-slate-400 border border-slate-850 px-2 py-0.5 rounded uppercase">NETRAL</span>
+                                @endif
+                                <span class="text-xs font-mono text-slate-400">Score: <strong>{{ number_format($bug->sentiment_score, 2) }}</strong></span>
+                            </div>
+                        @else
+                            <span class="text-xs font-mono text-slate-600">MENUNGGU ANTRIAN AI</span>
+                        @endif
+                    </div>
+
+                    <!-- Spam filter yield -->
+                    <div>
+                        <span class="block text-xs font-mono text-slate-500 uppercase mb-2">Spam / Keabsahan Laporan:</span>
+                        @if($bug->sentiment_label)
+                            @if($bug->is_spam)
+                                <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs space-y-1">
+                                    <div class="font-bold flex items-center gap-1.5"><i class="bi bi-shield-slash"></i> CRITICAL SPAM ALARM!</div>
+                                    <p class="text-slate-400 font-mono text-[11px] leading-relaxed">{{ $bug->spam_reason }}</p>
+                                </div>
+                            @else
+                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-450 text-xs font-mono font-bold">
+                                    <i class="bi bi-shield-fill-check"></i> VALID (LAPORAN SERIUS)
+                                </div>
+                            @endif
+                        @else
+                            <span class="text-xs font-mono text-slate-600">N/A</span>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback / Direct Message Box -->
+            <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-6 shadow-xl backdrop-blur-sm">
+                <h2 class="text-md font-bold text-slate-200 mb-4 flex items-center gap-2 uppercase tracking-wide">
+                    <i class="bi bi-chat-left-text-fill text-indigo-500"></i> KOTAK KOMUNIKASI QA
+                </h2>
+
+                <div class="space-y-4 max-h-[300px] overflow-y-auto mb-4 pr-1">
+                    @if($bug->feedbacks->isEmpty())
+                        <div class="text-center text-xs font-mono text-slate-650 py-12 uppercase tracking-wider">
+                            BELUM ADA PESAN YANG TERKIRIM
+                        </div>
                     @else
-                        <span style="color: var(--text-muted); font-size: 0.8rem;">Belum dianalisis</span>
+                        @foreach($bug->feedbacks as $message)
+                            @php
+                                $isOutbound = ($message->from_user_id === auth()->id());
+                            @endphp
+                            <div class="p-3 rounded-lg border text-xs space-y-1 relative {{ $isOutbound ? 'bg-slate-950/60 border-indigo-500/20 border-l-2' : 'bg-slate-850/30 border-slate-800 border-l-2 border-l-purple-500' }}">
+                                <div class="flex justify-between font-mono text-[10px] text-slate-500">
+                                    <span class="font-bold text-slate-400">{{ $message->sender?->name ?? 'System' }}</span>
+                                    <span>{{ $message->created_at->diffForHumans() }}</span>
+                                </div>
+                                <p class="text-slate-300 leading-normal">{{ $message->message }}</p>
+                            </div>
+                        @endforeach
                     @endif
                 </div>
-            </div>
-        </div>
 
-        <!-- Feedback Communication Box -->
-        <div class="card">
-            <h2 class="card-title"><i class="bi bi-chat-left-text-fill"></i> Komunikasi / Feedback</h2>
-            
-            <!-- Message List -->
-            <div class="feedback-timeline">
-                @if($bug->feedbacks->isEmpty())
-                    <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 2rem 0;">
-                        Belum ada komunikasi personal terkait laporan ini.
+                <!-- Input Message Form -->
+                <form action="{{ route('bugs.feedback.store', $bug) }}" method="POST" class="space-y-3">
+                    @csrf
+                    <div>
+                        <textarea name="message" rows="2" class="w-full bg-slate-950 border border-slate-850 rounded-lg p-2.5 text-slate-200 text-xs focus:outline-none focus:border-indigo-500 transition-all placeholder-slate-800" placeholder="Kirim tanggapan atau instruksi perbaikan..." required></textarea>
                     </div>
-                @else
-                    @foreach($bug->feedbacks as $message)
-                        @php
-                            $isOutbound = ($message->from_user_id === auth()->id());
-                        @endphp
-                        <div class="feedback-bubble {{ $isOutbound ? 'outbound' : 'inbound' }}">
-                            <div class="feedback-meta">
-                                <span class="feedback-sender">{{ $message->sender?->name ?? 'System' }}</span>
-                                <span>{{ $message->created_at->diffForHumans() }}</span>
-                            </div>
-                            <div class="feedback-body">{{ $message->message }}</div>
-                        </div>
-                    @endforeach
-                @endif
+                    <button type="submit" class="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all">
+                        <i class="bi bi-send-fill"></i> KIRIM PESAN FEEDBACK
+                    </button>
+                </form>
             </div>
 
-            <!-- Message Form (visible if user can chat) -->
-            <form action="{{ route('bugs.feedback.store', $bug) }}" method="POST">
-                @csrf
-                <div class="form-group" style="margin-bottom: 1rem;">
-                    <textarea name="message" rows="2" placeholder="Tulis pesan/klarifikasi..." class="form-control" style="font-size: 0.85rem;" required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center;">
-                    <i class="bi bi-send"></i> Kirim Pesan
-                </button>
-            </form>
         </div>
+
     </div>
 </div>
 @endsection
 
 @section('scripts')
 <script>
-    // Asynchronously mark messages as read when loading the page
     document.addEventListener('DOMContentLoaded', function() {
         fetch('{{ route('bugs.feedback.read', $bug) }}', {
             method: 'POST',

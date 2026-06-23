@@ -23,6 +23,15 @@ class DashboardController extends Controller
         
         $reworkCount = Bug::where('is_rework', true)->count();
         $reworkRate = $totalBugs > 0 ? round(($reworkCount / $totalBugs) * 100, 1) : 0.0;
+        $spamCount = Bug::where('is_spam', 1)->count();
+
+        // Severity Distribution for Donut Chart
+        $severityCounts = Bug::selectRaw('severity, count(*) as count')
+            ->groupBy('severity')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [strtolower($item->severity) => $item->count];
+            })->toArray();
 
         // 2. Sentiment Distribution
         $sentiments = Bug::selectRaw('sentiment_label, count(*) as count')
@@ -91,9 +100,9 @@ class DashboardController extends Controller
         $bugs = $auditQuery->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
         return view('dashboard.index', compact(
-            'totalBugs', 'openBugs', 'closedBugs', 'criticalOpenBugs', 'reworkRate',
+            'totalBugs', 'openBugs', 'closedBugs', 'criticalOpenBugs', 'reworkRate', 'spamCount',
             'sentiments', 'topProjects', 'damageCategories', 'trendData',
-            'projects', 'bugs'
+            'projects', 'bugs', 'severityCounts'
         ));
     }
 
