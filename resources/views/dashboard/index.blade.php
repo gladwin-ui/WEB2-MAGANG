@@ -3,6 +3,55 @@
 @section('title', 'Dashboard Analitik QA')
 
 @section('content')
+@php
+    $criticalOpenBugs = $criticalBugs;
+    $spamCount = $spamBlocked;
+    
+    // Calculate severity counts
+    $sevMap = \App\Models\Bug::groupBy('severity')->selectRaw('severity, count(*) as count')->pluck('count', 'severity')->toArray();
+    $severityCounts = [
+        'critical' => $sevMap['Critical'] ?? 0,
+        'major' => $sevMap['Major'] ?? 0,
+        'minor' => $sevMap['Minor'] ?? 0,
+    ];
+
+    // Mapped sentiments
+    $sentMap = $sentimentDistribution->pluck('total', 'sentiment_label')->toArray();
+    $sentiments = [
+        'positive' => $sentMap['positive'] ?? $sentMap['Positive'] ?? 0,
+        'neutral' => $sentMap['neutral'] ?? $sentMap['Neutral'] ?? 0,
+        'negative' => $sentMap['negative'] ?? $sentMap['Negative'] ?? 0,
+        'spam' => $sentMap['spam'] ?? $sentMap['Spam'] ?? 0,
+        'unanalyzed' => $sentMap['Unanalyzed'] ?? $sentMap['unanalyzed'] ?? 0,
+    ];
+
+    // Mapped damage categories
+    $damageCategories = $damageDistribution->map(function($item) {
+        return (object)[
+            'damage_category' => $item->damage_category,
+            'count' => $item->total
+        ];
+    });
+
+    // Mapped trend data
+    $trendMap = $volumeTrend->pluck('total', 'date')->toArray();
+    $trendData = [];
+    for ($i = 15; $i >= 0; $i--) {
+        $dateStr = now()->subDays($i)->format('Y-m-d');
+        $trendData[$dateStr] = $trendMap[$dateStr] ?? 0;
+    }
+
+    // Mapped top projects
+    $mappedTopProjects = $topProjects->map(function($tp) {
+        return (object)[
+            'project_name' => $tp->project?->name ?? 'Unknown Proyek',
+            'bug_count' => $tp->total
+        ];
+    });
+
+    // Mapped bugs
+    $bugs = $auditBugs;
+@endphp
 <div class="space-y-8">
     
     <!-- Top Header Bar -->
@@ -171,7 +220,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-xs font-mono">
-                        @forelse($topProjects as $tp)
+                        @forelse($mappedTopProjects as $tp)
                             <tr class="hover:bg-slate-50">
                                 <td class="py-2.5 px-3 font-semibold text-slate-700 uppercase">{{ $tp->project_name }}</td>
                                 <td class="py-2.5 px-3 text-right text-blue-600 font-bold">{{ $tp->bug_count }}</td>

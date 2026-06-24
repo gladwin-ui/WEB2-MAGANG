@@ -47,15 +47,9 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-sm">
                         @foreach($bugs as $bug)
-                            @php
-                                $unread = $bug->feedbacks->where('to_user_id', auth()->id())->where('is_read', false)->count();
-                            @endphp
                             <tr class="hover:bg-slate-50 transition-all {{ $bug->severity === 'Critical' && $bug->status === 'OPEN' ? 'bg-red-50/30' : '' }}">
-                                <td class="py-3.5 px-4 font-mono text-xs text-blue-600 font-bold flex items-center">
+                                <td class="py-3.5 px-4 font-mono text-xs text-blue-600 font-bold">
                                     #{{ $bug->id }}
-                                    @if($unread > 0)
-                                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-red-500 ml-1.5 animate-pulse" title="Ada feedback baru"></span>
-                                    @endif
                                 </td>
                                 <td class="py-3.5 px-4">
                                     <div class="flex items-center gap-2">
@@ -92,17 +86,26 @@
                                     @endif
                                 </td>
                                 <td class="py-3.5 px-4 text-right">
-                                    <div class="inline-flex gap-1.5">
-                                        <a href="{{ route('bugs.show', $bug) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-blue-600 hover:text-blue-700 rounded text-xs font-mono font-bold transition-all relative shadow-sm">
+                                    <div class="inline-flex gap-1.5 flex-wrap items-center">
+                                        <a href="{{ route('bugs.show', $bug) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-blue-600 hover:text-blue-700 rounded text-xs font-mono font-bold transition-all shadow-sm">
                                             <i class="bi bi-eye"></i> DETAIL
-                                            @if($unread > 0)
-                                                <span class="absolute -top-1 -right-1 flex h-2 w-2">
-                                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                                                </span>
-                                            @endif
                                         </a>
                                         @if($bug->status === 'OPEN')
+                                            @if(is_null($bug->assigned_to))
+                                                <form method="POST" action="{{ route('bugs.assign', $bug) }}" class="inline">
+                                                    @csrf
+                                                    <button type="submit" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-mono font-bold transition-all shadow-sm">
+                                                        <i class="bi bi-person-check"></i> ASSIGN
+                                                    </button>
+                                                </form>
+                                            @elseif($bug->assigned_to === Auth::id())
+                                                <span class="inline-flex text-[9px] font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded uppercase">DITUGASKAN KE KAMU</span>
+                                                <a href="{{ route('bugs.chat.show', $bug) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-mono font-bold transition-all shadow-sm">
+                                                    <i class="bi bi-chat-dots"></i> CHAT
+                                                </a>
+                                            @else
+                                                <span class="inline-flex text-[9px] font-bold font-mono bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded uppercase">DIAMBIL: {{ $bug->assignee->name }}</span>
+                                            @endif
                                             <a href="{{ route('bugs.close.form', $bug) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-mono font-bold transition-all shadow-sm">
                                                 <i class="bi bi-hammer"></i> TANGANI
                                             </a>

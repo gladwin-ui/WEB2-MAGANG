@@ -15,94 +15,56 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-        // 1. Summary Cards Metrics
-        $totalBugs = Bug::count();
-        $openBugs = Bug::where('status', 'OPEN')->count();
-        $closedBugs = Bug::where('status', 'CLOSED')->count();
-        $criticalOpenBugs = Bug::where('status', 'OPEN')->where('severity', 'Critical')->count();
-        
-        $reworkCount = Bug::where('is_rework', true)->count();
-        $reworkRate = $totalBugs > 0 ? round(($reworkCount / $totalBugs) * 100, 1) : 0.0;
-        $spamCount = Bug::where('is_spam', 1)->count();
+        // Summary Cards
+        $totalBugs    = Bug::count();
+        $openBugs     = Bug::where('status', 'OPEN')->count();
+        $closedBugs   = Bug::where('status', 'CLOSED')->count();
+        $criticalBugs = Bug::where('severity', 'Critical')->count();
+        $reworkRate   = $closedBugs > 0
+                        ? round(Bug::where('is_rework', true)->count() / $closedBugs * 100, 1)
+                        : 0;
+        $spamBlocked  = Bug::where('is_spam', true)->count();
 
-        // Severity Distribution for Donut Chart
-        $severityCounts = Bug::selectRaw('severity, count(*) as count')
-            ->groupBy('severity')
-            ->get()
-            ->mapWithKeys(function ($item) {
-                return [strtolower($item->severity) => $item->count];
-            })->toArray();
+        // Charts
+        $damageDistribution  = Bug::whereNotNull('damage_category')
+                                  ->groupBy('damage_category')
+                                  ->selectRaw('damage_category, count(*) as total')
+                                  ->get();
 
-        // 2. Sentiment Distribution
-        $sentiments = Bug::selectRaw('sentiment_label, count(*) as count')
-            ->groupBy('sentiment_label')
-            ->get()
-            ->mapWithKeys(function ($item) {
-                $label = $item->sentiment_label ?? 'Unanalyzed';
-                return [$label => $item->count];
-            })->toArray();
+        $sentimentDistribution = Bug::whereNotNull('sentiment_label')
+                                    ->groupBy('sentiment_label')
+                                    ->selectRaw('sentiment_label, count(*) as total')
+                                    ->get();
 
-        // 3. Top 5 Projects with most bugs
-        $topProjects = Bug::join('projects', 'bugs.project_id', '=', 'projects.id')
-            ->selectRaw('projects.name as project_name, count(bugs.id) as bug_count')
-            ->groupBy('projects.id', 'projects.name')
-            ->orderBy('bug_count', 'desc')
-            ->limit(5)
-            ->get();
+        $topProjects = Bug::with('project')
+                          ->groupBy('project_id')
+                          ->selectRaw('project_id, count(*) as total')
+                          ->orderByDesc('total')
+                          ->limit(5)
+                          ->get();
 
-        // 4. Damage Category Distribution
-        $damageCategories = Bug::where('status', 'CLOSED')
-            ->whereNotNull('damage_category')
-            ->selectRaw('damage_category, count(*) as count')
-            ->groupBy('damage_category')
-            ->orderBy('count', 'desc')
-            ->get();
+        $volumeTrend = Bug::selectRaw('DATE(created_at) as date, count(*) as total')
+                          ->where('created_at', '>=', now()->subDays(15))
+                          ->groupBy('date')
+                          ->orderBy('date')
+                          ->get();
 
-        // 5. Volume Trend (Last 14 Days)
-        $volumeTrend = Bug::selectRaw('DATE(created_at) as date, count(*) as count')
-            ->where('created_at', '>=', Carbon::now()->subDays(14))
-            ->groupBy('date')
-            ->orderBy('date', 'asc')
-            ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item->date => $item->count];
-            })->toArray();
+        // Tabel Audit dengan filter
+        $query = Bug::with(['reporter', 'project', 'device']);
+        if ($request->status)     $query->where('status', $request->status);
+        if ($request->severity)   $query->where('severity', $request->severity);
+        if ($request->project_id) $query->where('project_id', $request->project_id);
+        if ($request->date_from)  $query->whereDate('created_at', '>=', $request->date_from);
+        if ($request->date_to)    $query->whereDate('created_at', '<=', $request->date_to);
+        $auditBugs = $query->latest()->paginate(20)->withQueryString();
 
-        // Fill in missing dates for trend chart
-        $trendData = [];
-        for ($i = 14; $i >= 0; $i--) {
-            $dateStr = Carbon::now()->subDays($i)->format('Y-m-d');
-            $trendData[$dateStr] = $volumeTrend[$dateStr] ?? 0;
-        }
-
-        // 6. Bug Audit Table with Filters & Pagination
+        // Fetch projects for filter dropdown
         $projects = Project::orderBy('name')->get();
-        
-        $auditQuery = Bug::with(['project', 'serialNumber', 'reporter', 'fixer']);
-
-        // Apply filters
-        if ($request->filled('project_id')) {
-            $auditQuery->where('project_id', $request->project_id);
-        }
-        if ($request->filled('status')) {
-            $auditQuery->where('status', $request->status);
-        }
-        if ($request->filled('severity')) {
-            $auditQuery->where('severity', $request->severity);
-        }
-        if ($request->filled('date_from')) {
-            $auditQuery->where('created_at', '>=', Carbon::parse($request->date_from)->startOfDay());
-        }
-        if ($request->filled('date_to')) {
-            $auditQuery->where('created_at', '<=', Carbon::parse($request->date_to)->endOfDay());
-        }
-
-        $bugs = $auditQuery->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
 
         return view('dashboard.index', compact(
-            'totalBugs', 'openBugs', 'closedBugs', 'criticalOpenBugs', 'reworkRate', 'spamCount',
-            'sentiments', 'topProjects', 'damageCategories', 'trendData',
-            'projects', 'bugs', 'severityCounts'
+            'totalBugs', 'openBugs', 'closedBugs', 'criticalBugs', 'reworkRate', 'spamBlocked',
+            'damageDistribution', 'sentimentDistribution', 'topProjects', 'volumeTrend',
+            'auditBugs', 'projects'
         ));
     }
 

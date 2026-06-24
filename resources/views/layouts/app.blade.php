@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') - BugTrack MFG</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -148,18 +149,29 @@
                         </a>
                     @endif
 
-                    <a href="{{ route('bugs.index') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.index') && !request()->has('status') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                        <div class="flex items-center gap-3">
-                            <i class="bi bi-list-task text-base"></i> 
-                            <span>{{ auth()->user()->role === 'reporter' ? 'Riwayat Laporanku' : 'Queue Kerja Bug' }}</span>
-                        </div>
-                        @php
-                            $unreadFeedbackCount = \App\Models\BugFeedback::where('to_user_id', auth()->id())->where('is_read', false)->count();
-                        @endphp
-                        @if($unreadFeedbackCount > 0)
-                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold leading-none text-white bg-[#DC2626] rounded-full shadow-md font-mono animate-pulse">{{ $unreadFeedbackCount }}</span>
-                        @endif
-                    </a>
+                    @if(auth()->user()->role === 'reporter')
+                        <a href="{{ route('bugs.my') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.my') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="bi bi-list-task text-base"></i> 
+                                <span>Riwayat Laporanku</span>
+                            </div>
+                        </a>
+
+                    @elseif(auth()->user()->role === 'mekanik')
+                        <a href="{{ route('bugs.queue') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.queue') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="bi bi-list-task text-base"></i> 
+                                <span>Queue Kerja Bug</span>
+                            </div>
+                        </a>
+                    @else
+                        <a href="{{ route('bugs.index') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.index') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="bi bi-list-task text-base"></i> 
+                                <span>Semua Bug</span>
+                            </div>
+                        </a>
+                    @endif
 
                     @if(auth()->user()->role === 'reporter' || auth()->user()->role === 'admin')
                         <a href="{{ route('bugs.create') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.create') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">

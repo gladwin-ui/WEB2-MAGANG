@@ -6,8 +6,9 @@ use App\Http\Controllers\BugController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SerialNumberController;
-use App\Http\Controllers\BugFeedbackController;
+
 use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\BugChatController;
 
 // Redirect home to login
 Route::get('/', function () {
@@ -24,44 +25,40 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Authenticated Routes
 Route::middleware(['auth'])->group(function () {
     
-    // Bug Index & Details
+    // Bug Index
     Route::get('/bugs', [BugController::class, 'index'])->name('bugs.index');
-    Route::get('/bugs/create', [BugController::class, 'create'])->name('bugs.create');
-    Route::post('/bugs', [BugController::class, 'store'])->name('bugs.store');
-    Route::get('/bugs/{bug}', [BugController::class, 'show'])->name('bugs.show');
-    
-    // Bug Feedback
-    Route::post('/bugs/{bug}/feedback', [BugFeedbackController::class, 'store'])->name('bugs.feedback.store');
-    Route::post('/bugs/{bug}/feedback/read', [BugFeedbackController::class, 'markAsRead'])->name('bugs.feedback.read');
 
-    // Mechanics & Admin Close Bug Route
-    Route::middleware(['role:mekanik,admin'])->group(function () {
-        Route::get('/bugs/{bug}/close', [BugController::class, 'showCloseForm'])->name('bugs.close.form');
-        Route::post('/bugs/{bug}/close', [BugController::class, 'close'])->name('bugs.close');
+
+    // Hanya Reporter
+    Route::middleware(['role:reporter'])->group(function () {
+        Route::get('/bugs/create', [BugController::class, 'create'])->name('bugs.create');
+        Route::post('/bugs', [BugController::class, 'store'])->name('bugs.store');
+        Route::get('/bugs/my', [BugController::class, 'myBugs'])->name('bugs.my');
+
     });
 
-    // Admin Only Routes
+    // Hanya Mekanik
+    Route::middleware(['role:mekanik'])->group(function () {
+        Route::get('/bugs/queue', [BugController::class, 'queue'])->name('bugs.queue');
+        Route::get('/bugs/{bug}/close', [BugController::class, 'showClose'])->name('bugs.close.form');
+        Route::post('/bugs/{bug}/close', [BugController::class, 'close'])->name('bugs.close');
+        Route::post('/bugs/{bug}/assign', [BugController::class, 'assign'])->name('bugs.assign');
+    });
+
+    // Hanya Admin
     Route::middleware(['role:admin'])->group(function () {
-        // Analytics Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard/export', [DashboardController::class, 'exportCsv'])->name('dashboard.export');
-
-        // Master Projects
-        Route::get('/master/projects', [ProjectController::class, 'index'])->name('master.projects.index');
-        Route::post('/master/projects', [ProjectController::class, 'store'])->name('master.projects.store');
-        Route::put('/master/projects/{project}', [ProjectController::class, 'update'])->name('master.projects.update');
-        Route::delete('/master/projects/{project}', [ProjectController::class, 'destroy'])->name('master.projects.destroy');
-
-        // Master Serial Numbers
-        Route::get('/master/serial-numbers', [SerialNumberController::class, 'index'])->name('master.serial_numbers.index');
-        Route::post('/master/serial-numbers', [SerialNumberController::class, 'store'])->name('master.serial_numbers.store');
-        Route::put('/master/serial-numbers/{serialNumber}', [SerialNumberController::class, 'update'])->name('master.serial_numbers.update');
-        Route::delete('/master/serial-numbers/{serialNumber}', [SerialNumberController::class, 'destroy'])->name('master.serial_numbers.destroy');
-
-        // Master Devices
-        Route::get('/master/devices', [DeviceController::class, 'index'])->name('master.devices.index');
-        Route::post('/master/devices', [DeviceController::class, 'store'])->name('master.devices.store');
-        Route::put('/master/devices/{device}', [DeviceController::class, 'update'])->name('master.devices.update');
-        Route::delete('/master/devices/{device}', [DeviceController::class, 'destroy'])->name('master.devices.destroy');
+        Route::resource('/master/projects', ProjectController::class)->names('master.projects');
+        Route::resource('/master/devices', DeviceController::class)->names('master.devices');
+        Route::resource('/master/serial-numbers', SerialNumberController::class)->names('master.serial_numbers');
     });
+
+    // Wildcard Bug Details (must be at the bottom)
+    Route::get('/bugs/{bug}', [BugController::class, 'show'])->name('bugs.show');
+
+    // Chat — Reporter dan Mekanik
+    Route::get('/bugs/{bug}/chat', [BugChatController::class, 'show'])->name('bugs.chat.show');
+    Route::post('/bugs/{bug}/chat', [BugChatController::class, 'send'])->name('bugs.chat.send');
+    Route::get('/bugs/{bug}/chat/poll', [BugChatController::class, 'poll'])->name('bugs.chat.poll');
 });

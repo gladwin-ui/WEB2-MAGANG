@@ -6,16 +6,15 @@ SPAM_KEYWORDS = [
     'jjjj', 'kkkk', 'llll', 'mmmm', 'nnnn', 'oooo', 'pppp', 'qqqq', 'rrrr',
     'ssss', 'tttt', 'uuuu', 'vvvv', 'wwww', 'xxxx', 'yyyy', 'zzzz'
 ]
-
 def is_spam_report(text: str) -> tuple[bool, str | None]:
     if not text or not isinstance(text, str):
-        return True, "Deskripsi kosong atau tidak valid"
+        return True, "Teks laporan kosong atau tidak valid"
         
     text_stripped = text.strip()
     
-    # 1. Check for too short description
+    # 1. Check for too short text
     if len(text_stripped) < 5:
-        return True, "Deskripsi terlalu pendek (minimal 5 karakter)"
+        return True, "Teks laporan terlalu pendek (minimal 5 karakter)"
         
     # 2. Check for placeholder keywords (exact or substring matching)
     text_lower = text_stripped.lower()

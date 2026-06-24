@@ -16,6 +16,7 @@ class Bug extends Model
         'is_spam' => 'boolean',
         'sentiment_score' => 'float',
         'closed_at' => 'datetime',
+        'assigned_at' => 'datetime',
     ];
 
     public function project()
@@ -43,8 +44,11 @@ class Bug extends Model
         return $this->belongsTo(User::class, 'fixed_by');
     }
 
-    public function feedbacks()
-    {
-        return $this->hasMany(BugFeedback::class);
+    public function assignee() {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    public function chats() {
+        return $this->hasMany(BugChat::class)->orderBy('created_at', 'asc');
     }
 }

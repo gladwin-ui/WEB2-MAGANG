@@ -163,6 +163,7 @@
         <div class="space-y-6">
             
             <!-- AI Stage 1 box -->
+            @if(Auth::user()->role !== 'reporter')
             <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm border-t-4 border-t-blue-600">
                 <h2 class="text-md font-bold text-blue-600 mb-6 flex items-center gap-2 uppercase tracking-wide">
                     <i class="bi bi-robot"></i> DIAGNOSIS AI ENGINE (STAGE 1)
@@ -247,44 +248,32 @@
                     </div>
                 </div>
             </div>
+            @endif
 
-            <!-- Feedback / Direct Message Box -->
+            <!-- Chat / Assignment Info Box -->
             <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
                 <h2 class="text-md font-bold text-slate-800 mb-4 flex items-center gap-2 uppercase tracking-wide">
-                    <i class="bi bi-chat-left-text-fill text-blue-600"></i> KOTAK KOMUNIKASI QA
+                    <i class="bi bi-chat-left-text-fill text-blue-600"></i> KOMUNIKASI & PENUGASAN
                 </h2>
 
-                <div class="space-y-4 max-h-[300px] overflow-y-auto mb-4 pr-1">
-                    @if($bug->feedbacks->isEmpty())
-                        <div class="text-center text-xs font-mono text-slate-400 py-12 uppercase tracking-wider">
-                            BELUM ADA PESAN YANG TERKIRIM
+                @if(!is_null($bug->assigned_to))
+                    <div class="space-y-3 mb-4">
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs">
+                            <span class="block font-mono text-[10px] text-slate-500 uppercase mb-1">DITUGASKAN KE MEKANIK</span>
+                            <span class="font-bold text-slate-800">{{ $bug->assignee?->name ?? '-' }}</span>
+                            @if($bug->assigned_at)
+                                <span class="text-slate-500 font-mono ml-2">{{ $bug->assigned_at->format('d M Y, H:i') }}</span>
+                            @endif
                         </div>
-                    @else
-                        @foreach($bug->feedbacks as $message)
-                            @php
-                                $isOutbound = ($message->from_user_id === auth()->id());
-                            @endphp
-                            <div class="p-3 rounded-lg border text-xs space-y-1 relative {{ $isOutbound ? 'bg-blue-50/50 border-blue-200 border-l-2 border-l-blue-600' : 'bg-slate-50 border-slate-250 border-l-2 border-l-purple-600' }}">
-                                <div class="flex justify-between font-mono text-[10px] text-slate-500">
-                                    <span class="font-bold text-slate-700">{{ $message->sender?->name ?? 'System' }}</span>
-                                    <span>{{ $message->created_at->diffForHumans() }}</span>
-                                </div>
-                                <p class="text-slate-700 leading-normal">{{ $message->message }}</p>
-                            </div>
-                        @endforeach
-                    @endif
-                </div>
-
-                <!-- Input Message Form -->
-                <form action="{{ route('bugs.feedback.store', $bug) }}" method="POST" class="space-y-3">
-                    @csrf
-                    <div>
-                        <textarea name="message" rows="2" class="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-slate-800 text-xs focus:outline-none focus:border-blue-600 transition-all placeholder-slate-400" placeholder="Kirim tanggapan atau instruksi perbaikan..." required></textarea>
                     </div>
-                    <button type="submit" class="w-full flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm">
-                        <i class="bi bi-send-fill"></i> KIRIM PESAN FEEDBACK
-                    </button>
-                </form>
+                    <a href="{{ route('bugs.chat.show', $bug) }}" class="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm">
+                        <i class="bi bi-chat-dots-fill"></i> BUKA RUANG CHAT
+                    </a>
+                @else
+                    <div class="text-center text-xs font-mono text-slate-400 py-12 uppercase tracking-wider">
+                        BELUM ADA MEKANIK YANG MENGAMBIL LAPORAN INI
+                    </div>
+                @endif
             </div>
 
         </div>
@@ -293,16 +282,3 @@
 </div>
 @endsection
 
-@section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch('{{ route('bugs.feedback.read', $bug) }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json'
-            }
-        });
-    });
-</script>
-@endsection

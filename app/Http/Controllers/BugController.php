@@ -26,21 +26,11 @@ class BugController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Bug::with(['project', 'serialNumber', 'reporter', 'fixer', 'feedbacks']);
-
         if ($user->role === 'reporter') {
-            // Reporter only sees their own reported bugs
-            $query->where('reported_by', $user->id);
-            $bugs = $query->orderBy('created_at', 'desc')->paginate(10);
-            return view('bugs.reporter-index', compact('bugs'));
+            return redirect()->action([self::class, 'myBugs']);
         } elseif ($user->role === 'mekanik') {
-            // Mechanic sees all bugs, can filter by status (default to OPEN)
-            $status = $request->input('status', 'OPEN');
-            $query->where('status', $status);
-            $bugs = $query->orderBy('created_at', 'desc')->paginate(10);
-            return view('bugs.mekanik-queue', compact('bugs', 'status'));
+            return redirect()->action([self::class, 'queue']);
         } else {
-            // Admin gets redirected to dashboard, or can audit
             return redirect()->route('dashboard');
         }
     }
@@ -66,75 +56,72 @@ class BugController extends Controller
      */
     public function store(Request $request)
     {
-        if (Auth::user()->role !== 'reporter' && Auth::user()->role !== 'admin') {
-            abort(403);
-        }
-
+        // 1. Validasi request
         $request->validate([
-            'title' => 'required|string|max:255',
-            'project_id' => 'nullable|exists:projects,id',
+            'title' => 'required',
+            'description' => 'required',
             'severity' => 'required|in:Critical,Major,Minor',
-            'serial_number_id' => 'nullable|exists:serial_numbers,id',
-            'reporter_type' => 'required|in:produk,sub',
-            'device_id' => 'nullable|exists:devices,id',
-            'description' => 'nullable|string',
-            'product_version' => 'nullable|string|max:100',
-            'environment' => 'nullable|string|max:255',
-            'reproduce_steps' => 'nullable|string',
-            'expected_result' => 'nullable|string',
-            'attachment' => 'nullable|file|max:20480', // 20MB limit for logs/images/videos
+            'serial_number_id' => 'required|exists:serial_numbers,id',
+            'device_id' => 'required|exists:devices,id',
         ]);
 
-        $attachmentPath = null;
-        if ($request->hasFile('attachment')) {
-            $attachmentPath = $request->file('attachment')->store('bug_attachments', 'public');
+        // 2. Buat record bug baru dengan status = 'OPEN' dan reported_by = Auth::id()
+        $bug = new Bug();
+        $bug->title = $request->title;
+        $bug->description = $request->description;
+        $bug->severity = $request->severity;
+        $bug->serial_number_id = $request->serial_number_id;
+        $bug->device_id = $request->device_id;
+        $bug->status = 'OPEN';
+        $bug->reported_by = Auth::id();
+
+        // Assign optional/supplementary form fields if present
+        if ($request->filled('project_id')) {
+            $bug->project_id = $request->project_id;
+        }
+        if ($request->filled('reporter_type')) {
+            $bug->reporter_type = $request->reporter_type;
+        }
+        if ($request->filled('product_version')) {
+            $bug->product_version = $request->product_version;
+        }
+        if ($request->filled('environment')) {
+            $bug->environment = $request->environment;
+        }
+        if ($request->filled('reproduce_steps')) {
+            $bug->reproduce_steps = $request->reproduce_steps;
+        }
+        if ($request->filled('expected_result')) {
+            $bug->expected_result = $request->expected_result;
         }
 
-        // Get serial number snapshot if selected
-        $snCodeSnapshot = null;
+        if ($request->hasFile('attachment')) {
+            $bug->attachment_path = $request->file('attachment')->store('bug_attachments', 'public');
+        }
+
         if ($request->serial_number_id) {
             $sn = SerialNumber::find($request->serial_number_id);
-            $snCodeSnapshot = $sn?->sn_code;
+            $bug->sn_code_snapshot = $sn?->sn_code;
         }
 
-        // 1. Save core bug info (OPEN status)
-        $bug = Bug::create([
-            'title' => $request->title,
-            'project_id' => $request->project_id,
-            'severity' => $request->severity,
-            'serial_number_id' => $request->serial_number_id,
-            'sn_code_snapshot' => $snCodeSnapshot,
-            'reporter_type' => $request->reporter_type,
-            'device_id' => $request->device_id,
-            'description' => $request->description,
-            'product_version' => $request->product_version,
-            'environment' => $request->environment,
-            'reproduce_steps' => $request->reproduce_steps,
-            'expected_result' => $request->expected_result,
-            'attachment_path' => $attachmentPath,
-            'reported_by' => Auth::id(),
-            'status' => 'OPEN',
-        ]);
+        // 3. Simpan bug ke DB ($bug->save())
+        $bug->save();
 
-        // 2. Call Python Analytics Service SYNCHRONOUSLY
-        $aiAnalysis = $this->analyticsService->analyzeBugReport($request->description ?? '');
+        // 4. Panggil BugAnalyticsService::analyzeBugReport($bug) secara sinkron
+        $aiAnalysis = $this->analyticsService->analyzeBugReport($bug);
 
-        // 3. Update Bug record with AI Stage 1 outputs
-        $bug->update([
-            'sentiment_label' => $aiAnalysis['sentiment_label'] ?? null,
-            'sentiment_score' => $aiAnalysis['sentiment_score'] ?? null,
-            'is_spam' => $aiAnalysis['is_spam'] ?? false,
-            'spam_reason' => $aiAnalysis['spam_reason'] ?? null,
-            'severity_recommended' => $aiAnalysis['severity_recommended'] ?? null,
-            'severity_recommendation_reason' => $aiAnalysis['severity_recommendation_reason'] ?? null,
-        ]);
+        // 5. Update bug dengan hasil AI: sentiment_label, sentiment_score, is_spam, spam_reason, severity_recommended, severity_recommendation_reason
+        // 6. Jika Analytics Service down/error, biarkan kolom AI tetap null — jangan gagalkan proses simpan
+        $bug->sentiment_label = $aiAnalysis['sentiment_label'] ?? null;
+        $bug->sentiment_score = $aiAnalysis['sentiment_score'] ?? null;
+        $bug->is_spam = $aiAnalysis['is_spam'] ?? false;
+        $bug->spam_reason = $aiAnalysis['spam_reason'] ?? null;
+        $bug->severity_recommended = $aiAnalysis['severity_recommended'] ?? null;
+        $bug->severity_recommendation_reason = $aiAnalysis['severity_recommendation_reason'] ?? null;
+        $bug->save();
 
-        $message = 'Laporan bug berhasil disubmit!';
-        if ($bug->is_spam) {
-            $message .= ' (AI mendeteksi kemungkinan spam/laporan asal-asalan: ' . $bug->spam_reason . ')';
-        }
-
-        return redirect()->route('bugs.index')->with('success', $message);
+        // 7. Return redirect ke halaman riwayat bug Reporter dengan pesan sukses
+        return redirect()->action([self::class, 'myBugs'])->with('success', 'Laporan bug berhasil disubmit!');
     }
 
     /**
@@ -142,20 +129,20 @@ class BugController extends Controller
      */
     public function show(Bug $bug)
     {
-        $bug->load(['project', 'serialNumber', 'device', 'reporter', 'fixer', 'feedbacks.sender']);
+        $bug->load(['project', 'serialNumber', 'device', 'reporter', 'fixer', 'assignee', 'chats.sender']);
         return view('bugs.show', compact('bug'));
     }
 
     /**
      * Show the form to close the bug.
      */
-    public function showCloseForm(Bug $bug)
+    public function showClose(Bug $bug)
     {
         if (Auth::user()->role !== 'mekanik' && Auth::user()->role !== 'admin') {
             abort(403);
         }
 
-        if ($bug->status === 'CLOSED') {
+        if ($bug->status !== 'OPEN') {
             return redirect()->route('bugs.show', $bug)->with('error', 'Bug sudah ditutup.');
         }
 
@@ -167,44 +154,84 @@ class BugController extends Controller
      */
     public function close(Request $request, Bug $bug)
     {
-        if (Auth::user()->role !== 'mekanik' && Auth::user()->role !== 'admin') {
+        // 1. Ambil bug by ID, pastikan statusnya 'OPEN' — jika bukan, abort(403)
+        if ($bug->status !== 'OPEN') {
             abort(403);
         }
 
+        // 2. Validasi request (root_cause required, repair_action required, is_rework boolean)
         $request->validate([
-            'root_cause' => 'required|string',
-            'repair_action' => 'required|string',
-            'is_rework' => 'nullable|boolean',
-            'feedback_message' => 'nullable|string', // Optional feedback to reporter
+            'root_cause' => 'required',
+            'repair_action' => 'required',
+            'is_rework' => 'boolean',
         ]);
 
-        // 1. Call Python Analytics Service for Stage 2 (Damage Categorization)
-        $aiAnalysis = $this->analyticsService->analyzeDamageCause(
-            $request->root_cause,
-            $request->repair_action
-        );
+        // 3. Update bug: root_cause, repair_action, is_rework dari request; fixed_by = Auth::id(); closed_at = now(); status = 'CLOSED'
+        $bug->root_cause = $request->root_cause;
+        $bug->repair_action = $request->repair_action;
+        $bug->is_rework = $request->boolean('is_rework');
+        $bug->fixed_by = Auth::id();
+        $bug->closed_at = now();
+        $bug->status = 'CLOSED';
 
-        // 2. Save technical closing actions and AI results
-        $bug->update([
-            'status' => 'CLOSED',
-            'root_cause' => $request->root_cause,
-            'repair_action' => $request->repair_action,
-            'is_rework' => $request->has('is_rework'),
-            'fixed_by' => Auth::id(),
-            'closed_at' => Carbon::now(),
-            'damage_category' => $aiAnalysis['damage_category'] ?? 'Lain-lain',
-        ]);
+        // 4. Simpan ($bug->save())
+        $bug->save();
 
-        // 3. Send feedback message to reporter if provided
-        if ($request->feedback_message) {
-            $bug->feedbacks()->create([
-                'from_user_id' => Auth::id(),
-                'to_user_id' => $bug->reported_by,
-                'message' => $request->feedback_message,
-                'is_read' => false,
-            ]);
+        // 5. Panggil BugAnalyticsService::analyzeDamageCause($bug->root_cause, $bug->repair_action) secara sinkron
+        $aiAnalysis = $this->analyticsService->analyzeDamageCause($bug->root_cause, $bug->repair_action);
+
+        // 6. Update bug dengan hasil AI: damage_category
+        // 7. Jika Analytics Service down/error, damage_category tetap null — jangan gagalkan proses close
+        $bug->damage_category = $aiAnalysis['damage_category'] ?? null;
+        $bug->save();
+
+        // 8. Return redirect ke halaman queue Mekanik dengan pesan sukses
+        return redirect()->action([self::class, 'queue'])->with('success', 'Bug berhasil ditutup!');
+    }
+
+    /**
+     * Show reporter's bug reports history.
+     */
+    public function myBugs(Request $request)
+    {
+        $user = Auth::user();
+        $bugs = Bug::with(['project', 'serialNumber', 'reporter', 'fixer', 'assignee'])
+            ->where('reported_by', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        return view('bugs.reporter-index', compact('bugs'));
+    }
+
+    /**
+     * Show mechanics bugs queue.
+     */
+    public function queue(Request $request)
+    {
+        $status = $request->input('status', 'OPEN');
+        $bugs = Bug::with(['project', 'serialNumber', 'reporter', 'fixer', 'assignee'])
+            ->where('status', $status)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        return view('bugs.mekanik-queue', compact('bugs', 'status'));
+    }
+
+    /**
+     * Assign an OPEN bug to the currently logged-in mechanic.
+     */
+    public function assign(Bug $bug)
+    {
+        if ($bug->status !== 'OPEN') {
+            return back()->with('error', 'Bug ini sudah tidak tersedia.');
         }
 
-        return redirect()->route('bugs.show', $bug)->with('success', 'Laporan bug berhasil ditutup dan dianalisis!');
+        if (!is_null($bug->assigned_to)) {
+            return back()->with('error', 'Bug ini sudah diambil oleh mekanik lain.');
+        }
+
+        $bug->assigned_to = Auth::id();
+        $bug->assigned_at = now();
+        $bug->save();
+
+        return back()->with('success', 'Bug berhasil di-assign ke kamu.');
     }
 }

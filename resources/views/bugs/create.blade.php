@@ -19,6 +19,17 @@
 
     <!-- Form Panel -->
     <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm max-w-4xl">
+        @if ($errors->any())
+            <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm space-y-1">
+                <div class="font-bold uppercase tracking-wider text-xs font-mono mb-1">// ERROR VALIDASI:</div>
+                <ul class="list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('bugs.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
@@ -52,8 +63,8 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label for="serial_number_id" class="block text-xs font-mono tracking-wider text-slate-600 uppercase mb-2">Serial Number Alat / ID SN</label>
-                    <select id="serial_number_id" name="serial_number_id" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600 transition-all">
+                    <label for="serial_number_id" class="block text-xs font-mono tracking-wider text-slate-600 uppercase mb-2">Serial Number Alat / ID SN *</label>
+                    <select id="serial_number_id" name="serial_number_id" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600 transition-all" required>
                         <option value="">-- Pilih Serial Number --</option>
                         @foreach($serialNumbers as $sn)
                             <option value="{{ $sn->id }}" {{ old('serial_number_id') == $sn->id ? 'selected' : '' }}>
@@ -64,12 +75,24 @@
                 </div>
 
                 <div>
-                    <label for="reporter_type" class="block text-xs font-mono tracking-wider text-slate-600 uppercase mb-2">Tipe Laporan / Origin *</label>
-                    <select id="reporter_type" name="reporter_type" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600 transition-all" required>
-                        <option value="produk" {{ old('reporter_type') === 'produk' ? 'selected' : '' }}>Produk (Unit Modul Utama)</option>
-                        <option value="sub" {{ old('reporter_type') === 'sub' ? 'selected' : '' }}>Sub-komponen (Modul Part PCB)</option>
+                    <label for="device_id" class="block text-xs font-mono tracking-wider text-slate-600 uppercase mb-2">Device Relasi / Alat Terkait *</label>
+                    <select id="device_id" name="device_id" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600 transition-all" required>
+                        <option value="">-- Pilih Device --</option>
+                        @foreach($devices as $device)
+                            <option value="{{ $device->id }}" {{ old('device_id') == $device->id ? 'selected' : '' }}>
+                                {{ $device->name }} (ID: {{ $device->id }})
+                            </option>
+                        @endforeach
                     </select>
                 </div>
+            </div>
+
+            <div>
+                <label for="reporter_type" class="block text-xs font-mono tracking-wider text-slate-600 uppercase mb-2">Tipe Laporan / Origin *</label>
+                <select id="reporter_type" name="reporter_type" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600 transition-all" required>
+                    <option value="produk" {{ old('reporter_type') === 'produk' ? 'selected' : '' }}>Produk (Unit Modul Utama)</option>
+                    <option value="sub" {{ old('reporter_type') === 'sub' ? 'selected' : '' }}>Sub-komponen (Modul Part PCB)</option>
+                </select>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
