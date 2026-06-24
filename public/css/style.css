@@ -1,22 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --bg-dark: #0a0f1d;
-    --bg-card: rgba(18, 24, 43, 0.7);
-    --bg-sidebar: #0f1527;
-    --border-color: rgba(255, 255, 255, 0.08);
-    --text-primary: #f3f4f6;
-    --text-secondary: #9ca3af;
-    --text-muted: #6b7280;
+    --bg-dark: #F8FAFC;
+    --bg-card: #FFFFFF;
+    --bg-sidebar: #FFFFFF;
+    --border-color: #E2E8F0;
+    --text-primary: #1E293B;
+    --text-secondary: #64748B;
+    --text-muted: #94A3B8;
     
-    --color-primary: #4f46e5;      /* Indigo */
-    --color-primary-hover: #4338ca;
+    --color-primary: #2563EB;      /* Biru Korporat */
+    --color-primary-hover: #1D4ED8;
     
-    --color-critical: #ef4444;     /* Crimson Red */
-    --color-major: #f59e0b;        /* Amber Yellow */
-    --color-minor: #10b981;        /* Emerald Green */
-    --color-spam: #8b5cf6;         /* Violet Purple */
-    --color-info: #06b6d4;         /* Cyan */
+    --color-critical: #DC2626;     /* Crimson Red */
+    --color-major: #CA8A04;        /* Amber Yellow */
+    --color-minor: #16A34A;        /* Emerald Green */
+    --color-spam: #475569;         /* Neutral Gray */
+    --color-info: #2563EB;         /* Corporate Blue */
 }
 
 * {
