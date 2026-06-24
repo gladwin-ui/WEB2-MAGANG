@@ -56,7 +56,37 @@ class DashboardController extends Controller
         if ($request->project_id) $query->where('project_id', $request->project_id);
         if ($request->date_from)  $query->whereDate('created_at', '>=', $request->date_from);
         if ($request->date_to)    $query->whereDate('created_at', '<=', $request->date_to);
-        $auditBugs = $query->latest()->paginate(20)->withQueryString();
+
+        $urgencySort = $request->input('urgency_sort');
+        if (in_array($urgencySort, ['desc', 'asc'], true)) {
+            $query->selectRaw("
+                bugs.*,
+                CASE
+                    WHEN bugs.is_spam = 1 OR LOWER(COALESCE(bugs.sentiment_label, '')) = 'spam' THEN 0
+                    ELSE ROUND(
+                        (
+                            CASE
+                                WHEN bugs.severity = 'Critical' THEN 0.8
+                                WHEN bugs.severity = 'Major' THEN 0.5
+                                ELSE 0.2
+                            END
+                            + (1 - COALESCE(bugs.sentiment_score, 0))
+                        ) / 2,
+                    2)
+                END AS urgency_score
+            ");
+
+            if ($urgencySort === 'desc') {
+                $query->orderByDesc('urgency_score')->orderByDesc('created_at');
+            } else {
+                $query->orderBy('urgency_score')->orderByDesc('created_at');
+            }
+        } else {
+            // Default: laporan terbaru di atas
+            $query->latest();
+        }
+
+        $auditBugs = $query->paginate(20)->withQueryString();
 
         // Fetch projects for filter dropdown
         $projects = Project::orderBy('name')->get();

@@ -146,6 +146,11 @@ class BugController extends Controller
             return redirect()->route('bugs.show', $bug)->with('error', 'Bug sudah ditutup.');
         }
 
+        // Mekanik hanya boleh menangani laporan yang sudah ia ambil sendiri.
+        if (Auth::user()->role === 'mekanik' && $bug->assigned_to !== Auth::id()) {
+            return redirect()->route('bugs.queue')->with('error', 'Anda hanya dapat menangani laporan yang sudah Anda ambil.');
+        }
+
         return view('bugs.close', compact('bug'));
     }
 
@@ -154,9 +159,18 @@ class BugController extends Controller
      */
     public function close(Request $request, Bug $bug)
     {
+        if (Auth::user()->role !== 'mekanik' && Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
         // 1. Ambil bug by ID, pastikan statusnya 'OPEN' — jika bukan, abort(403)
         if ($bug->status !== 'OPEN') {
             abort(403);
+        }
+
+        // Mekanik hanya boleh menutup laporan yang sudah ia ambil sendiri.
+        if (Auth::user()->role === 'mekanik' && $bug->assigned_to !== Auth::id()) {
+            return redirect()->route('bugs.queue')->with('error', 'Anda hanya dapat menutup laporan yang sudah Anda ambil.');
         }
 
         // 2. Validasi request (root_cause required, repair_action required, is_rework boolean)

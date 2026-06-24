@@ -32,12 +32,12 @@
                         <tr class="border-b border-slate-200 text-[10px] font-mono tracking-widest text-slate-500 uppercase bg-slate-50">
                             <th class="py-3 px-4">ID TIKET</th>
                             <th class="py-3 px-4">JUDUL BUG</th>
-                            <th class="py-3 px-4">PROJECT</th>
-                            <th class="py-3 px-4">SEVERITY</th>
-                            <th class="py-3 px-4">SERIAL NUMBER</th>
+                            <th class="py-3 px-4">PROYEK</th>
+                            <th class="py-3 px-4">TINGKAT KEPARAHAN</th>
+                            <th class="py-3 px-4">NOMOR SERI</th>
                             <th class="py-3 px-4">STATUS</th>
                             <th class="py-3 px-4">TANGGAL LAPOR</th>
-                            <th class="py-3 px-4 text-right">AKSI</th>
+                            <th class="py-3 px-4 text-right w-[220px]">AKSI</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-sm">
@@ -66,14 +66,14 @@
                                     @endif
                                 </td>
                                 <td class="py-3.5 px-4 font-mono text-xs text-slate-500">{{ $bug->created_at->format('d M Y, H:i') }}</td>
-                                <td class="py-3.5 px-4 text-right">
-                                    <div class="inline-flex gap-1.5 items-center">
-                                        <a href="{{ route('bugs.show', $bug) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-blue-600 hover:text-blue-700 rounded text-xs font-mono font-bold transition-all shadow-sm">
+                                <td class="py-3.5 px-4 text-right align-middle">
+                                    <div class="inline-flex flex-col sm:flex-row justify-end items-stretch sm:items-center gap-1.5 min-w-[180px]">
+                                        <a href="{{ route('bugs.show', $bug) }}" class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-blue-600 hover:text-blue-700 rounded text-xs font-mono font-bold transition-all shadow-sm whitespace-nowrap">
                                             <i class="bi bi-eye"></i> DETAIL
                                         </a>
                                         @if(!is_null($bug->assigned_to))
-                                            <a href="{{ route('bugs.chat.show', $bug) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-mono font-bold transition-all shadow-sm">
-                                                <i class="bi bi-chat-dots"></i> CHAT MEKANIK
+                                            <a href="{{ route('bugs.chat.show', $bug) }}" class="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-mono font-bold transition-all shadow-sm whitespace-nowrap">
+                                                <i class="bi bi-chat-dots"></i> OBROLAN MEKANIK
                                             </a>
                                         @endif
                                     </div>

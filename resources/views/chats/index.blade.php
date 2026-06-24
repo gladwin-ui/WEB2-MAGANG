@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Riwayat Chat')
+@section('title', 'Riwayat Obrolan')
 
 @section('content')
 <div class="space-y-6">
     <!-- Header -->
     <div class="border-b border-slate-200 pb-4">
-        <h1 class="text-2xl font-black text-slate-800 tracking-tight uppercase">Riwayat Chat</h1>
+        <h1 class="text-2xl font-black text-slate-800 tracking-tight uppercase">Riwayat Obrolan</h1>
         <p class="text-xs text-slate-500 font-mono tracking-wider uppercase">Daftar percakapan koordinasi perbaikan defect modul produksi</p>
     </div>
 
@@ -16,7 +16,7 @@
             <div class="flex flex-col items-center justify-center py-16 text-slate-400">
                 <i class="bi bi-chat-left-dots text-5xl mb-4 text-slate-300"></i>
                 <p class="text-sm font-mono uppercase tracking-wider mb-2">Belum ada riwayat percakapan</p>
-                <p class="text-xs text-slate-400 text-center">Pesan chat hanya terbuka setelah laporan bug Anda diklaim oleh seorang mekanik.</p>
+                <p class="text-xs text-slate-400 text-center">Pesan obrolan hanya terbuka setelah laporan bug Anda diambil oleh mekanik.</p>
             </div>
         @else
             <div class="divide-y divide-slate-100">
@@ -30,9 +30,9 @@
                                     {{ $bug->title }}
                                 </h3>
                                 @if($bug->status === 'OPEN')
-                                    <span class="inline-flex text-[9px] font-bold font-mono bg-red-50 text-red-700 border border-red-200 px-2 py-0.2 rounded uppercase">OPEN</span>
+                                    <span class="inline-flex text-[9px] font-bold font-mono bg-red-50 text-red-700 border border-red-200 px-2 py-0.2 rounded uppercase">TERBUKA</span>
                                 @else
-                                    <span class="inline-flex text-[9px] font-bold font-mono bg-green-50 text-green-700 border border-green-200 px-2 py-0.2 rounded uppercase">CLOSED</span>
+                                    <span class="inline-flex text-[9px] font-bold font-mono bg-green-50 text-green-700 border border-green-200 px-2 py-0.2 rounded uppercase">DITUTUP</span>
                                 @endif
                                 <span class="text-[10px] font-mono text-slate-400">({{ $bug->project?->name ?? 'Project #' . $bug->project_id }})</span>
                             </div>
@@ -64,7 +64,7 @@
                         <!-- Action Button -->
                         <div class="shrink-0">
                             <a href="{{ route('bugs.chat.show', $bug) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all active:scale-[0.98]">
-                                <i class="bi bi-chat-dots-fill"></i> BUKA CHAT
+                                <i class="bi bi-chat-dots-fill"></i> BUKA OBROLAN
                             </a>
                         </div>
                     </div>

@@ -254,6 +254,12 @@
                         <option value="Minor" {{ request('severity') === 'Minor' ? 'selected' : '' }}>MINOR</option>
                     </select>
 
+                    <select name="urgency_sort" class="bg-white border border-slate-200 rounded px-3 py-1.5 text-slate-700 focus:outline-none focus:border-blue-600">
+                        <option value="">[URUTAN DEFAULT: TERBARU]</option>
+                        <option value="desc" {{ request('urgency_sort') === 'desc' ? 'selected' : '' }}>URGENCY TERTINGGI KE TERENDAH</option>
+                        <option value="asc" {{ request('urgency_sort') === 'asc' ? 'selected' : '' }}>URGENCY TERENDAH KE TERTINGGI</option>
+                    </select>
+
                     <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded px-2.5 py-1 text-slate-700">
                         <span class="text-[9px] text-slate-400 uppercase font-mono">FROM:</span>
                         <input type="date" name="date_from" value="{{ request('date_from') }}" class="bg-transparent border-none text-slate-800 text-xs focus:outline-none focus:ring-0 p-0 font-mono w-28" style="color-scheme: light;">

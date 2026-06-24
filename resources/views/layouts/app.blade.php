@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') - Manufacturing Tracking System by PT Hariff</title>
+    <title>@yield('title', 'Dasbor') - Sistem Pelacakan Manufaktur PT Hariff</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <!-- Tailwind CSS & ApexCharts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -65,7 +65,7 @@
                     fontFamily: {
                         mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
                         sans: ['Inter', 'sans-serif'],
-                        serif: ['Merriweather', 'Georgia', 'serif']
+                        serif: ['Inter', 'sans-serif']
                     }
                 }
             }
@@ -142,7 +142,9 @@
             color: var(--text-primary) !important;
         }
         h1, h2, h3, h4, h5, h6, .brand, .font-heading {
-            font-family: 'Merriweather', 'Georgia', serif !important;
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.01em;
             color: var(--text-primary) !important;
         }
         .font-mono, code, kbd, samp, pre {
@@ -360,6 +362,12 @@
         body.dark .border-yellow-200, body.dark .border-yellow-250 {
             border-color: rgba(202, 138, 4, 0.3) !important;
         }
+        body.dark .bg-indigo-50 {
+            background-color: rgba(99, 102, 241, 0.2) !important;
+        }
+        body.dark .text-indigo-650 {
+            color: #a5b4fc !important;
+        }
 
         /* Collapsible Sidebar Styles */
         .sidebar-transition {
@@ -437,6 +445,21 @@
             box-shadow: none !important;
         }
 
+        /* Pastikan teks tombol keluar tetap terbaca di semua mode */
+        .logout-btn {
+            color: #1E293B !important;
+        }
+        body.dark .logout-btn {
+            background-color: #334155 !important;
+            border-color: #475569 !important;
+            color: #F8FAFC !important;
+        }
+        body.dark .logout-btn:hover {
+            background-color: #475569 !important;
+            border-color: #64748B !important;
+            color: #FFFFFF !important;
+        }
+
         /* Solid Yellow style overrides for all submit, primary, and blue action buttons */
         button[type="submit"],
         .btn-primary,
@@ -509,8 +532,8 @@
                     <img src="{{ asset('Logo.png') }}" alt="Logo PT Hariff" class="h-9 w-auto rounded-lg brand-logo-light">
                     <img src="{{ asset('logo-darkmode.jpg') }}" alt="Logo PT Hariff" class="h-9 w-auto rounded-lg brand-logo-dark hidden">
                     <div>
-                        <span class="font-extrabold text-xs text-slate-800 block leading-tight uppercase tracking-wider">Manufacturing</span>
-                        <span class="font-extrabold text-xs text-slate-800 block leading-tight uppercase tracking-wider">Tracking System</span>
+                        <span class="font-extrabold text-xs text-slate-800 block leading-tight uppercase tracking-wider">Sistem Pelacakan</span>
+                        <span class="font-extrabold text-xs text-slate-800 block leading-tight uppercase tracking-wider">Manufaktur</span>
                         <span class="block text-[8px] text-slate-400 font-mono tracking-widest uppercase mt-1">BY PT HARIFF</span>
                     </div>
                 </div>
@@ -527,13 +550,13 @@
                             <i class="bi bi-speedometer2 text-base"></i> Dashboard Analitik
                         </a>
                         <a href="{{ route('master.projects.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('master.projects.*') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                            <i class="bi bi-kanban text-base"></i> Kelola Project
+                            <i class="bi bi-kanban text-base"></i> Kelola Proyek
                         </a>
                         <a href="{{ route('master.serial_numbers.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('master.serial_numbers.*') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                            <i class="bi bi-hash text-base"></i> Kelola Serial Number
+                            <i class="bi bi-hash text-base"></i> Kelola Nomor Seri
                         </a>
                         <a href="{{ route('master.devices.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('master.devices.*') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                            <i class="bi bi-cpu text-base"></i> Kelola Device
+                            <i class="bi bi-cpu text-base"></i> Kelola Perangkat
                         </a>
                     @endif
 
@@ -547,7 +570,7 @@
                         <a href="{{ route('bugs.chat.index') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.chat.index') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
                             <div class="flex items-center gap-3">
                                 <i class="bi bi-chat-left-text text-base"></i> 
-                                <span>Riwayat Chat</span>
+                                <span>Riwayat Obrolan</span>
                             </div>
                         </a>
 
@@ -555,13 +578,13 @@
                         <a href="{{ route('bugs.queue') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.queue') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
                             <div class="flex items-center gap-3">
                                 <i class="bi bi-list-task text-base"></i> 
-                                <span>Queue Kerja Bug</span>
+                                <span>Antrean Kerja Bug</span>
                             </div>
                         </a>
                         <a href="{{ route('bugs.chat.index') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.chat.index') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
                             <div class="flex items-center gap-3">
                                 <i class="bi bi-chat-left-text text-base"></i> 
-                                <span>Riwayat Chat</span>
+                                <span>Riwayat Obrolan</span>
                             </div>
                         </a>
                     @endif
@@ -593,7 +616,7 @@
                     </button>
                     <form action="{{ route('logout') }}" method="POST" class="flex-1" style="flex: 2;">
                         @csrf
-                        <button type="submit" class="w-full flex items-center justify-center gap-2 px-3 py-2 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg text-xs font-semibold transition-all shadow-sm">
+                        <button type="submit" class="logout-btn w-full flex items-center justify-center gap-2 px-3 py-2 border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-lg text-xs font-semibold transition-all shadow-sm">
                             <i class="bi bi-box-arrow-right"></i> Keluar
                         </button>
                     </form>
