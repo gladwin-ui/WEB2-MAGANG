@@ -13,10 +13,10 @@
         
         <!-- Toggle Status Tabs -->
         <div class="bg-slate-100 border border-slate-200 rounded-lg p-1 flex gap-1 shadow-sm shrink-0">
-            <a href="{{ route('bugs.index', ['status' => 'OPEN']) }}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all {{ $status === 'OPEN' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-650 hover:text-slate-900' }}">
+            <a href="{{ route('bugs.queue', ['status' => 'OPEN']) }}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all {{ $status === 'OPEN' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-650 hover:text-slate-900' }}">
                 <i class="bi bi-clock-history"></i> OPEN QUEUE
             </a>
-            <a href="{{ route('bugs.index', ['status' => 'CLOSED']) }}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all {{ $status === 'CLOSED' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-650 hover:text-slate-900' }}">
+            <a href="{{ route('bugs.queue', ['status' => 'CLOSED']) }}" class="flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-all {{ $status === 'CLOSED' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-650 hover:text-slate-900' }}">
                 <i class="bi bi-check-all"></i> CLOSED HISTORY
             </a>
         </div>
@@ -47,7 +47,7 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-sm">
                         @foreach($bugs as $bug)
-                            <tr class="hover:bg-slate-50 transition-all {{ $bug->severity === 'Critical' && $bug->status === 'OPEN' ? 'bg-red-50/30' : '' }}">
+                            <tr class="hover:bg-slate-50 transition-all {{ $bug->severity === 'Critical' && $bug->status === 'OPEN' ? 'bg-red-50/10 dark:bg-red-950/20' : '' }}">
                                 <td class="py-3.5 px-4 font-mono text-xs text-blue-600 font-bold">
                                     #{{ $bug->id }}
                                 </td>

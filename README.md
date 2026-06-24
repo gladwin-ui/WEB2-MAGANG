@@ -40,20 +40,20 @@ Dari kolom `description`, Analytics Engine menghasilkan:
 Dari kolom `root_cause` + `repair_action`, Analytics Engine menghasilkan:
 - `damage_category` — kategori penyebab kerusakan (contoh: "Overheat/Panas Berlebih", "Korosi/Kelembapan", "Hubungan Pendek/Short Circuit", "Kesalahan Pemasangan", "Kualitas Komponen", "Lain-lain"). Basis untuk dashboard **"Penyebab Kerusakan Paling Sering Terjadi"**.
 
-### Fitur Assignment & Chat Mekanik ↔ Reporter
+### Assignment & Chat Mekanik ↔ Reporter
 
-> **PERUBAHAN ARSITEKTUR (menggantikan konsep "Feedback satu-arah" sebelumnya):** Konsep `bug_feedback` (pesan sekali kirim mekanik→reporter) **digantikan total** dengan mekanisme **Assignment + Chat dua arah**. Tabel `bug_feedback` SUDAH DI-DROP, diganti tabel `bug_chats`.
+> **Catatan:** Konsep `bug_feedback` (pesan sekali kirim mekanik→reporter) yang sebelumnya direncanakan **telah digantikan total** dengan mekanisme Assignment + Chat dua arah. Tabel `bug_feedback` sudah di-drop, diganti `bug_chats`.
 
 **Assignment (Claim Bug):**
 - Bug berstatus `OPEN` terlihat oleh SEMUA mekanik di queue.
 - Mekanik mana pun bisa **klaim/assign** bug tersebut ke dirinya sendiri (`assigned_to`, `assigned_at` pada tabel `bugs`).
-- Begitu sebuah bug sudah di-assign, mekanik LAIN tidak bisa mengklaimnya lagi (validasi `assigned_to` harus `null` sebelum assign berhasil) — mencegah dua mekanik menangani bug yang sama tanpa koordinasi.
+- Begitu sebuah bug sudah di-assign, mekanik LAIN tidak bisa mengklaimnya lagi — mencegah dua mekanik menangani bug yang sama tanpa koordinasi.
 
 **Chat (Dua Arah, Per-Bug):**
 - Setiap bug punya ruang chat sendiri (tabel `bug_chats`: `bug_id`, `sender_id`, `message`).
-- **Reporter** HANYA bisa membuka/mengirim chat JIKA bug miliknya SUDAH di-assign ke seorang mekanik (`assigned_to` tidak null).
-- **Mekanik** HANYA bisa membuka/mengirim chat pada bug yang **dia sendiri** yang assign (`assigned_to === Auth::id()`).
-- Chat menggunakan pola **polling AJAX sederhana** (endpoint `poll` mengambil pesan baru berdasarkan `last_id`), BUKAN WebSocket — cukup untuk skala penggunaan internal saat ini.
+- **Reporter** HANYA bisa membuka/mengirim chat JIKA bug miliknya SUDAH di-assign ke seorang mekanik.
+- **Mekanik** HANYA bisa membuka/mengirim chat pada bug yang **dia sendiri** yang assign.
+- Chat menggunakan pola **polling AJAX sederhana**, BUKAN WebSocket.
 
 ### Arti `reporter_type` ('produk' vs 'sub')
 Menunjukkan **level/cakupan objek fisik** yang dilaporkan bermasalah, BUKAN siapa yang melapor:
@@ -79,19 +79,16 @@ bugs               : id, project_id (FK), title, severity (Critical|Major|Minor)
                       fixed_by (FK users, nullable), closed_at,
                       -- Hasil AI Tahap 1 (saat submit):
                       sentiment_label, sentiment_score, is_spam, spam_reason,
-                      severity_recommended (varchar, BUKAN enum -- lihat catatan di bawah),
+                      severity_recommended (varchar -- lihat Catatan Teknis),
                       severity_recommendation_reason,
                       -- Hasil AI Tahap 2 (saat ditutup):
                       damage_category
 bug_chats          : id, bug_id (FK), sender_id (FK users), message
-                      -- (MENGGANTIKAN tabel bug_feedback yang sudah di-drop)
 ```
 
 **Catatan:** `projects`, `devices`, dan `serial_numbers` adalah tabel master **MINIMAL/placeholder** — struktur tabel asli di database `mfg_record` tidak diketahui sepenuhnya. Data lama diimpor dengan nama generik ("Project #27", dst) dan **PERLU diedit manual** setelah data master asli didapat dari tempat magang.
 
 `reported_by`, `fixed_by`, dan `assigned_to` adalah **foreign key relasional** ke tabel `users` (BUKAN string bebas seperti pada data asli `bugcreatedby`/`bugfixby`).
-
-`severity_recommended` sengaja diubah dari `enum('Critical','Major','Minor')` menjadi `varchar(50)` — Python Analytics Service kadang mengembalikan nilai yang tidak persis cocok dengan 3 pilihan enum (variasi kapitalisasi, atau nilai fallback), dan `enum` ketat di MySQL menolak insert untuk nilai di luar daftar. `varchar` lebih permisif terhadap variasi output AI, dengan trade-off validasi nilai jadi tanggung jawab kode aplikasi, bukan database.
 
 ---
 
@@ -143,7 +140,7 @@ app/
 ├── Http/
 │   ├── Controllers/
 │   │   ├── LoginController.php
-│   │   ├── BugController.php          <- Submit, queue, assign (mekanik), close (reporter+mekanik)
+│   │   ├── BugController.php          <- Submit, queue, assign (mekanik), close
 │   │   ├── BugChatController.php      <- Chat dua arah per-bug (show, send, poll)
 │   │   ├── DashboardController.php    <- Analitik (admin)
 │   │   ├── ProjectController.php      <- Kelola master project (admin)
@@ -181,16 +178,15 @@ analytics-service/
 1. **TIDAK ADA Queue/Job/Redis.** Semua pemanggilan ke Python Analytics Service bersifat SINKRON dalam siklus request yang sama. Keputusan SENGAJA karena mekanik membutuhkan visibilitas bug secara real-time.
 2. **Severity manual TIDAK PERNAH di-override AI.** `severity` (reporter) dan `severity_recommended` (AI) adalah DUA KOLOM TERPISAH, keduanya disimpan dan ditampilkan berdampingan. Keputusan akhir tetap di tangan manusia.
 3. **Konsep "Spam" dipertahankan** meski pelapor staf internal — staf internal juga bisa membuat laporan tidak substantif/asal-asalan.
-4. **Assignment bersifat eksklusif (first-come-first-served).** Begitu satu mekanik mengklaim bug OPEN, mekanik lain tidak bisa mengklaimnya lagi. Tidak ada mekanisme "lepas klaim" saat ini (jika dibutuhkan, harus didiskusikan sebagai requirement baru).
-5. **Chat hanya terbuka setelah assignment ada.** Reporter tidak bisa memulai percakapan sebelum ada mekanik yang menangani bug-nya — ini mencegah reporter "menyerbu" chat sebelum ada pihak yang relevan untuk merespons.
-6. **Tabel master (`projects`, `devices`, `serial_numbers`) bersifat sementara/placeholder** sampai struktur asli dari `mfg_record` didapatkan.
-7. **`reported_by`/`fixed_by`/`assigned_to` adalah foreign key relasional**, bukan string bebas — akun dibuat untuk setiap nama unik yang ditemukan di data historis (Admin, Fioni Agriyani, Maneng, manufacture, program, dan nilai anomali "1").
+4. **Assignment bersifat eksklusif (first-come-first-served).** Begitu satu mekanik mengklaim bug OPEN, mekanik lain tidak bisa mengklaimnya lagi. Chat per-bug hanya terbuka setelah assignment ada — reporter tidak bisa memulai percakapan sebelum ada mekanik yang menangani bug-nya.
+5. **Tabel master (`projects`, `devices`, `serial_numbers`) bersifat sementara/placeholder** sampai struktur asli dari `mfg_record` didapatkan.
+6. **`reported_by`/`fixed_by` adalah foreign key relasional**, bukan string bebas — akun dibuat untuk setiap nama unik yang ditemukan di data historis (Admin, Fioni Agriyani, Maneng, manufacture, program, dan nilai anomali "1").
 
 ---
 
 ## ✅ Requirement & Status Implementasi
 
-> Bagian ini mencerminkan **kondisi terkini** proyek (terakhir diperbarui setelah Audit Menyeluruh v3 — pasca perubahan arsitektur Assignment+Chat). Status: `✅ Selesai` / `🔄 Sedang dikerjakan` / `📋 Direncanakan, belum dikerjakan` / `🐛 Ada bug, perlu fix`.
+> Bagian ini mencerminkan **kondisi terkini** proyek (terakhir diperbarui setelah Audit Menyeluruh v3). Status: `✅ Selesai` / `🔄 Sedang dikerjakan` / `📋 Direncanakan, belum dikerjakan` / `🐛 Ada bug, perlu fix`. **Ini SATU-SATUNYA section status di README ini** — semua fitur (termasuk dashboard analitik) dan bug/catatan teknis terkait digabung di sini per kategori, TIDAK ADA section status terpisah lainnya.
 
 ### Fondasi
 - ✅ Skema database (users extend, projects, devices, serial_numbers, bugs, bug_chats)
@@ -199,41 +195,27 @@ analytics-service/
 - ✅ Python Analytics Service (FastAPI) — sentiment, spam detection, severity recommendation, damage categorization
 - ✅ Pemanggilan SINKRON ke Analytics Service (tanpa Queue/Job)
 
-### Fitur Inti
+### Fitur Inti per Role
 - ✅ Submit bug oleh Reporter (`BugController::store`) dengan analisis AI Tahap 1 sinkron
 - ✅ Queue bug OPEN untuk Mekanik (`BugController::queue`)
-- ✅ Assignment/klaim bug eksklusif oleh Mekanik (`BugController::assign`)
+- ✅ Assignment/klaim bug eksklusif oleh Mekanik (`BugController::assign`) — *catatan: belum ada mekanisme "lepas klaim", lihat Catatan Teknis #2 di bawah*
 - ✅ Form tutup bug oleh Mekanik (`root_cause`, `repair_action`, `is_rework`) dengan analisis AI Tahap 2 sinkron (`damage_category`)
-- ✅ Chat dua arah Reporter ↔ Mekanik per-bug, dengan polling AJAX (`BugChatController`)
-- ✅ Dashboard Analitik Admin dasar + Export CSV (`DashboardController::exportCsv`)
+- ✅ Chat dua arah Reporter ↔ Mekanik per-bug, polling AJAX (`BugChatController`) — menggantikan konsep "Feedback satu-arah" yang sudah ditinggalkan (tabel `bug_feedback` di-drop, diganti `bug_chats`)
 - ✅ Kelola master data Project, Serial Number, & Device (admin)
 
-### Dashboard Analitik (Mirroring SmartReport)
-> **PERLU DIVERIFIKASI ULANG** — fitur-fitur ini sebelumnya dicatat ✅ berdasarkan laporan Antigravity (Audit v2), TAPI implementasinya saat itu memakai tema visual neon yang sudah ditolak. Karena `dashboard/index.blade.php` kemungkinan telah ditulis ulang sebagai bagian dari perubahan arsitektur besar (Assignment+Chat), **status berikut perlu dicek ulang isinya**, bukan cuma asumsi "pasti masih ada":
+### Dashboard Analitik Admin
+> ⚠️ **PERLU VERIFIKASI ULANG** — fitur di bawah sebelumnya tercatat ✅ berdasarkan laporan Antigravity, namun karena `dashboard/index.blade.php` kemungkinan ditulis ulang sebagai bagian dari perubahan arsitektur Assignment+Chat (lihat Changelog v0.6), status berikut **TIDAK BOLEH diasumsikan otomatis masih utuh** — agent yang mengerjakan task berikutnya WAJIB mengecek ulang isi kode, bukan hanya membaca status di sini.
+- 🔄 Export CSV (`DashboardController::exportCsv`)
 - 🔄 Summary cards (Total Bug, Open, Closed, Critical, Rework Rate, Spam Blocked)
-- 🔄 Distribusi Sentimen — donut chart
+- 🔄 Tabel Audit Bug dengan filter (status/severity/project/tanggal) + pagination
+- 🔄 Distribusi Sentimen (Positive/Neutral/Negative/Spam) — donut chart
 - 🔄 Project Paling Banyak Bug (Top 5)
 - 🔄 Tren Volume Laporan (line chart)
 - 🔄 Analytics Penyebab Kerusakan (distribusi `damage_category`)
-- 🔄 Tabel Audit Bug dengan filter (status/severity/project/tanggal) + pagination
 
-### 🎨 Arah Visual/Styling — SPESIFIKASI RESMI (Light Mode Profesional/Korporat)
-- ❌ **MASIH BELUM DIIMPLEMENTASIKAN.** Verifikasi terbaru: `resources/css/app.css` MASIH berisi token lama (`--color-obsidian`, `--color-neon-cyan`, `--color-neon-pink`, `--color-neon-green`, `--color-neon-amber`, utility `shadow-neon-*`) dan BELUM memiliki token `--accent-primary: #2563EB` sesuai spesifikasi resmi. **Spesifikasi detail lihat di bawah** — token ini WAJIB diterapkan di `app.css` DAN seluruh view yang masih merujuk kelas `neon-*`/`obsidian`/`panel-bg`.
-
-### Belum Dikerjakan
-- 📋 Implementasi penuh spesifikasi visual Light Mode Profesional (lihat di atas)
-- 📋 Mekanisme "lepas klaim" assignment (jika dibutuhkan ke depan — saat ini belum ada requirement untuk ini, BELUM diputuskan)
-
----
-
-## 🧹 Pembersihan Repository (Housekeeping)
-
-- 🐛 **`Gemini.md` di root proyek SUDAH USANG** — file ini adalah versi LAMA dokumen acuan, isinya sudah sepenuhnya digabung ke `README.md` ini sejak v0.3. **HARUS DIHAPUS** dari repository untuk mencegah AI coding agent membaca dokumen yang sudah tidak sinkron dengan kondisi terkini.
-- 🐛 **`index.html` di root proyek TIDAK RELEVAN** — file HTML statis berjudul "Modern Admin Dashboard - Business" yang terdeteksi di root, kemungkinan mockup/referensi desain yang tidak sengaja ikut tersimpan ke repository. Proyek ini adalah aplikasi Laravel (server-rendered Blade), file HTML statis berdiri sendiri di root TIDAK memiliki fungsi dalam arsitektur ini. **HARUS DIHAPUS.**
-
-### 🎨 Arah Visual/Styling — SPESIFIKASI RESMI (Light Mode Profesional/Korporat)
-
-- ❌ **DITOLAK:** Tema "Cyberpunk/Neon" (warna `neon-cyan`, `neon-pink`, `neon-amber`, `neon-green`, background `obsidian`/`panel-bg`) yang diimplementasikan secara SEPIHAK oleh AI coding agent tanpa pernah didiskusikan/disepakati sebelumnya. **Tema ini WAJIB DIGANTI sepenuhnya** mengikuti spesifikasi di bawah.
+### 🎨 Arah Visual/Styling
+- ❌ **DITOLAK & WAJIB DIGANTI:** Tema "Cyberpunk/Neon" (`neon-cyan`, `neon-pink`, `neon-amber`, `neon-green`, `obsidian`/`panel-bg`) — diimplementasikan sepihak oleh AI coding agent tanpa pernah disepakati. **Status verifikasi terbaru: token neon INI MASIH ADA di `resources/css/app.css`, BELUM diganti.**
+- 📋 **Spesifikasi resmi pengganti — Light Mode Profesional/Korporat** (lihat detail design token lengkap di bawah). **BELUM diimplementasikan ke kode.**
 
 **Karakter visual yang dituju:** bersih, formal, dipercaya — cocok untuk laporan ke atasan/manajemen di lingkungan manufaktur. TIDAK ADA efek glow/shadow warna mencolok, TIDAK ADA background gelap sebagai default, TIDAK ADA istilah "neon"/"cyberpunk" dalam penamaan apapun (class CSS, variable, komentar kode).
 
@@ -283,17 +265,21 @@ analytics-service/
 - Tombol primary (submit, simpan): solid `--accent-primary`, teks putih, `border-radius` sedang (8px, BUKAN pill).
 - HAPUS seluruh elemen `animate-pulse`/efek berkedip yang sifatnya dekoratif murni — PERTAHANKAN HANYA untuk badge counter notifikasi unread (fungsional, bukan dekoratif).
 
-📋 **Status implementasi spesifikasi ini:** belum dieksekusi — task berikutnya untuk Antigravity adalah menerapkan token di atas ke SELURUH view yang saat ini masih memakai kelas `neon-*`/`obsidian`/`panel-bg`, MENGGANTI TOTAL tanpa sisa.
+### Housekeeping Repository
+- 🐛 `Gemini.md` di root — dokumen acuan LAMA yang sudah usang (isinya sudah digabung ke README.md ini). **HARUS DIHAPUS.**
+- 🐛 `index.html` di root — file HTML statis tidak relevan, kemungkinan mockup yang tidak sengaja tersimpan. **HARUS DIHAPUS.**
+
+### Belum Diputuskan / Direncanakan
+- 📋 Mekanisme "lepas klaim" assignment — saat ini belum ada requirement untuk ini, belum diputuskan apakah dibutuhkan.
 
 ---
 
-## 🐛 Bug Diketahui & Perlu Diperbaiki
+## 📌 Catatan Teknis & Keterbatasan yang Diketahui
 
-*(3 bug dari Audit v1 — mass-assignment, input tanggal, Device controller — SUDAH TERVERIFIKASI diperbaiki, lihat Changelog v0.4)*
+*(Bukan bug yang menghalangi fungsi, tapi perlu diketahui untuk pengembangan lanjutan)*
 
-### Catatan Teknis Ringan (Tidak Urgent)
-1. **`severity_recommended` kini `varchar` bebas, bukan `enum`.** Trade-off yang disengaja (lihat catatan di "Skema Database") — pastikan kode yang MEMBACA kolom ini (badge, filter) tetap defensif terhadap nilai yang mungkin tidak persis "Critical"/"Major"/"Minor" (misal hasil AI yang typo/format beda).
-2. **Belum ada mekanisme "lepas klaim" assignment.** Jika seorang mekanik assign bug tapi tidak jadi menanganinya (lupa, salah klik, dsb), saat ini TIDAK ADA cara mengembalikan bug itu ke status "belum di-assign" — bug tersebut akan tetap terkunci ke mekanik itu selamanya sampai di-CLOSE. Ini BUKAN bug, tapi gap requirement yang belum diputuskan apakah perlu ditangani.
+1. **`severity_recommended` adalah `varchar(50)`, bukan `enum`.** Sengaja dilonggarkan karena Python Analytics Service kadang mengembalikan nilai yang tidak persis cocok dengan 3 pilihan enum, dan `enum` ketat MySQL menolak insert untuk nilai di luar daftar. Trade-off: kode yang MEMBACA kolom ini (badge, filter) harus defensif terhadap nilai yang mungkin tidak persis "Critical"/"Major"/"Minor".
+2. **Belum ada mekanisme "lepas klaim" assignment.** Jika mekanik assign bug tapi tidak jadi menanganinya, saat ini TIDAK ADA cara mengembalikan bug ke status "belum di-assign" — bug tetap terkunci ke mekanik tersebut sampai di-CLOSE.
 
 ---
 
@@ -309,7 +295,7 @@ analytics-service/
 
 ### v0.2 — Fitur Inti per Role
 - `BugController`: submit bug (reporter), tampilkan queue OPEN, form tutup bug (mekanik) dengan analisis AI Tahap 2.
-- `BugFeedbackController`: kirim & baca feedback mekanik → reporter.
+- `BugFeedbackController` (versi awal, KEMUDIAN DIGANTI — lihat v0.6): kirim & baca feedback mekanik → reporter.
 - `DashboardController`: dashboard analitik dasar + export CSV.
 - `ProjectController` & `SerialNumberController`: kelola master data (admin).
 
@@ -331,16 +317,16 @@ analytics-service/
 ### v0.5 — Spesifikasi Arah Visual Baru Ditetapkan
 - Tema "Cyberpunk/Neon" resmi ditolak dan diganti dengan spesifikasi **Light Mode Profesional/Korporat**.
 - Design token lengkap ditetapkan: biru korporat (`#2563EB`) sebagai satu-satunya warna aksen utama, 4 warna badge standar (success/warning/danger/neutral) untuk status & severity, background putih bersih tanpa gradient/glow.
-- Status: spesifikasi sudah final di README.md, **BELUM dieksekusi ke kode** — menunggu task implementasi berikutnya.
+- Status: spesifikasi sudah final di README.md, **BELUM dieksekusi ke kode**.
 
-### v0.6 — Audit Menyeluruh v3: Perubahan Arsitektur Besar Terdeteksi
-- **[PERUBAHAN ARSITEKTUR]** Tabel `bug_feedback` DI-DROP, diganti `bug_chats` — fitur "feedback satu-arah" digantikan total dengan **Assignment + Chat dua arah**.
-- **[FITUR BARU]** Kolom `assigned_to`/`assigned_at` pada `bugs` — mekanik bisa klaim bug OPEN secara eksklusif (`BugController::assign`).
-- **[FITUR BARU]** `BugChatController` — chat per-bug dengan polling AJAX, akses dikunci: reporter butuh bug sudah di-assign, mekanik hanya bisa chat di bug yang dia assign sendiri.
+### v0.6 — Perubahan Arsitektur Besar & Konsolidasi Dokumen
+- **[PERUBAHAN ARSITEKTUR]** Tabel `bug_feedback` DI-DROP, diganti `bug_chats` — fitur "feedback satu-arah" digantikan total dengan **Assignment + Chat dua arah**. `BugFeedbackController` digantikan `BugChatController`.
+- **[FITUR BARU]** Kolom `assigned_to`/`assigned_at` pada `bugs` — mekanik bisa klaim bug OPEN secara eksklusif.
 - **[PERUBAHAN SKEMA]** `severity_recommended` diubah dari `enum` ketat menjadi `varchar(50)` — mengatasi kegagalan insert saat AI mengembalikan nilai yang tidak persis cocok dengan 3 pilihan enum.
-- **[VERIFIKASI]** Spesifikasi visual Light Mode Profesional (v0.5) **DIKONFIRMASI BELUM diimplementasikan** — `resources/css/app.css` masih berisi token neon lama, belum ada `--accent-primary: #2563EB`.
-- **[STATUS DIKOREKSI]** Seluruh item Dashboard Analitik (donut sentimen, top 5 project, tren volume, dst) yang sebelumnya tercatat ✅ di v0.4 **diturunkan ke 🔄** — perlu verifikasi ulang karena `dashboard/index.blade.php` kemungkinan ditulis ulang sebagai bagian dari perubahan arsitektur besar ini, status lama tidak bisa diasumsikan masih berlaku begitu saja.
-- **[HOUSEKEEPING]** Ditemukan 2 file tidak relevan di root proyek: `Gemini.md` (dokumen acuan lama yang sudah usang) dan `index.html` (mockup HTML statis tidak terpakai) — keduanya ditandai untuk DIHAPUS.
+- **[VERIFIKASI]** Spesifikasi visual Light Mode Profesional (v0.5) dikonfirmasi **BELUM diimplementasikan** — `app.css` masih berisi token neon lama.
+- **[KONSOLIDASI DOKUMEN]** Section "Dashboard Analitik (Mirroring SmartReport)" dan "Bug Diketahui & Perlu Diperbaiki" yang sebelumnya terpisah dan tumpang-tindih isinya **DIGABUNG** menjadi satu struktur tunggal di bawah "Requirement & Status Implementasi" — TIDAK ADA lagi section status implementasi yang terpisah-pisah. Catatan teknis (bug ringan, keterbatasan desain) dipindah ke section baru "📌 Catatan Teknis & Keterbatasan yang Diketahui".
+- **[STATUS DIKOREKSI]** Seluruh item Dashboard Analitik diturunkan dari ✅ menjadi 🔄 — perlu verifikasi ulang kode karena kemungkinan ditulis ulang saat perubahan arsitektur Assignment+Chat.
+- **[HOUSEKEEPING]** `Gemini.md` dan `index.html` di root ditandai untuk dihapus.
 
 ---
 

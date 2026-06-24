@@ -65,9 +65,7 @@ h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', sans-serif;
     font-size: 1.5rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #818cf8, #4f46e5);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #2563EB;
     margin-bottom: 2.5rem;
     display: flex;
     align-items: center;
@@ -93,10 +91,16 @@ h1, h2, h3, h4, h5, h6 {
     transition: all 0.3s ease;
 }
 
-.nav-item.active a, .nav-item a:hover {
-    color: var(--text-primary);
-    background-color: rgba(79, 70, 229, 0.15);
-    border-left: 3px solid var(--color-primary);
+.nav-item.active a {
+    color: #2563EB;
+    background-color: transparent;
+    border-left: 3px solid #2563EB;
+}
+
+.nav-item a:hover {
+    color: #2563EB;
+    background-color: var(--bg-dark);
+    border-left: 3px solid #2563EB;
 }
 
 .user-profile {
@@ -294,12 +298,12 @@ tr:hover td {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
-    color: white;
+    background-color: #F59E0B;
+    color: #1E293B;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #4f46e5, #4338ca);
+    background-color: #D97706;
     transform: translateY(-1px);
 }
 
@@ -535,4 +539,52 @@ tr:hover td {
 
 .feedback-body {
     font-size: 0.9rem;
+}
+
+/* Premium Styling Upgrades */
+.premium-card {
+    background-color: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.premium-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.05) !important;
+    border-color: #CBD5E1 !important;
+}
+
+/* Premium accent line on card top */
+.premium-card-accent::before {
+    content: '' !important;
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 3px !important;
+    background: #F59E0B !important;
+    z-index: 10 !important;
+}
+
+/* Primary Button / Gradient Accent */
+.btn-premium-gradient {
+    background: #F59E0B !important;
+    color: #1E293B !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.btn-premium-gradient:hover {
+    background: #D97706 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+}
+
+.btn-premium-gradient:active {
+    transform: translateY(0) !important;
+    box-shadow: none !important;
 }

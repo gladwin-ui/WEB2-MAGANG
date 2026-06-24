@@ -51,4 +51,8 @@ class Bug extends Model
     public function chats() {
         return $this->hasMany(BugChat::class)->orderBy('created_at', 'asc');
     }
+
+    public function latestChat() {
+        return $this->hasOne(BugChat::class)->latestOfMany();
+    }
 }

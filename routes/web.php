@@ -58,6 +58,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/bugs/{bug}', [BugController::class, 'show'])->name('bugs.show');
 
     // Chat — Reporter dan Mekanik
+    Route::get('/chats', [BugChatController::class, 'index'])->name('bugs.chat.index');
     Route::get('/bugs/{bug}/chat', [BugChatController::class, 'show'])->name('bugs.chat.show');
     Route::post('/bugs/{bug}/chat', [BugChatController::class, 'send'])->name('bugs.chat.send');
     Route::get('/bugs/{bug}/chat/poll', [BugChatController::class, 'poll'])->name('bugs.chat.poll');

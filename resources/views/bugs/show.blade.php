@@ -250,6 +250,7 @@
             </div>
             @endif
 
+            @if(auth()->user()->role === 'admin')
             <!-- Chat / Assignment Info Box -->
             <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
                 <h2 class="text-md font-bold text-slate-800 mb-4 flex items-center gap-2 uppercase tracking-wide">
@@ -275,6 +276,7 @@
                     </div>
                 @endif
             </div>
+            @endif
 
         </div>
 

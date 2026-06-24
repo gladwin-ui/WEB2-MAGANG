@@ -4,33 +4,81 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --color-obsidian: #060814;
-    --color-panel-bg: #111625;
-    --color-panel-border: #1F293D;
-    
-    --color-neon-cyan: #00F0FF;
-    --color-neon-pink: #FF2E93;
-    --color-neon-green: #00FF85;
-    --color-neon-amber: #F59E0B;
-    
-    --color-accent: #3B82F6;
+    --color-bg-main: #FFFFFF;
+    --color-bg-sidebar: #FFFFFF;
+    --color-bg-card: #FFFFFF;
+    --color-bg-card-hover: #F8FAFC;
+    --color-border-default: #E2E8F0;
+    --color-text-primary: #1E293B;
+    --color-text-secondary: #64748B;
+    --color-text-tertiary: #94A3B8;
+
+    --color-accent-primary: #2563EB;
+    --color-accent-primary-hover: #1D4ED8;
+    --color-accent-primary-soft: #EFF6FF;
+
+    --color-badge-success-bg: #DCFCE7;
+    --color-badge-success-text: #16A34A;
+    --color-badge-warning-bg: #FEF9C3;
+    --color-badge-warning-text: #CA8A04;
+    --color-badge-danger-bg: #FEE2E2;
+    --color-badge-danger-text: #DC2626;
+    --color-badge-neutral-bg: #F1F5F9;
+    --color-badge-neutral-text: #475569;
+
+    --radius-card: 12px;
+    --radius-pill: 999px;
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.04);
     
     --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', 'monospace';
-    --font-sans: 'Inter', 'Outfit', 'sans-serif';
+    --font-sans: 'Inter', 'sans-serif';
+    --font-serif: 'Merriweather', 'Georgia', 'serif';
 }
 
-@utility shadow-neon-pink {
-    box-shadow: 0 0 15px rgba(255, 46, 147, 0.45);
+/* Premium Styling Upgrades */
+.premium-card {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
 
-@utility shadow-neon-cyan {
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.35);
+.premium-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.05);
+    border-color: #CBD5E1;
 }
 
-@utility shadow-neon-green {
-    box-shadow: 0 0 15px rgba(0, 255, 133, 0.35);
+/* Premium accent line on card top */
+.premium-card-accent::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #2563EB 0%, #7C3AED 100%);
+    z-index: 10;
 }
 
-@utility shadow-neon-amber {
-    box-shadow: 0 0 15px rgba(245, 158, 11, 0.35);
+/* Primary Button / Gradient Accent */
+.btn-premium-gradient {
+    background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+    color: #FFFFFF;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-premium-gradient:hover {
+    background: linear-gradient(135deg, #1D4ED8 0%, #6D28D9 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn-premium-gradient:active {
+    transform: translateY(0);
+    box-shadow: none;
 }

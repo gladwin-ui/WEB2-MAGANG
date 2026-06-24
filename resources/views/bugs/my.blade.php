@@ -1,22 +1,22 @@
 @extends('layouts.app')
 
-@section('title', 'Riwayat Laporanku')
+@section('title', 'Riwayat Laporan')
 
 @section('content')
 <div class="space-y-6">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-            <h1 class="text-2xl font-black text-slate-800 tracking-tight">RIWAYAT LAPORANKU</h1>
-            <p class="text-xs text-slate-500 font-mono tracking-wider uppercase">DAFTAR KERUSAKAN PRODUKSI YANG ANDA PILOTI</p>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tight">RIWAYAT LAPORAN</h1>
+            <p class="text-xs text-slate-500 font-mono tracking-wider uppercase">DAFTAR KERUSAKAN PRODUKSI</p>
         </div>
-        <a href="{{ route('bugs.create') }}" class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold shadow-sm transition-all active:scale-[0.98]">
+        <a href="{{ route('bugs.create') }}" class="flex items-center gap-2 px-4 py-2.5 btn-premium-gradient rounded-lg text-sm font-bold shadow-sm transition-all active:scale-[0.98]">
             <i class="bi bi-plus-circle-fill"></i> LAPORKAN BUG BARU
         </a>
     </div>
 
     <!-- Data Card -->
-    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+    <div class="premium-card premium-card-accent p-6">
         @if($bugs->isEmpty())
             <div class="flex flex-col items-center justify-center py-16 text-slate-400">
                 <i class="bi bi-folder-x text-5xl mb-4 text-slate-300"></i>

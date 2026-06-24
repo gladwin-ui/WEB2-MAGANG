@@ -27,9 +27,9 @@ class BugController extends Controller
     {
         $user = Auth::user();
         if ($user->role === 'reporter') {
-            return redirect()->action([self::class, 'myBugs']);
+            return redirect()->action([self::class, 'myBugs'], $request->query());
         } elseif ($user->role === 'mekanik') {
-            return redirect()->action([self::class, 'queue']);
+            return redirect()->action([self::class, 'queue'], $request->query());
         } else {
             return redirect()->route('dashboard');
         }

@@ -8,7 +8,7 @@ from services.spam_detection import is_spam_report
 from services.severity_recommendation import recommend_severity
 from services.damage_categorization import categorize_damage
 
-app = FastAPI(title="BugTrack MFG Analytics AI Service")
+app = FastAPI(title="Manufacturing Tracking System by PT Hariff Analytics AI Service")
 
 # Request Models
 class BugReportRequest(BaseModel):

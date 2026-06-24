@@ -72,10 +72,10 @@
     </div>
 
     <!-- ZONE 1: INTEGRATED HARDWARE KPI CARDS (TOP ROW) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         
         <!-- Card 1: Total Hardware Bugs -->
-        <div class="bg-white border border-slate-200 border-l-4 border-l-slate-400 rounded-xl p-5 flex items-center gap-4 shadow-sm hover:bg-slate-50/50 transition-all">
+        <div class="bg-white border border-slate-200 border-l-4 border-l-slate-400 rounded-xl p-5 flex items-center gap-4 shadow-sm hover:bg-slate-50/50 transition-all hover:-translate-y-1 hover:shadow-md duration-300">
             <div class="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
                 <i class="bi bi-cpu text-2xl"></i>
             </div>
@@ -86,7 +86,7 @@
         </div>
 
         <!-- Card 2: Open Bugs Queue -->
-        <div class="bg-white border border-slate-200 border-l-4 border-l-amber-500 rounded-xl p-5 flex items-center gap-4 shadow-sm hover:bg-slate-50/50 transition-all">
+        <div class="bg-white border border-slate-200 border-l-4 border-l-amber-500 rounded-xl p-5 flex items-center gap-4 shadow-sm hover:bg-slate-50/50 transition-all hover:-translate-y-1 hover:shadow-md duration-300">
             <div class="h-12 w-12 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
                 <i class="bi bi-folder2-open text-2xl"></i>
             </div>
@@ -97,7 +97,7 @@
         </div>
 
         <!-- Card 3: Closed Bugs Logs -->
-        <div class="bg-white border border-slate-200 border-l-4 border-l-green-500 rounded-xl p-5 flex items-center gap-4 shadow-sm hover:bg-slate-50/50 transition-all">
+        <div class="bg-white border border-slate-200 border-l-4 border-l-green-500 rounded-xl p-5 flex items-center gap-4 shadow-sm hover:bg-slate-50/50 transition-all hover:-translate-y-1 hover:shadow-md duration-300">
             <div class="h-12 w-12 rounded-lg bg-green-50 flex items-center justify-center text-green-600 shrink-0">
                 <i class="bi bi-check-circle text-2xl"></i>
             </div>
@@ -108,7 +108,7 @@
         </div>
 
         <!-- Card 4: Active Critical Alerts -->
-        <div class="bg-white border border-slate-200 border-l-4 border-l-red-650 rounded-xl p-5 flex items-center gap-4 shadow-sm hover:bg-slate-50/50 transition-all">
+        <div class="bg-white border border-slate-200 border-l-4 border-l-red-650 rounded-xl p-5 flex items-center gap-4 shadow-sm hover:bg-slate-50/50 transition-all hover:-translate-y-1 hover:shadow-md duration-300">
             <div class="h-12 w-12 rounded-lg bg-red-50 flex items-center justify-center text-red-600 shrink-0">
                 <i class="bi bi-exclamation-triangle text-2xl"></i>
             </div>
@@ -123,26 +123,8 @@
             </div>
         </div>
 
-        <!-- Card 5: Factory Rework Rate -->
-        <div class="bg-white border border-slate-200 border-l-4 border-l-purple-550 rounded-xl p-5 flex items-center gap-4 shadow-sm hover:bg-slate-50/50 transition-all">
-            <div class="h-12 w-12 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600 shrink-0">
-                <i class="bi bi-arrow-repeat text-2xl"></i>
-            </div>
-            <div>
-                <span class="block text-[10px] font-mono tracking-widest text-slate-500 uppercase">REWORK RATE</span>
-                <div class="flex items-baseline gap-2">
-                    <span class="text-2xl font-black font-mono text-slate-800">{{ $reworkRate }}%</span>
-                    @if($reworkRate > 15)
-                        <span class="text-[9px] font-bold font-mono bg-red-100 text-red-700 px-1.5 py-0.5 rounded border border-red-200 uppercase">WARNING</span>
-                    @else
-                        <span class="text-[9px] font-bold font-mono bg-green-100 text-green-700 px-1.5 py-0.5 rounded border border-green-200 uppercase">STABLE</span>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <!-- Card 6: AI Automation Ingestion -->
-        <div class="bg-white border border-slate-200 border-l-4 border-l-indigo-500 rounded-xl p-5 flex items-center gap-4 shadow-sm hover:bg-slate-50/50 transition-all">
+        <!-- Card 5: AI Automation Ingestion -->
+        <div class="bg-white border border-slate-200 border-l-4 border-l-indigo-500 rounded-xl p-5 flex items-center gap-4 shadow-sm hover:bg-slate-50/50 transition-all hover:-translate-y-1 hover:shadow-md duration-300">
             <div class="h-12 w-12 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-650 shrink-0">
                 <i class="bi bi-shield-check text-2xl"></i>
             </div>
@@ -157,7 +139,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
         
         <!-- Left Panel: Bugs by Severity Donut Chart (2/5 cols width) -->
-        <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div class="lg:col-span-2 premium-card premium-card-accent p-6">
             <h2 class="text-xs font-mono font-bold tracking-widest text-slate-600 mb-6 uppercase flex items-center gap-2">
                 <i class="bi bi-pie-chart text-blue-600"></i>
                 DISTRIBUSI BUG BY SEVERITY
@@ -169,7 +151,7 @@
         </div>
 
         <!-- Right Panel: Culpable Hardware Components Chart (3/5 cols width) -->
-        <div class="lg:col-span-3 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div class="lg:col-span-3 premium-card premium-card-accent p-6">
             <h2 class="text-xs font-mono font-bold tracking-widest text-slate-600 mb-6 uppercase flex items-center gap-2">
                 <i class="bi bi-bar-chart-steps text-blue-600"></i>
                 ANALISIS AI KATEGORI PENYEBAB KERUSAKAN
@@ -184,7 +166,7 @@
     <!-- ZONE 2.5: SYSTEM STABILITY & VOLUME DYNAMICS (NEW ROW) -->
     <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <!-- Sentiment Donut Chart (Card 1) -->
-        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div class="premium-card premium-card-accent p-6">
             <h2 class="text-xs font-mono font-bold tracking-widest text-slate-600 mb-6 uppercase flex items-center gap-2">
                 <i class="bi bi-chat-heart text-blue-600"></i>
                 DISTRIBUSI SENTIMEN LAPORAN (NLP STAGE 1)
@@ -195,7 +177,7 @@
         </div>
 
         <!-- Volume Trend Line Chart (Card 2) -->
-        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div class="premium-card premium-card-accent p-6">
             <h2 class="text-xs font-mono font-bold tracking-widest text-slate-600 mb-6 uppercase flex items-center gap-2">
                 <i class="bi bi-graph-up-arrow text-blue-600"></i>
                 TREN VOLUME LAPORAN (15 HARI TERAKHIR)
@@ -206,7 +188,7 @@
         </div>
 
         <!-- Top 5 Projects Table (Card 3) -->
-        <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div class="premium-card premium-card-accent p-6">
             <h2 class="text-xs font-mono font-bold tracking-widest text-slate-600 mb-6 uppercase flex items-center gap-2">
                 <i class="bi bi-trophy text-blue-600"></i>
                 PROYEK PALING BANYAK BUG (TOP 5)
@@ -237,7 +219,7 @@
     </div>
 
     <!-- ZONE 3: LIVE FACTORY FEED DATA TABLE (BOTTOM SECTION) -->
-    <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+    <div class="premium-card premium-card-accent p-6">
         
         <!-- Section Header -->
         <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6 border-b border-slate-200 pb-5">
@@ -307,11 +289,17 @@
                     @forelse($bugs as $b)
                         @php
                             // Calculate Urgency Score dynamically based on severity and sentiment label
-                            $sevWeight = $b->severity === 'Critical' ? 0.8 : ($b->severity === 'Major' ? 0.5 : 0.2);
-                            $sentScore = $b->sentiment_score !== null ? $b->sentiment_score : 0.0;
-                            // Score formula: (severity weight + (1 - sentiment score)) / 2
-                            $urgencyScore = round(($sevWeight + (1.0 - $sentScore)) / 2.0, 2);
-                            $urgencyScore = min(1.0, max(0.0, $urgencyScore));
+                            $isSpam = $b->is_spam || strtolower($b->sentiment_label) === 'spam';
+                            
+                            if ($isSpam) {
+                                $urgencyScore = 0.0;
+                            } else {
+                                $sevWeight = $b->severity === 'Critical' ? 0.8 : ($b->severity === 'Major' ? 0.5 : 0.2);
+                                $sentScore = $b->sentiment_score !== null ? $b->sentiment_score : 0.0;
+                                // Score formula: (severity weight + (1 - sentiment score)) / 2
+                                $urgencyScore = round(($sevWeight + (1.0 - $sentScore)) / 2.0, 2);
+                                $urgencyScore = min(1.0, max(0.0, $urgencyScore));
+                            }
                         @endphp
                         <tr class="hover:bg-slate-50 transition-all">
                             
@@ -471,6 +459,13 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
+        const isDark = document.body.classList.contains('dark');
+        const textPrimaryColor = isDark ? '#F9FAFB' : '#1E293B';
+        const textSecondaryColor = isDark ? '#9CA3AF' : '#64748B';
+        const borderColor = isDark ? '#374151' : '#E2E8F0';
+        const strokeColor = isDark ? '#1F2937' : '#FFFFFF';
+        const tooltipTheme = isDark ? 'dark' : 'light';
+
         // 1. Severity Donut Chart (Left Column)
         var severityCounts = {
             critical: {{ $severityCounts['critical'] ?? 0 }},
@@ -484,7 +479,7 @@
                 type: 'donut',
                 height: 290,
                 background: 'transparent',
-                foreColor: '#64748B'
+                foreColor: textSecondaryColor
             },
             labels: ['Critical Hazards', 'Major Defects', 'Minor Flaws'],
             colors: ['#DC2626', '#CA8A04', '#16A34A'], // corporate red, warning amber, success green
@@ -494,7 +489,7 @@
             stroke: {
                 show: true,
                 width: 2,
-                colors: ['#FFFFFF'] // card panel background is white
+                colors: [strokeColor]
             },
             legend: {
                 position: 'bottom',
@@ -521,14 +516,14 @@
                                 show: true,
                                 fontSize: '11px',
                                 fontFamily: 'Inter, sans-serif',
-                                color: '#64748B',
+                                color: textSecondaryColor,
                                 offsetY: -8
                             },
                             value: {
                                 show: true,
                                 fontSize: '24px',
                                 fontFamily: 'Inter, sans-serif',
-                                color: '#1E293B',
+                                color: textPrimaryColor,
                                 fontWeight: 'bold',
                                 offsetY: 8,
                                 formatter: function (val) {
@@ -538,7 +533,7 @@
                             total: {
                                 show: true,
                                 label: 'TOTAL LOGS',
-                                color: '#64748B',
+                                color: textSecondaryColor,
                                 fontSize: '10px',
                                 fontFamily: 'Inter, sans-serif',
                                 formatter: function (w) {
@@ -552,7 +547,7 @@
                 }
             },
             tooltip: {
-                theme: 'light'
+                theme: tooltipTheme
             }
         };
 
@@ -574,7 +569,7 @@
                 type: 'bar',
                 height: 290,
                 background: 'transparent',
-                foreColor: '#64748B',
+                foreColor: textSecondaryColor,
                 toolbar: {
                     show: false
                 }
@@ -608,7 +603,7 @@
                 }
             },
             grid: {
-                borderColor: '#E2E8F0',
+                borderColor: borderColor,
                 strokeDashArray: 3,
                 xaxis: {
                     lines: {
@@ -641,12 +636,12 @@
                     style: {
                         fontSize: '10px',
                         fontFamily: 'Inter, sans-serif',
-                        colors: '#64748B'
+                        colors: textSecondaryColor
                     }
                 }
             },
             tooltip: {
-                theme: 'light'
+                theme: tooltipTheme
             }
         };
 
@@ -674,7 +669,7 @@
                 type: 'donut',
                 height: 290,
                 background: 'transparent',
-                foreColor: '#64748B'
+                foreColor: textSecondaryColor
             },
             labels: ['Positive', 'Neutral', 'Negative', 'Spam Warning', 'Unanalyzed'],
             colors: ['#16A34A', '#475569', '#DC2626', '#8B5CF6', '#94A3B8'], // professional palette
@@ -684,7 +679,7 @@
             stroke: {
                 show: true,
                 width: 2,
-                colors: ['#FFFFFF']
+                colors: [strokeColor]
             },
             legend: {
                 position: 'bottom',
@@ -711,14 +706,14 @@
                                 show: true,
                                 fontSize: '10px',
                                 fontFamily: 'Inter, sans-serif',
-                                color: '#64748B',
+                                color: textSecondaryColor,
                                 offsetY: -8
                             },
                             value: {
                                 show: true,
                                 fontSize: '20px',
                                 fontFamily: 'Inter, sans-serif',
-                                color: '#1E293B',
+                                color: textPrimaryColor,
                                 fontWeight: 'bold',
                                 offsetY: 6,
                                 formatter: function (val) {
@@ -728,7 +723,7 @@
                             total: {
                                 show: true,
                                 label: 'TOTAL SENTIMENT',
-                                color: '#64748B',
+                                color: textSecondaryColor,
                                 fontSize: '9px',
                                 fontFamily: 'Inter, sans-serif',
                                 formatter: function (w) {
@@ -742,7 +737,7 @@
                 }
             },
             tooltip: {
-                theme: 'light'
+                theme: tooltipTheme
             }
         };
 
@@ -766,7 +761,7 @@
                 type: 'area',
                 height: 290,
                 background: 'transparent',
-                foreColor: '#64748B',
+                foreColor: textSecondaryColor,
                 toolbar: {
                     show: false
                 }
@@ -786,7 +781,7 @@
                 }
             },
             grid: {
-                borderColor: '#E2E8F0',
+                borderColor: borderColor,
                 strokeDashArray: 3,
                 xaxis: {
                     lines: {
@@ -828,12 +823,76 @@
                 }
             },
             tooltip: {
-                theme: 'light'
+                theme: tooltipTheme
             }
         };
 
         var volumeChart = new ApexCharts(document.querySelector("#volumeChart"), volumeOptions);
         volumeChart.render();
+
+        // 5. Dynamic Theme-Changed Event Listener to update all charts on the fly
+        document.addEventListener('theme-changed', function(e) {
+            const newTheme = e.detail.theme;
+            const newIsDark = newTheme === 'dark';
+            
+            const newTextPrimary = newIsDark ? '#F9FAFB' : '#1E293B';
+            const newTextSecondary = newIsDark ? '#9CA3AF' : '#64748B';
+            const newBorderColor = newIsDark ? '#374151' : '#E2E8F0';
+            const newStrokeColor = newIsDark ? '#1F2937' : '#FFFFFF';
+            
+            severityChart.updateOptions({
+                chart: { foreColor: newTextSecondary },
+                stroke: { colors: [newStrokeColor] },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            labels: {
+                                name: { color: newTextSecondary },
+                                value: { color: newTextPrimary },
+                                total: { color: newTextSecondary }
+                            }
+                        }
+                    }
+                },
+                tooltip: { theme: newTheme }
+            });
+
+            componentsChart.updateOptions({
+                chart: { foreColor: newTextSecondary },
+                grid: { borderColor: newBorderColor },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: newTextSecondary
+                        }
+                    }
+                },
+                tooltip: { theme: newTheme }
+            });
+
+            sentimentChart.updateOptions({
+                chart: { foreColor: newTextSecondary },
+                stroke: { colors: [newStrokeColor] },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            labels: {
+                                name: { color: newTextSecondary },
+                                value: { color: newTextPrimary },
+                                total: { color: newTextSecondary }
+                            }
+                        }
+                    }
+                },
+                tooltip: { theme: newTheme }
+            });
+
+            volumeChart.updateOptions({
+                chart: { foreColor: newTextSecondary },
+                grid: { borderColor: newBorderColor },
+                tooltip: { theme: newTheme }
+            });
+        });
     });
 </script>
 @endsection

@@ -8,6 +8,38 @@ use Illuminate\Support\Facades\Auth;
 
 class BugChatController extends Controller
 {
+    // Tampilkan daftar chat aktif/riwayat chat
+    public function index() {
+        $user = Auth::user();
+
+        if ($user->role === 'reporter') {
+            $bugs = Bug::where('reported_by', $user->id)
+                ->whereNotNull('assigned_to')
+                ->with(['assignee', 'project', 'latestChat.sender'])
+                ->get()
+                ->sortByDesc(function ($bug) {
+                    return $bug->latestChat ? $bug->latestChat->created_at : $bug->created_at;
+                });
+        } elseif ($user->role === 'mekanik') {
+            $bugs = Bug::where('assigned_to', $user->id)
+                ->with(['reporter', 'project', 'latestChat.sender'])
+                ->get()
+                ->sortByDesc(function ($bug) {
+                    return $bug->latestChat ? $bug->latestChat->created_at : $bug->created_at;
+                });
+        } else {
+            // Admin can see chats too
+            $bugs = Bug::whereNotNull('assigned_to')
+                ->with(['reporter', 'assignee', 'project', 'latestChat.sender'])
+                ->get()
+                ->sortByDesc(function ($bug) {
+                    return $bug->latestChat ? $bug->latestChat->created_at : $bug->created_at;
+                });
+        }
+
+        return view('chats.index', compact('bugs'));
+    }
+
     // Tampilkan halaman chat
     public function show(Bug $bug) {
         $user = Auth::user();

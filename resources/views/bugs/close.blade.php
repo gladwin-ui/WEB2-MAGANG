@@ -45,11 +45,7 @@
                         </label>
                     </div>
 
-                    <div class="pt-6 border-t border-slate-200">
-                        <label for="feedback_message" class="block text-xs font-mono tracking-wider text-slate-600 uppercase mb-2">Kirim Pesan Klarifikasi ke Reporter (Opsional)</label>
-                        <textarea id="feedback_message" name="feedback_message" rows="2" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-slate-800 text-xs focus:outline-none focus:border-blue-600 transition-all placeholder-slate-400" placeholder="Contoh: Pastikan casing ditutup dengan sekrup kencang agar air tidak berembun kembali..."></textarea>
-                        <small class="block text-[10px] text-slate-500 font-mono tracking-wide mt-1.5 uppercase">Pesan ini akan otomatis masuk ke inbox reporter terkait tiket ini</small>
-                    </div>
+
 
                     <div class="flex gap-3 pt-4 border-t border-slate-200">
                         <button type="submit" class="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold shadow-sm transition-all transform active:scale-[0.98]">
