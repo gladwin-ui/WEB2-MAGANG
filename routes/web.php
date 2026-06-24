@@ -9,6 +9,7 @@ use App\Http\Controllers\SerialNumberController;
 
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\BugChatController;
+use App\Http\Controllers\UserSettingsController;
 
 // Redirect home to login
 Route::get('/', function () {
@@ -34,6 +35,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/bugs/create', [BugController::class, 'create'])->name('bugs.create');
         Route::post('/bugs', [BugController::class, 'store'])->name('bugs.store');
         Route::get('/bugs/my', [BugController::class, 'myBugs'])->name('bugs.my');
+        Route::get('/pengaturan', [UserSettingsController::class, 'edit'])->name('users.settings.edit');
+        Route::post('/pengaturan', [UserSettingsController::class, 'update'])->name('users.settings.update');
 
     });
 

@@ -528,10 +528,12 @@
         <div>
             <!-- Brand Logo & Toggle -->
             <div class="flex items-center justify-between gap-3 mb-8">
-                <div class="flex items-center gap-3">
-                    <img src="{{ asset('Logo.png') }}" alt="Logo PT Hariff" class="h-9 w-auto rounded-lg brand-logo-light">
-                    <img src="{{ asset('logo-darkmode.jpg') }}" alt="Logo PT Hariff" class="h-9 w-auto rounded-lg brand-logo-dark hidden">
-                    <div>
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-11 h-11 shrink-0 relative">
+                        <img src="{{ asset('Logo.png') }}" alt="Logo PT Hariff" class="absolute inset-0 w-full h-full object-contain rounded brand-logo-light">
+                        <img src="{{ asset('logo-darkmode.jpg') }}" alt="Logo PT Hariff" class="absolute inset-0 w-full h-full object-contain rounded brand-logo-dark hidden">
+                    </div>
+                    <div class="min-w-0">
                         <span class="font-extrabold text-xs text-slate-800 block leading-tight uppercase tracking-wider">Sistem Pelacakan</span>
                         <span class="font-extrabold text-xs text-slate-800 block leading-tight uppercase tracking-wider">Manufaktur</span>
                         <span class="block text-[8px] text-slate-400 font-mono tracking-widest uppercase mt-1">BY PT HARIFF</span>
@@ -573,6 +575,12 @@
                                 <span>Riwayat Obrolan</span>
                             </div>
                         </a>
+                        <a href="{{ route('users.settings.edit') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('users.settings.*') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="bi bi-gear text-base"></i>
+                                <span>Pengaturan</span>
+                            </div>
+                        </a>
 
                     @elseif(auth()->user()->role === 'mekanik')
                         <a href="{{ route('bugs.queue') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.queue') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
@@ -602,9 +610,13 @@
         @auth
             <div class="border-t border-slate-200 pt-4 mt-8">
                 <div class="flex items-center gap-3">
-                    <div class="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center font-bold text-sm text-slate-700">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                    </div>
+                    @if(auth()->user()->profile_photo_path)
+                        <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="Foto profil" class="h-9 w-9 rounded-full object-cover border border-slate-200">
+                    @else
+                        <div class="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center font-bold text-sm text-slate-700">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                        </div>
+                    @endif
                     <div class="overflow-hidden">
                         <div class="text-sm font-semibold text-slate-700 truncate">{{ auth()->user()->name }}</div>
                         <div class="text-xs text-slate-400 font-mono tracking-wider uppercase">{{ auth()->user()->role }}</div>
