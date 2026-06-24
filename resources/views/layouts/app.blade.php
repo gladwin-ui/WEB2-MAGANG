@@ -137,11 +137,22 @@
                         <a href="{{ route('master.serial_numbers.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('master.serial_numbers.*') ? 'bg-indigo-600/15 text-white border-l-2 border-indigo-500' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
                             <i class="bi bi-hash text-base"></i> Kelola Serial Number
                         </a>
+                        <a href="{{ route('master.devices.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('master.devices.*') ? 'bg-indigo-600/15 text-white border-l-2 border-indigo-500' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+                            <i class="bi bi-cpu text-base"></i> Kelola Device
+                        </a>
                     @endif
 
-                    <a href="{{ route('bugs.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.index') && !request()->has('status') ? 'bg-indigo-600/15 text-white border-l-2 border-indigo-500' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
-                        <i class="bi bi-list-task text-base"></i> 
-                        <span>{{ auth()->user()->role === 'reporter' ? 'Riwayat Laporanku' : 'Queue Kerja Bug' }}</span>
+                    <a href="{{ route('bugs.index') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.index') && !request()->has('status') ? 'bg-indigo-600/15 text-white border-l-2 border-indigo-500' : 'text-slate-400 hover:text-white hover:bg-slate-800/60' }}">
+                        <div class="flex items-center gap-3">
+                            <i class="bi bi-list-task text-base"></i> 
+                            <span>{{ auth()->user()->role === 'reporter' ? 'Riwayat Laporanku' : 'Queue Kerja Bug' }}</span>
+                        </div>
+                        @php
+                            $unreadFeedbackCount = \App\Models\BugFeedback::where('to_user_id', auth()->id())->where('is_read', false)->count();
+                        @endphp
+                        @if($unreadFeedbackCount > 0)
+                            <span class="inline-flex items-center justify-center px-2 py-0.5 text-[10px] font-bold leading-none text-white bg-neon-pink rounded-full shadow-lg shadow-neon-pink/20 font-mono animate-pulse">{{ $unreadFeedbackCount }}</span>
+                        @endif
                     </a>
 
                     @if(auth()->user()->role === 'reporter' || auth()->user()->role === 'admin')

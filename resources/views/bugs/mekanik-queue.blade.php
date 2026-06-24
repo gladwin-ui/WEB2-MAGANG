@@ -47,8 +47,16 @@
                     </thead>
                     <tbody class="divide-y divide-slate-800/50 text-sm">
                         @foreach($bugs as $bug)
+                            @php
+                                $unread = $bug->feedbacks->where('to_user_id', auth()->id())->where('is_read', false)->count();
+                            @endphp
                             <tr class="hover:bg-slate-900/20 transition-all {{ $bug->severity === 'Critical' && $bug->status === 'OPEN' ? 'bg-rose-500/5' : '' }}">
-                                <td class="py-3.5 px-4 font-mono text-xs text-indigo-400 font-bold">#{{ $bug->id }}</td>
+                                <td class="py-3.5 px-4 font-mono text-xs text-indigo-400 font-bold flex items-center">
+                                    #{{ $bug->id }}
+                                    @if($unread > 0)
+                                        <span class="inline-block w-1.5 h-1.5 rounded-full bg-neon-pink shadow-neon-pink ml-1.5 animate-pulse" title="Ada feedback baru"></span>
+                                    @endif
+                                </td>
                                 <td class="py-3.5 px-4">
                                     <div class="flex items-center gap-2">
                                         <span class="font-bold text-slate-200">{{ $bug->title }}</span>
@@ -85,8 +93,14 @@
                                 </td>
                                 <td class="py-3.5 px-4 text-right">
                                     <div class="inline-flex gap-1.5">
-                                        <a href="{{ route('bugs.show', $bug) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-350 hover:text-slate-200 rounded text-xs font-mono font-bold transition-all">
+                                        <a href="{{ route('bugs.show', $bug) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-950 hover:bg-slate-900 border border-slate-800 text-slate-350 hover:text-slate-200 rounded text-xs font-mono font-bold transition-all relative">
                                             <i class="bi bi-eye"></i> DETAIL
+                                            @if($unread > 0)
+                                                <span class="absolute -top-1 -right-1 flex h-2 w-2">
+                                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-pink opacity-75"></span>
+                                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-neon-pink"></span>
+                                                </span>
+                                            @endif
                                         </a>
                                         @if($bug->status === 'OPEN')
                                             <a href="{{ route('bugs.close.form', $bug) }}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-450 hover:text-emerald-300 rounded text-xs font-mono font-bold transition-all">

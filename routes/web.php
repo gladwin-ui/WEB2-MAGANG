@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SerialNumberController;
 use App\Http\Controllers\BugFeedbackController;
+use App\Http\Controllers\DeviceController;
 
 // Redirect home to login
 Route::get('/', function () {
@@ -56,5 +57,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/master/serial-numbers', [SerialNumberController::class, 'store'])->name('master.serial_numbers.store');
         Route::put('/master/serial-numbers/{serialNumber}', [SerialNumberController::class, 'update'])->name('master.serial_numbers.update');
         Route::delete('/master/serial-numbers/{serialNumber}', [SerialNumberController::class, 'destroy'])->name('master.serial_numbers.destroy');
+
+        // Master Devices
+        Route::get('/master/devices', [DeviceController::class, 'index'])->name('master.devices.index');
+        Route::post('/master/devices', [DeviceController::class, 'store'])->name('master.devices.store');
+        Route::put('/master/devices/{device}', [DeviceController::class, 'update'])->name('master.devices.update');
+        Route::delete('/master/devices/{device}', [DeviceController::class, 'destroy'])->name('master.devices.destroy');
     });
 });

@@ -23,7 +23,7 @@
     </div>
 
     <!-- ZONE 1: INTEGRATED HARDWARE KPI CARDS (TOP ROW) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         
         <!-- Card 1: Total Hardware Bugs -->
         <div class="bg-panel-bg border border-panel-border rounded-xl p-5 flex items-center gap-4 relative overflow-hidden shadow-lg hover:border-neon-cyan/30 transition-all group">
@@ -37,7 +37,48 @@
             </div>
         </div>
 
-        <!-- Card 2: Factory Rework Rate -->
+        <!-- Card 2: Open Bugs Queue -->
+        <div class="bg-panel-bg border border-panel-border rounded-xl p-5 flex items-center gap-4 relative overflow-hidden shadow-lg hover:border-accent/30 transition-all group">
+            <div class="absolute top-0 right-0 w-1.5 h-full bg-accent group-hover:shadow-accent"></div>
+            <div class="h-12 w-12 rounded-lg bg-accent/5 border border-accent/20 flex items-center justify-center text-accent shrink-0">
+                <i class="bi bi-folder2-open text-2xl"></i>
+            </div>
+            <div>
+                <span class="block text-[10px] font-mono tracking-widest text-slate-500 uppercase">QUEUE OPEN</span>
+                <span class="text-2xl font-black font-mono text-accent">{{ $openBugs }} <span class="text-xs font-normal text-slate-500 font-sans">BUGS</span></span>
+            </div>
+        </div>
+
+        <!-- Card 3: Closed Bugs Logs -->
+        <div class="bg-panel-bg border border-panel-border rounded-xl p-5 flex items-center gap-4 relative overflow-hidden shadow-lg hover:border-closed/30 transition-all group">
+            <div class="absolute top-0 right-0 w-1.5 h-full bg-closed group-hover:shadow-closed"></div>
+            <div class="h-12 w-12 rounded-lg bg-closed/5 border border-closed/20 flex items-center justify-center text-closed shrink-0">
+                <i class="bi bi-check-circle text-2xl"></i>
+            </div>
+            <div>
+                <span class="block text-[10px] font-mono tracking-widest text-slate-500 uppercase">LOGS CLOSED</span>
+                <span class="text-2xl font-black font-mono text-closed">{{ $closedBugs }} <span class="text-xs font-normal text-slate-500 font-sans">BUGS</span></span>
+            </div>
+        </div>
+
+        <!-- Card 4: Active Critical Alerts -->
+        <div class="bg-panel-bg border border-panel-border rounded-xl p-5 flex items-center gap-4 relative overflow-hidden shadow-lg shadow-neon-pink/5 hover:border-neon-pink/30 transition-all group">
+            <div class="absolute top-0 right-0 w-1.5 h-full bg-neon-pink group-hover:shadow-neon-pink"></div>
+            <div class="h-12 w-12 rounded-lg bg-neon-pink/10 border border-neon-pink/20 flex items-center justify-center text-neon-pink shrink-0 critical-pulse">
+                <i class="bi bi-exclamation-triangle text-2xl"></i>
+            </div>
+            <div>
+                <span class="block text-[10px] font-mono tracking-widest text-slate-500 uppercase">ACTIVE CRITICALS</span>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-2xl font-black font-mono text-neon-pink">{{ $criticalOpenBugs }}</span>
+                    @if($criticalOpenBugs > 0)
+                        <span class="text-[9px] font-bold font-mono bg-neon-pink/15 text-neon-pink px-1.5 py-0.5 rounded border border-neon-pink/30 uppercase tracking-wider shadow-neon-pink select-none critical-pulse">ALERT HAZARD</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 5: Factory Rework Rate -->
         <div class="bg-panel-bg border border-neon-amber/25 rounded-xl p-5 flex items-center gap-4 relative overflow-hidden shadow-lg hover:border-neon-amber/50 transition-all group">
             <div class="absolute top-0 right-0 w-1.5 h-full bg-neon-amber group-hover:shadow-neon-amber"></div>
             <div class="h-12 w-12 rounded-lg bg-neon-amber/5 border border-neon-amber/20 flex items-center justify-center text-neon-amber shrink-0">
@@ -56,24 +97,7 @@
             </div>
         </div>
 
-        <!-- Card 3: Active Critical Alerts -->
-        <div class="bg-panel-bg border border-panel-border rounded-xl p-5 flex items-center gap-4 relative overflow-hidden shadow-lg shadow-neon-pink/5 hover:border-neon-pink/30 transition-all group">
-            <div class="absolute top-0 right-0 w-1.5 h-full bg-neon-pink group-hover:shadow-neon-pink"></div>
-            <div class="h-12 w-12 rounded-lg bg-neon-pink/10 border border-neon-pink/20 flex items-center justify-center text-neon-pink shrink-0 critical-pulse">
-                <i class="bi bi-exclamation-triangle text-2xl"></i>
-            </div>
-            <div>
-                <span class="block text-[10px] font-mono tracking-widest text-slate-500 uppercase">ACTIVE CRITICALS</span>
-                <div class="flex items-baseline gap-2">
-                    <span class="text-2xl font-black font-mono text-neon-pink">{{ $criticalOpenBugs }}</span>
-                    @if($criticalOpenBugs > 0)
-                        <span class="text-[9px] font-bold font-mono bg-neon-pink/15 text-neon-pink px-1.5 py-0.5 rounded border border-neon-pink/30 uppercase tracking-wider shadow-neon-pink select-none critical-pulse">ALERT HAZARD</span>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <!-- Card 4: AI Automation Ingestion -->
+        <!-- Card 6: AI Automation Ingestion -->
         <div class="bg-panel-bg border border-panel-border rounded-xl p-5 flex items-center gap-4 relative overflow-hidden shadow-lg hover:border-neon-green/30 transition-all group">
             <div class="absolute top-0 right-0 w-1.5 h-full bg-neon-green group-hover:shadow-neon-green"></div>
             <div class="h-12 w-12 rounded-lg bg-neon-green/5 border border-neon-green/20 flex items-center justify-center text-neon-green shrink-0">
@@ -114,6 +138,61 @@
         </div>
     </div>
 
+    <!-- ZONE 2.5: SYSTEM STABILITY & VOLUME DYNAMICS (NEW ROW) -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <!-- Sentiment Donut Chart (Card 1) -->
+        <div class="bg-panel-bg border border-panel-border rounded-xl p-6 shadow-xl backdrop-blur-md">
+            <h2 class="text-xs font-mono font-bold tracking-widest text-slate-400 mb-6 uppercase flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full bg-neon-green inline-block shadow-neon-green"></span>
+                DISTRIBUSI SENTIMEN LAPORAN (NLP STAGE 1)
+            </h2>
+            <div class="flex flex-col items-center justify-center min-h-[290px]">
+                <div id="sentimentChart" class="w-full"></div>
+            </div>
+        </div>
+
+        <!-- Volume Trend Line Chart (Card 2) -->
+        <div class="bg-panel-bg border border-panel-border rounded-xl p-6 shadow-xl backdrop-blur-md">
+            <h2 class="text-xs font-mono font-bold tracking-widest text-slate-400 mb-6 uppercase flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full bg-neon-cyan inline-block shadow-neon-cyan"></span>
+                TREN VOLUME LAPORAN (15 HARI TERAKHIR)
+            </h2>
+            <div class="flex flex-col justify-center min-h-[290px]">
+                <div id="volumeChart" class="w-full"></div>
+            </div>
+        </div>
+
+        <!-- Top 5 Projects Table (Card 3) -->
+        <div class="bg-panel-bg border border-panel-border rounded-xl p-6 shadow-xl backdrop-blur-md">
+            <h2 class="text-xs font-mono font-bold tracking-widest text-slate-400 mb-6 uppercase flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full bg-neon-amber inline-block shadow-neon-amber"></span>
+                PROYEK PALING BANYAK BUG (TOP 5)
+            </h2>
+            <div class="overflow-x-auto min-h-[290px] flex flex-col justify-between">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-panel-border text-[9px] font-mono tracking-widest text-slate-500 uppercase">
+                            <th class="py-2.5 px-3">PROJECT NAME</th>
+                            <th class="py-2.5 px-3 text-right">BUG COUNT</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-panel-border/40 text-xs font-mono">
+                        @forelse($topProjects as $tp)
+                            <tr class="hover:bg-slate-800/20">
+                                <td class="py-2.5 px-3 font-semibold text-slate-200 uppercase">{{ $tp->project_name }}</td>
+                                <td class="py-2.5 px-3 text-right text-neon-cyan font-bold">{{ $tp->bug_count }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="2" class="py-4 px-3 text-center text-slate-500 uppercase">[NO PROJECT DATA]</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- ZONE 3: LIVE FACTORY FEED DATA TABLE (BOTTOM SECTION) -->
     <div class="bg-panel-bg border border-panel-border rounded-xl p-6 shadow-xl backdrop-blur-md">
         
@@ -149,6 +228,16 @@
                         <option value="Major" {{ request('severity') === 'Major' ? 'selected' : '' }}>MAJOR</option>
                         <option value="Minor" {{ request('severity') === 'Minor' ? 'selected' : '' }}>MINOR</option>
                     </select>
+
+                    <div class="flex items-center gap-1.5 bg-obsidian border border-panel-border rounded px-2.5 py-1 text-slate-350">
+                        <span class="text-[9px] text-slate-500 uppercase font-mono">FROM:</span>
+                        <input type="date" name="date_from" value="{{ request('date_from') }}" class="bg-transparent border-none text-slate-200 text-xs focus:outline-none focus:ring-0 p-0 font-mono w-28" style="color-scheme: dark;">
+                    </div>
+
+                    <div class="flex items-center gap-1.5 bg-obsidian border border-panel-border rounded px-2.5 py-1 text-slate-350">
+                        <span class="text-[9px] text-slate-500 uppercase font-mono">TO:</span>
+                        <input type="date" name="date_to" value="{{ request('date_to') }}" class="bg-transparent border-none text-slate-200 text-xs focus:outline-none focus:ring-0 p-0 font-mono w-28" style="color-scheme: dark;">
+                    </div>
 
                     <button type="submit" class="bg-neon-cyan/10 hover:bg-neon-cyan/20 border border-neon-cyan/30 text-neon-cyan hover:text-white px-4 py-1.5 rounded font-bold transition-all shadow-neon-cyan/10">
                         EXECUTE
@@ -520,6 +609,188 @@
 
         var componentsChart = new ApexCharts(document.querySelector("#componentsChart"), componentsOptions);
         componentsChart.render();
+
+        // 3. Sentiment Donut Chart
+        var sentimentCounts = {
+            positive: {{ $sentiments['positive'] ?? $sentiments['Positive'] ?? 0 }},
+            neutral: {{ $sentiments['neutral'] ?? $sentiments['Neutral'] ?? 0 }},
+            negative: {{ $sentiments['negative'] ?? $sentiments['Negative'] ?? 0 }},
+            spam: {{ $sentiments['spam'] ?? $sentiments['Spam'] ?? 0 }},
+            unanalyzed: {{ $sentiments['Unanalyzed'] ?? $sentiments['unanalyzed'] ?? 0 }}
+        };
+
+        var sentimentOptions = {
+            series: [
+                sentimentCounts.positive,
+                sentimentCounts.neutral,
+                sentimentCounts.negative,
+                sentimentCounts.spam,
+                sentimentCounts.unanalyzed
+            ],
+            chart: {
+                type: 'donut',
+                height: 290,
+                background: 'transparent',
+                foreColor: '#9CA3AF'
+            },
+            labels: ['Positive', 'Neutral', 'Negative', 'Spam Warning', 'Unanalyzed'],
+            colors: ['#00FF85', '#00F0FF', '#F59E0B', '#FF2E93', '#6B7280'], // neon green, neon cyan, neon amber, neon pink, gray
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                show: true,
+                width: 2,
+                colors: ['#111625'] // card panel background
+            },
+            legend: {
+                position: 'bottom',
+                fontSize: '9px',
+                fontFamily: 'JetBrains Mono',
+                markers: {
+                    radius: 4,
+                    width: 8,
+                    height: 8
+                },
+                itemMargin: {
+                    horizontal: 5,
+                    vertical: 5
+                }
+            },
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '72%',
+                        background: 'transparent',
+                        labels: {
+                            show: true,
+                            name: {
+                                show: true,
+                                fontSize: '10px',
+                                fontFamily: 'Outfit',
+                                color: '#6B7280',
+                                offsetY: -8
+                            },
+                            value: {
+                                show: true,
+                                fontSize: '20px',
+                                fontFamily: 'JetBrains Mono',
+                                color: '#FFFFFF',
+                                fontWeight: 'bold',
+                                offsetY: 6,
+                                formatter: function (val) {
+                                    return val;
+                                }
+                            },
+                            total: {
+                                show: true,
+                                label: 'TOTAL SENTIMENT',
+                                color: '#6B7280',
+                                fontSize: '9px',
+                                fontFamily: 'JetBrains Mono',
+                                formatter: function (w) {
+                                    return w.globals.seriesTotals.reduce(function(a, b) {
+                                        return a + b;
+                                    }, 0);
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            tooltip: {
+                theme: 'dark'
+            }
+        };
+
+        var sentimentChart = new ApexCharts(document.querySelector("#sentimentChart"), sentimentOptions);
+        sentimentChart.render();
+
+        // 4. Volume Trend Line/Area Chart
+        var trendData = {!! json_encode($trendData) !!};
+        var trendKeys = Object.keys(trendData).map(function(date) {
+            var d = new Date(date);
+            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        });
+        var trendValues = Object.values(trendData);
+
+        var volumeOptions = {
+            series: [{
+                name: 'Volume Laporan',
+                data: trendValues
+            }],
+            chart: {
+                type: 'area',
+                height: 290,
+                background: 'transparent',
+                foreColor: '#9CA3AF',
+                toolbar: {
+                    show: false
+                }
+            },
+            colors: ['#00F0FF'], // neon cyan
+            stroke: {
+                curve: 'smooth',
+                width: 3
+            },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.45,
+                    opacityTo: 0.05,
+                    stops: [0, 90, 100]
+                }
+            },
+            grid: {
+                borderColor: '#1F293D',
+                strokeDashArray: 3,
+                xaxis: {
+                    lines: {
+                        show: false
+                    }
+                },
+                yaxis: {
+                    lines: {
+                        show: true
+                    }
+                }
+            },
+            xaxis: {
+                categories: trendKeys,
+                axisBorder: {
+                    show: false
+                },
+                axisTicks: {
+                    show: false
+                },
+                labels: {
+                    style: {
+                        fontSize: '9px',
+                        fontFamily: 'JetBrains Mono'
+                    }
+                }
+            },
+            yaxis: {
+                min: 0,
+                tickAmount: 4,
+                labels: {
+                    style: {
+                        fontSize: '9px',
+                        fontFamily: 'JetBrains Mono'
+                    },
+                    formatter: function(val) {
+                        return Math.floor(val);
+                    }
+                }
+            },
+            tooltip: {
+                theme: 'dark'
+            }
+        };
+
+        var volumeChart = new ApexCharts(document.querySelector("#volumeChart"), volumeOptions);
+        volumeChart.render();
     });
 </script>
 @endsection

@@ -172,11 +172,11 @@ analytics-service/
 
 ## ✅ Requirement & Status Implementasi
 
-> Bagian ini mencerminkan **kondisi terkini** proyek. Status: `✅ Selesai` / `🔄 Sedang dikerjakan` / `📋 Direncanakan, belum dikerjakan`.
+> Bagian ini mencerminkan **kondisi terkini** proyek (terakhir diperbarui setelah Audit v1). Status: `✅ Selesai` / `🔄 Sedang dikerjakan` / `📋 Direncanakan, belum dikerjakan` / `🐛 Ada bug, perlu fix`.
 
 ### Fondasi
 - ✅ Skema database (6 tabel: users extend, projects, devices, serial_numbers, bugs, bug_feedback)
-- ✅ Seeder import 24 baris data historis dari `mfg_record`
+- 🐛 Seeder import 24 baris data historis dari `mfg_record` — **BUG mass-assignment Project/SerialNumber, lihat "Bug Diketahui" #1**
 - ✅ Auth & 3 role (reporter, mekanik, admin) + RoleMiddleware
 - ✅ Python Analytics Service (FastAPI) — sentiment, spam detection, severity recommendation, damage categorization
 - ✅ Pemanggilan SINKRON ke Analytics Service (tanpa Queue/Job)
@@ -187,19 +187,38 @@ analytics-service/
 - ✅ Form tutup bug oleh Mekanik (`root_cause`, `repair_action`, `is_rework`) dengan analisis AI Tahap 2 sinkron (`damage_category`)
 - ✅ Fitur Feedback Mekanik → Reporter (`BugFeedbackController`, dengan status `is_read`)
 - ✅ Dashboard Analitik Admin dasar + Export CSV (`DashboardController::exportCsv`)
-- ✅ Kelola master data Project & Serial Number (admin)
+- 🔄 Kelola master data Project & Serial Number (admin) — **Device BELUM ada Controller/view, lihat "Bug Diketahui" #3**
 
 ### Dashboard Analitik (Mirroring SmartReport)
-- 🔄 Summary cards: Total Bug, Open, Closed, Critical (belum closed), Rework Rate (%)
-- 📋 Distribusi Sentimen (Positive/Neutral/Negative/Spam) — chart donut
-- 📋 Project Paling Banyak Bug (Top 5)
-- 📋 Tren Volume Laporan (harian/mingguan)
-- 🔄 Tabel Audit Bug dengan filter (status/severity/project/tanggal) + pagination
-- 📋 Analytics Penyebab Kerusakan (distribusi `damage_category`)
+- ✅ Analytics Penyebab Kerusakan (distribusi `damage_category`) — sudah ada query + horizontal bar chart di `index.blade.php`
+- 🔄 Summary cards: Total Bug, Open, Closed, Critical, Rework Rate (%) — UI saat ini menampilkan Total Bug, Rework Rate, Active Criticals, Spam Blocked; **kartu Open & Closed terpisah BELUM ada**
+- 🔄 Tabel Audit Bug dengan filter (status/severity/project/tanggal) + pagination — pagination & filter Project/Status/Severity sudah jalan; **input rentang tanggal (date_from/date_to) BELUM ada di UI**, lihat "Bug Diketahui" #2
+- 🔄 Distribusi Sentimen (Positive/Neutral/Negative/Spam) — chart donut — data sudah dihitung di Controller, **visualisasi donut BELUM dirender di view**
+- 📋 Project Paling Banyak Bug (Top 5) — query sudah ada di Controller, **belum dirender di view**
+- 📋 Tren Volume Laporan (harian/mingguan) — query sudah ada di Controller, **belum dirender di view**
 
 ### Belum Dikerjakan
 - 📋 UI/UX styling final (saat ini fungsional dasar, belum ada tema visual yang ditetapkan)
 - 📋 Notifikasi in-app untuk Reporter saat menerima feedback baru
+- 📋 Pengelolaan master data Device (Controller + view) — lihat "Bug Diketahui" #3
+
+---
+
+## 🐛 Bug Diketahui & Perlu Diperbaiki (dari Audit v1)
+
+### 1. [KRITIS] Mass-assignment Project/SerialNumber di Seeder
+**Lokasi:** `DatabaseSeeder.php` (L51, L76), `Project.php` (L12), `SerialNumber.php` (L12)
+**Masalah:** Seeder membuat Project/SerialNumber dengan `id` eksplisit (misal `id => 27`) via `create()`, tapi `$fillable` di kedua Model TIDAK menyertakan kolom `id`. Laravel mengabaikan `id` manual ini dan menggantinya dengan auto-increment sequential — akibatnya, saat seeder membuat data `Bug` yang merujuk `project_id`/`serial_number_id` sesuai ID ASLI dari data historis, relasinya SALAH atau gagal foreign key constraint.
+**Fix yang dipilih:** Tambahkan `id` ke `$fillable` pada `Project.php` dan `SerialNumber.php` (BUKAN pakai `unguard()` global, supaya proteksi mass-assignment tetap berlaku untuk kolom lain).
+
+### 2. Input rentang tanggal hilang di UI filter Dashboard
+**Lokasi:** `index.blade.php` (L131-160), `DashboardController.php` (L93-98)
+**Masalah:** Backend sudah mendukung filter `date_from`/`date_to`, tapi form filter di view hanya punya dropdown Project/Status/Severity — tidak ada `<input type="date">`.
+**Fix:** Tambahkan 2 input date ke panel filter, sejajar dengan dropdown yang sudah ada.
+
+### 3. Master data Device tidak ada Controller/view
+**Lokasi:** tidak ditemukan `DeviceController`, tidak ada view di `resources/views/master/`
+**Keputusan:** Device DIPERTAHANKAN sebagai requirement (bukan dihapus dari README) — buat `DeviceController` + view sederhana mengikuti pola PERSIS `ProjectController`/`SerialNumberController` yang sudah ada, untuk konsistensi meski saat ini tidak ada data Device terisi (semua `iddevice` NULL di data historis).
 
 ---
 
@@ -218,6 +237,13 @@ analytics-service/
 - `BugFeedbackController`: kirim & baca feedback mekanik → reporter.
 - `DashboardController`: dashboard analitik dasar + export CSV.
 - `ProjectController` & `SerialNumberController`: kelola master data (admin).
+
+### v0.3 — Audit v1 & Temuan Bug
+- Audit menyeluruh kesesuaian kode vs README.md dilakukan oleh Antigravity.
+- Ditemukan bug KRITIS: mass-assignment `id` pada Project/SerialNumber seeder (lihat "Bug Diketahui" #1).
+- Ditemukan gap UI: input filter tanggal hilang, distribusi sentimen/top produk/tren volume belum dirender di view meski query backend sudah ada.
+- Ditemukan gap fitur: master data Device belum punya Controller/view.
+- Status beberapa item dikoreksi: Analytics Penyebab Kerusakan ternyata SUDAH selesai (sebelumnya tercatat 📋).
 
 ---
 

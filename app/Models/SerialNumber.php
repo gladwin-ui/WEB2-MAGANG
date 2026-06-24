@@ -9,7 +9,7 @@ class SerialNumber extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['project_id', 'sn_code', 'type'];
+    protected $fillable = ['id', 'project_id', 'sn_code', 'type'];
 
     public function project()
     {

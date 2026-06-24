@@ -26,7 +26,7 @@ class BugController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Bug::with(['project', 'serialNumber', 'reporter', 'fixer']);
+        $query = Bug::with(['project', 'serialNumber', 'reporter', 'fixer', 'feedbacks']);
 
         if ($user->role === 'reporter') {
             // Reporter only sees their own reported bugs
