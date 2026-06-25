@@ -31,16 +31,6 @@ class User extends Authenticatable
         ];
     }
 
-    public function isReporter(): bool
-    {
-        return $this->role === 'reporter';
-    }
-
-    public function isMekanik(): bool
-    {
-        return $this->role === 'mekanik';
-    }
-
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
@@ -55,24 +45,4 @@ class User extends Authenticatable
         return route('users.profile-photo', $this);
     }
 
-    // Relationships
-    public function reportedBugs()
-    {
-        return $this->hasMany(Bug::class, 'reported_by');
-    }
-
-    public function fixedBugs()
-    {
-        return $this->hasMany(Bug::class, 'fixed_by');
-    }
-
-    public function sentFeedback()
-    {
-        return $this->hasMany(BugFeedback::class, 'from_user_id');
-    }
-
-    public function receivedFeedback()
-    {
-        return $this->hasMany(BugFeedback::class, 'to_user_id');
-    }
 }

@@ -166,12 +166,10 @@
                 <input type="email" id="email" name="email" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-slate-800 text-sm focus:outline-none focus:border-blue-600 transition-all placeholder-slate-400" placeholder="email@hariff.co.id" value="{{ old('email') }}" required>
             </div>
 
-            <div>
-                <label for="role" class="block text-xs font-mono tracking-wider text-slate-600 uppercase mb-1.5">Peran / Otoritas Staf</label>
-                <select id="role" name="role" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600 transition-all" required>
-                    <option value="reporter" {{ old('role') === 'reporter' ? 'selected' : '' }}>Reporter (Operator Produksi/QA)</option>
-                    <option value="mekanik" {{ old('role') === 'mekanik' ? 'selected' : '' }}>Mekanik (Teknisi Penanganan)</option>
-                </select>
+            <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                <div class="block text-xs font-mono tracking-wider text-slate-600 uppercase mb-1.5">Peran Akun</div>
+                <div class="text-sm font-semibold text-slate-800">Admin</div>
+                <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Registrasi ini hanya membuat akun admin untuk akses dashboard analitik dan master data.</p>
             </div>
 
             <div>

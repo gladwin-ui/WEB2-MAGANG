@@ -3,25 +3,42 @@
 @section('title', 'Dashboard Analitik QA')
 
 @section('content')
+@if(!$hasImportedData)
+{{-- ============================================================ --}}
+{{-- EMPTY STATE: No completed SQL import yet                      --}}
+{{-- ============================================================ --}}
+<div class="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
+    <div class="w-20 h-20 rounded-3xl bg-blue-50 flex items-center justify-center mb-6">
+        <i class="bi bi-database-slash text-4xl text-blue-400"></i>
+    </div>
+    <h2 class="text-xl font-extrabold text-slate-800 mb-2">Dashboard Belum Ada Data</h2>
+    <p class="text-sm text-slate-500 max-w-sm mb-2">
+        Belum ada file <code class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">.sql</code> yang berhasil diimport.
+        Dashboard analitik akan tampil setelah proses import pertama selesai.
+    </p>
+    <p class="text-xs text-slate-400 mb-8">
+        Pastikan <code class="font-mono bg-slate-100 px-1 rounded">php artisan queue:work</code> sudah berjalan
+        agar job import diproses.
+    </p>
+    <a href="{{ route('import.upload') }}"
+       class="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold text-white shadow-sm transition-colors"
+       style="background-color: #2563EB;">
+        <i class="bi bi-cloud-upload"></i>
+        Import Data .sql Sekarang
+    </a>
+</div>
+@else
 @php
     $criticalOpenBugs = $criticalBugs;
     $spamCount = $spamBlocked;
-    
-    // Calculate severity counts
-    $sevMap = \App\Models\Bug::groupBy('severity')->selectRaw('severity, count(*) as count')->pluck('count', 'severity')->toArray();
-    $severityCounts = [
-        'critical' => $sevMap['Critical'] ?? 0,
-        'major' => $sevMap['Major'] ?? 0,
-        'minor' => $sevMap['Minor'] ?? 0,
-    ];
 
     // Mapped sentiments
     $sentMap = $sentimentDistribution->pluck('total', 'sentiment_label')->toArray();
     $sentiments = [
-        'positive' => $sentMap['positive'] ?? $sentMap['Positive'] ?? 0,
-        'neutral' => $sentMap['neutral'] ?? $sentMap['Neutral'] ?? 0,
-        'negative' => $sentMap['negative'] ?? $sentMap['Negative'] ?? 0,
-        'spam' => $sentMap['spam'] ?? $sentMap['Spam'] ?? 0,
+        'positive'   => $sentMap['positive']   ?? $sentMap['Positive']   ?? 0,
+        'neutral'    => $sentMap['neutral']    ?? $sentMap['Neutral']    ?? 0,
+        'negative'   => $sentMap['negative']   ?? $sentMap['Negative']   ?? 0,
+        'spam'       => $sentMap['spam']       ?? $sentMap['Spam']       ?? 0,
         'unanalyzed' => $sentMap['Unanalyzed'] ?? $sentMap['unanalyzed'] ?? 0,
     ];
 
@@ -29,7 +46,7 @@
     $damageCategories = $damageDistribution->map(function($item) {
         return (object)[
             'damage_category' => $item->damage_category,
-            'count' => $item->total
+            'count'           => $item->total
         ];
     });
 
@@ -45,7 +62,7 @@
     $mappedTopProjects = $topProjects->map(function($tp) {
         return (object)[
             'project_name' => $tp->project?->name ?? 'Unknown Proyek',
-            'bug_count' => $tp->total
+            'bug_count'    => $tp->total
         ];
     });
 
@@ -63,6 +80,13 @@
             <p class="text-xs md:text-sm text-slate-500 font-mono tracking-widest uppercase mt-1">
                 PT HARIFF MANUFACTURING QUALITY CONTROL & AI ANALYTICS SYSTEM
             </p>
+            @php
+                $activeFile = $sqlFiles->firstWhere('id', $selectedJobId);
+                $activeFileName = $activeFile ? $activeFile->filename : ($selectedJobId === 'all' ? 'Semua File SQL (Gabungan)' : 'File #' . $selectedJobId);
+            @endphp
+            <div class="mt-2 text-xs font-semibold text-blue-650 bg-blue-50 border border-blue-100 rounded px-2.5 py-1 inline-flex items-center gap-1.5 font-mono uppercase">
+                <i class="bi bi-file-earmark-code"></i> Aktif: {{ $activeFileName }}
+            </div>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('dashboard.export', request()->query()) }}" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-blue-600 hover:text-blue-700 rounded-lg text-xs font-mono font-bold tracking-wider uppercase transition-all shadow-sm">
@@ -234,6 +258,15 @@
             <!-- Sleek Cyber Filter Panel -->
             <form action="{{ route('dashboard') }}" method="GET" class="w-full xl:w-auto">
                 <div class="flex flex-wrap gap-2 text-xs font-mono">
+                    <select name="import_job_id" class="bg-white border rounded px-3 py-1.5 text-slate-700 focus:outline-none focus:border-blue-600 font-bold" style="border-color: #2563EB;">
+                        <option value="all" {{ $selectedJobId === 'all' ? 'selected' : '' }}>[SEMUA FILE SQL]</option>
+                        @foreach($sqlFiles as $file)
+                            <option value="{{ $file->id }}" {{ $selectedJobId == $file->id ? 'selected' : '' }}>
+                                {{ strtoupper($file->filename) }}
+                            </option>
+                        @endforeach
+                    </select>
+
                     <select name="project_id" class="bg-white border border-slate-200 rounded px-3 py-1.5 text-slate-700 focus:outline-none focus:border-blue-600">
                         <option value="">[SEMUA PROYEK]</option>
                         @foreach($projects as $p)
@@ -412,7 +445,7 @@
 
                                         @if($b->status === 'CLOSED')
                                             <span class="inline-flex items-center gap-1.5 bg-green-100 text-green-700 border border-green-200 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono uppercase tracking-wider">
-                                                CLOSED // {{ strtoupper($b->fixer?->name ?? 'System') }}
+                                                CLOSED // {{ strtoupper($b->fixed_by ?? 'System') }}
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1.5 bg-yellow-100 text-yellow-700 border border-yellow-250 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono uppercase tracking-wider">
@@ -445,9 +478,11 @@
         </div>
     </div>
 </div>
+@endif
 @endsection
 
 @section('scripts')
+@if($hasImportedData)
 <script>
     function reprocessAI(bugId, btnElement) {
         // Toggle icon spin animation
@@ -901,4 +936,5 @@
         });
     });
 </script>
+@endif
 @endsection

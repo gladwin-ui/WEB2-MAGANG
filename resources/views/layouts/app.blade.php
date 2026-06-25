@@ -547,63 +547,28 @@
             <!-- Nav Links -->
             <nav class="space-y-1.5">
                 @auth
-                    @if(auth()->user()->role === 'admin')
-                        <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('dashboard') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                            <i class="bi bi-speedometer2 text-base"></i> Dashboard Analitik
-                        </a>
-                        <a href="{{ route('master.projects.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('master.projects.*') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                            <i class="bi bi-kanban text-base"></i> Kelola Proyek
-                        </a>
-                        <a href="{{ route('master.serial_numbers.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('master.serial_numbers.*') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                            <i class="bi bi-hash text-base"></i> Kelola Nomor Seri
-                        </a>
-                        <a href="{{ route('master.devices.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('master.devices.*') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                            <i class="bi bi-cpu text-base"></i> Kelola Perangkat
-                        </a>
-                    @endif
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('dashboard') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
+                        <i class="bi bi-speedometer2 text-base"></i> Dashboard Analitik
+                    </a>
+                    <a href="{{ route('master.projects.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('master.projects.*') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
+                        <i class="bi bi-kanban text-base"></i> Kelola Proyek
+                    </a>
+                    <a href="{{ route('master.serial_numbers.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('master.serial_numbers.*') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
+                        <i class="bi bi-hash text-base"></i> Kelola Nomor Seri
+                    </a>
+                    <a href="{{ route('master.devices.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('master.devices.*') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
+                        <i class="bi bi-cpu text-base"></i> Kelola Perangkat
+                    </a>
 
-                    @if(auth()->user()->role === 'reporter')
-                        <a href="{{ route('bugs.my') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.my') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                            <div class="flex items-center gap-3">
-                                <i class="bi bi-list-task text-base"></i> 
-                                <span>Riwayat Laporan</span>
-                            </div>
-                        </a>
-                        <a href="{{ route('bugs.chat.index') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.chat.index') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                            <div class="flex items-center gap-3">
-                                <i class="bi bi-chat-left-text text-base"></i> 
-                                <span>Riwayat Obrolan</span>
-                            </div>
-                        </a>
+                    {{-- Divider --}}
+                    <div class="my-2 border-t border-slate-100"></div>
 
-                    @elseif(auth()->user()->role === 'mekanik')
-                        <a href="{{ route('bugs.queue') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.queue') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                            <div class="flex items-center gap-3">
-                                <i class="bi bi-list-task text-base"></i> 
-                                <span>Antrean Kerja Bug</span>
-                            </div>
-                        </a>
-                        <a href="{{ route('bugs.chat.index') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.chat.index') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                            <div class="flex items-center gap-3">
-                                <i class="bi bi-chat-left-text text-base"></i> 
-                                <span>Riwayat Obrolan</span>
-                            </div>
-                        </a>
-                    @endif
-
-                    @if(auth()->user()->role === 'reporter' || auth()->user()->role === 'admin')
-                        <a href="{{ route('bugs.create') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.create') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                            <i class="bi bi-plus-circle text-base"></i> Laporkan Bug Baru
-                        </a>
-                        @if(auth()->user()->role === 'reporter')
-                            <a href="{{ route('users.settings.edit') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('users.settings.*') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                                <div class="flex items-center gap-3">
-                                    <i class="bi bi-gear text-base"></i>
-                                    <span>Pengaturan</span>
-                                </div>
-                            </a>
-                        @endif
-                    @endif
+                    <a href="{{ route('import.upload') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.upload') || request()->routeIs('import.history') || request()->routeIs('import.progress') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
+                        <i class="bi bi-cloud-upload text-base"></i> Import Data .sql
+                    </a>
+                    <a href="{{ route('import.trash') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.trash') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
+                        <i class="bi bi-trash text-base"></i> Keranjang Sampah
+                    </a>
                 @endauth
             </nav>
         </div>

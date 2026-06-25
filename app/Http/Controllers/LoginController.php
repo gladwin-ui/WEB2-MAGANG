@@ -45,14 +45,13 @@ class LoginController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|in:reporter,mekanik', // Admins must be seeded or created by DB
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'role' => 'admin',
         ]);
 
         Auth::login($user);
@@ -70,12 +69,6 @@ class LoginController extends Controller
 
     protected function redirectUser($user)
     {
-        if ($user->role === 'admin') {
-            return redirect()->route('dashboard');
-        } elseif ($user->role === 'mekanik') {
-            return redirect()->route('bugs.index'); // Queue list
-        } else {
-            return redirect()->route('bugs.index'); // Reporter index
-        }
+        return redirect()->route('dashboard');
     }
 }

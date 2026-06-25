@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bug;
+use App\Models\ImportJob;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -15,42 +16,146 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-        // Summary Cards
-        $totalBugs    = Bug::count();
-        $openBugs     = Bug::where('status', 'OPEN')->count();
-        $closedBugs   = Bug::where('status', 'CLOSED')->count();
-        $criticalBugs = Bug::where('severity', 'Critical')->count();
-        $reworkRate   = $closedBugs > 0
-                        ? round(Bug::where('is_rework', true)->count() / $closedBugs * 100, 1)
+        // Get all completed active import jobs
+        $sqlFiles = ImportJob::where('status', 'completed')
+            ->orderByDesc('created_at')
+            ->get();
+
+        $hasImportedData = $sqlFiles->isNotEmpty();
+
+        if (!$hasImportedData) {
+            return view('dashboard.index', [
+                'hasImportedData'      => false,
+                'totalBugs'            => 0,
+                'openBugs'             => 0,
+                'closedBugs'           => 0,
+                'criticalBugs'         => 0,
+                'reworkRate'           => 0,
+                'spamBlocked'          => 0,
+                'damageDistribution'   => collect(),
+                'sentimentDistribution'=> collect(),
+                'topProjects'          => collect(),
+                'volumeTrend'          => collect(),
+                'auditBugs'            => Bug::whereRaw('1=0')->paginate(20),
+                'projects'             => collect(),
+                'sqlFiles'             => collect(),
+                'selectedJobId'        => 'all',
+                'severityCounts'       => [
+                    'critical' => 0,
+                    'major'    => 0,
+                    'minor'    => 0,
+                ],
+            ]);
+        }
+
+        // Determine selected SQL file
+        $selectedJobId = $request->input('import_job_id');
+        if ($selectedJobId === null) {
+            $latestJob = $sqlFiles->first();
+            $selectedJobId = $latestJob ? (string)$latestJob->id : 'all';
+        }
+
+        // 1. totalBugs
+        $totalBugsQuery = Bug::query();
+        if ($selectedJobId !== 'all') {
+            $totalBugsQuery->where('import_job_id', $selectedJobId);
+        }
+        $totalBugs = $totalBugsQuery->count();
+
+        // 2. openBugs
+        $openBugsQuery = Bug::where('status', 'OPEN');
+        if ($selectedJobId !== 'all') {
+            $openBugsQuery->where('import_job_id', $selectedJobId);
+        }
+        $openBugs = $openBugsQuery->count();
+
+        // 3. closedBugs
+        $closedBugsQuery = Bug::where('status', 'CLOSED');
+        if ($selectedJobId !== 'all') {
+            $closedBugsQuery->where('import_job_id', $selectedJobId);
+        }
+        $closedBugs = $closedBugsQuery->count();
+
+        // 4. criticalBugs
+        $criticalBugsQuery = Bug::where('severity', 'Critical');
+        if ($selectedJobId !== 'all') {
+            $criticalBugsQuery->where('import_job_id', $selectedJobId);
+        }
+        $criticalBugs = $criticalBugsQuery->count();
+
+        // 5. reworkRate
+        $reworkQuery = Bug::where('is_rework', true);
+        if ($selectedJobId !== 'all') {
+            $reworkQuery->where('import_job_id', $selectedJobId);
+        }
+        $reworkCount = $reworkQuery->count();
+        $reworkRate = $closedBugs > 0
+                        ? round($reworkCount / $closedBugs * 100, 1)
                         : 0;
-        $spamBlocked  = Bug::where('is_spam', true)->count();
+
+        // 6. spamBlocked
+        $spamQuery = Bug::where('is_spam', true);
+        if ($selectedJobId !== 'all') {
+            $spamQuery->where('import_job_id', $selectedJobId);
+        }
+        $spamBlocked = $spamQuery->count();
 
         // Charts
-        $damageDistribution  = Bug::whereNotNull('damage_category')
-                                  ->groupBy('damage_category')
-                                  ->selectRaw('damage_category, count(*) as total')
-                                  ->get();
+        $damageQuery = Bug::whereNotNull('damage_category');
+        if ($selectedJobId !== 'all') {
+            $damageQuery->where('import_job_id', $selectedJobId);
+        }
+        $damageDistribution = $damageQuery->groupBy('damage_category')
+                                          ->selectRaw('damage_category, count(*) as total')
+                                          ->get();
 
-        $sentimentDistribution = Bug::whereNotNull('sentiment_label')
-                                    ->groupBy('sentiment_label')
-                                    ->selectRaw('sentiment_label, count(*) as total')
-                                    ->get();
+        $sentimentQuery = Bug::whereNotNull('sentiment_label');
+        if ($selectedJobId !== 'all') {
+            $sentimentQuery->where('import_job_id', $selectedJobId);
+        }
+        $sentimentDistribution = $sentimentQuery->groupBy('sentiment_label')
+                                                ->selectRaw('sentiment_label, count(*) as total')
+                                                ->get();
 
-        $topProjects = Bug::with('project')
-                          ->groupBy('project_id')
-                          ->selectRaw('project_id, count(*) as total')
-                          ->orderByDesc('total')
-                          ->limit(5)
-                          ->get();
+        $topProjectsQuery = Bug::with('project');
+        if ($selectedJobId !== 'all') {
+            $topProjectsQuery->where('import_job_id', $selectedJobId);
+        }
+        $topProjects = $topProjectsQuery->groupBy('project_id')
+                                        ->selectRaw('project_id, count(*) as total')
+                                        ->orderByDesc('total')
+                                        ->limit(5)
+                                        ->get();
 
-        $volumeTrend = Bug::selectRaw('DATE(created_at) as date, count(*) as total')
-                          ->where('created_at', '>=', now()->subDays(15))
-                          ->groupBy('date')
-                          ->orderBy('date')
-                          ->get();
+        $volumeQuery = Bug::selectRaw('DATE(created_at) as date, count(*) as total')
+                          ->where('created_at', '>=', now()->subDays(15));
+        if ($selectedJobId !== 'all') {
+            $volumeQuery->where('import_job_id', $selectedJobId);
+        }
+        $volumeTrend = $volumeQuery->groupBy('date')
+                                   ->orderBy('date')
+                                   ->get();
+
+        // Severity Map
+        $sevQuery = Bug::query();
+        if ($selectedJobId !== 'all') {
+            $sevQuery->where('import_job_id', $selectedJobId);
+        }
+        $sevMap = $sevQuery->groupBy('severity')
+                           ->selectRaw('severity, count(*) as count')
+                           ->pluck('count', 'severity')
+                           ->toArray();
+        $severityCounts = [
+            'critical' => $sevMap['Critical'] ?? 0,
+            'major'    => $sevMap['Major']    ?? 0,
+            'minor'    => $sevMap['Minor']    ?? 0,
+        ];
 
         // Tabel Audit dengan filter
-        $query = Bug::with(['reporter', 'project', 'device']);
+        $query = Bug::with(['project', 'device']);
+        if ($selectedJobId !== 'all') {
+            $query->where('import_job_id', $selectedJobId);
+        }
         if ($request->status)     $query->where('status', $request->status);
         if ($request->severity)   $query->where('severity', $request->severity);
         if ($request->project_id) $query->where('project_id', $request->project_id);
@@ -92,9 +197,10 @@ class DashboardController extends Controller
         $projects = Project::orderBy('name')->get();
 
         return view('dashboard.index', compact(
+            'hasImportedData',
             'totalBugs', 'openBugs', 'closedBugs', 'criticalBugs', 'reworkRate', 'spamBlocked',
             'damageDistribution', 'sentimentDistribution', 'topProjects', 'volumeTrend',
-            'auditBugs', 'projects'
+            'auditBugs', 'projects', 'sqlFiles', 'selectedJobId', 'severityCounts'
         ));
     }
 
@@ -103,7 +209,16 @@ class DashboardController extends Controller
      */
     public function exportCsv(Request $request)
     {
-        $auditQuery = Bug::with(['project', 'serialNumber', 'reporter', 'fixer']);
+        $selectedJobId = $request->input('import_job_id');
+        if ($selectedJobId === null) {
+            $latestJob = ImportJob::where('status', 'completed')->orderByDesc('created_at')->first();
+            $selectedJobId = $latestJob ? (string)$latestJob->id : 'all';
+        }
+
+        $auditQuery = Bug::with(['project', 'serialNumber']);
+        if ($selectedJobId !== 'all') {
+            $auditQuery->where('import_job_id', $selectedJobId);
+        }
 
         // Apply same filters as dashboard
         if ($request->filled('project_id')) {
@@ -163,8 +278,8 @@ class DashboardController extends Controller
                     $bug->repair_action,
                     $bug->is_rework ? 'Yes' : 'No',
                     $bug->status,
-                    $bug->reporter?->name ?? 'System',
-                    $bug->fixer?->name ?? '',
+                    $bug->reported_by ?? 'System',
+                    $bug->fixed_by ?? '',
                     $bug->closed_at ? $bug->closed_at->format('Y-m-d H:i:s') : '',
                     $bug->created_at->format('Y-m-d H:i:s'),
                     $bug->sentiment_label,

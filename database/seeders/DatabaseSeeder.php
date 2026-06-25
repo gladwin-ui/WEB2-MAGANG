@@ -17,32 +17,26 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Create Seeded Users from Production Names
-        $userNames = [
-            'Admin' => ['email' => 'admin@bugtrack.test', 'role' => 'admin'],
-            'Fioni Agriyani' => ['email' => 'fioni@bugtrack.test', 'role' => 'mekanik'],
-            'Maneng' => ['email' => 'maneng@bugtrack.test', 'role' => 'mekanik'],
-            'manufacture' => ['email' => 'manufacture@bugtrack.test', 'role' => 'mekanik'],
-            'program' => ['email' => 'program@bugtrack.test', 'role' => 'mekanik'],
-            '1' => ['email' => 'user1@bugtrack.test', 'role' => 'mekanik'],
-        ];
-
-        $users = [];
-        foreach ($userNames as $name => $data) {
-            $users[strtolower($name)] = User::create([
-                'name' => $name,
-                'email' => $data['email'],
-                'password' => Hash::make('password123'),
-                'role' => $data['role'],
-            ]);
-        }
-
-        // Add a testing reporter account
-        $users['reporter'] = User::create([
-            'name' => 'Reporter Testing',
-            'email' => 'reporter@bugtrack.test',
+        // 1. Create one seeded admin account for the read-only analytics app.
+        User::create([
+            'name' => 'Admin',
+            'email' => 'admin@bugtrack.test',
             'password' => Hash::make('password123'),
-            'role' => 'reporter',
+            'role' => 'admin',
+        ]);
+
+        $importJob = \App\Models\ImportJob::create([
+            'filename'       => 'mfg_record_historical.sql',
+            'total_rows'     => 24,
+            'processed_rows' => 24,
+            'inserted_count' => 24,
+            'updated_count'  => 0,
+            'skipped_count'  => 0,
+            'deleted_count'  => 0,
+            'failed_count'   => 0,
+            'status'         => 'completed',
+            'started_at'     => now(),
+            'finished_at'    => now(),
         ]);
 
         // 2. Create Master Projects (1, 3, 27, 31, 176, 177, 189, 192)
@@ -394,17 +388,6 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($bugsData as $bug) {
-            // Find reporter user ID
-            $reporterName = strtolower($bug['reported_by'] ?? 'admin');
-            $reporterId = isset($users[$reporterName]) ? $users[$reporterName]->id : $users['admin']->id;
-
-            // Find fixer user ID
-            $fixerId = null;
-            if ($bug['fixed_by']) {
-                $fixerName = strtolower($bug['fixed_by']);
-                $fixerId = isset($users[$fixerName]) ? $users[$fixerName]->id : $users['admin']->id;
-            }
-
             Bug::create([
                 'id' => $bug['id'],
                 'project_id' => $bug['project_id'],
@@ -423,12 +406,13 @@ class DatabaseSeeder extends Seeder
                 'is_rework' => $bug['is_rework'],
                 'attachment_path' => $bug['attachment_path'],
                 'expected_result' => $bug['expected_result'],
-                'reported_by' => $reporterId,
+                'reported_by' => $bug['reported_by'],
                 'status' => $bug['status'],
-                'fixed_by' => $fixerId,
+                'fixed_by' => $bug['fixed_by'],
                 'closed_at' => $bug['closed_at'] ? Carbon::parse($bug['closed_at']) : null,
                 'created_at' => Carbon::parse($bug['created_at']),
                 'updated_at' => Carbon::parse($bug['updated_at']),
+                'import_job_id' => $importJob->id,
                 
                 // Historical rows: set AI attributes to null/false
                 'sentiment_label' => null,

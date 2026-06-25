@@ -4,17 +4,16 @@
 
 @section('content')
 <div class="space-y-6">
-    <!-- Back arrow and Action header -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4">
         <div>
-            <a href="{{ route('bugs.index') }}" class="text-xs text-slate-500 hover:text-blue-600 font-mono tracking-wider uppercase inline-flex items-center gap-1 mb-2">
-                <i class="bi bi-arrow-left"></i> KEMBALI KE QUEUE
+            <a href="{{ route('dashboard') }}" class="text-xs text-slate-500 hover:text-blue-600 font-mono tracking-wider uppercase inline-flex items-center gap-1 mb-2">
+                <i class="bi bi-arrow-left"></i> KEMBALI KE DASHBOARD
             </a>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 flex-wrap">
                 <h1 class="text-2xl font-black text-slate-800 tracking-tight">TIKET DEFECT #{{ $bug->id }}</h1>
                 @if($bug->status === 'OPEN')
                     <span class="inline-flex text-[9px] font-bold font-mono bg-red-50 text-red-700 border border-red-200 px-2.5 py-0.5 rounded uppercase">
-                        <span class="h-1.5 w-1.5 rounded-full bg-red-500 mr-1.5"></span> OPEN QUEUE
+                        <span class="h-1.5 w-1.5 rounded-full bg-red-500 mr-1.5"></span> OPEN
                     </span>
                 @else
                     <span class="inline-flex text-[9px] font-bold font-mono bg-green-50 text-green-700 border border-green-200 px-2.5 py-0.5 rounded uppercase">
@@ -26,28 +25,19 @@
                     <span class="inline-flex text-[9px] font-bold font-mono bg-purple-100 text-purple-700 border border-purple-200 px-2.5 py-0.5 rounded uppercase">REWORK</span>
                 @endif
             </div>
-            <p class="text-xs text-slate-500 font-mono mt-1">DILAPORKAN OLEH: {{ strtoupper($bug->reporter?->name ?? 'System') }} // TANGGAL: {{ $bug->created_at->format('d M Y, H:i') }}</p>
+            <p class="text-xs text-slate-500 font-mono mt-1">
+                DILAPORKAN OLEH: {{ strtoupper($bug->reported_by ?? 'SYSTEM') }} // TANGGAL: {{ $bug->created_at->format('d M Y, H:i') }}
+            </p>
         </div>
-
-        @if($bug->status === 'OPEN' && (auth()->user()->role === 'mekanik' || auth()->user()->role === 'admin'))
-            <a href="{{ route('bugs.close.form', $bug) }}" class="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm active:scale-[0.98]">
-                <i class="bi bi-hammer"></i> SELESAIKAN & TUTUP BUG
-            </a>
-        @endif
     </div>
 
-    <!-- Grid Columns -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        <!-- Left Side: Basic Info & Repair Log (2 Cols wide on desktop) -->
         <div class="lg:col-span-2 space-y-6">
-            
-            <!-- Technical details card -->
             <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
                 <h2 class="text-md font-bold text-slate-800 mb-6 border-b border-slate-200 pb-3 uppercase tracking-wide">
                     INFORMASI FISIK & KELENGKAPAN MODUL
                 </h2>
-                
+
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-xs">
                     <div>
                         <span class="text-slate-500 block font-mono uppercase mb-0.5">Project</span>
@@ -70,20 +60,20 @@
                 <div class="space-y-4 text-sm">
                     <div>
                         <h3 class="text-xs text-slate-600 font-mono uppercase mb-1">Deskripsi Masalah / Deskripsi Cacat:</h3>
-                        <div class="bg-slate-50 border border-slate-200 p-4 rounded-lg text-slate-700 leading-relaxed white-space-pre-line">{{ $bug->description ?? 'Tidak ada deskripsi.' }}</div>
+                        <div class="bg-slate-50 border border-slate-200 p-4 rounded-lg text-slate-700 leading-relaxed whitespace-pre-line">{{ $bug->description ?? 'Tidak ada deskripsi.' }}</div>
                     </div>
 
                     @if($bug->reproduce_steps)
                         <div>
                             <h3 class="text-xs text-slate-600 font-mono uppercase mb-1">Langkah Reproduksi:</h3>
-                            <div class="bg-slate-50 border border-slate-200 p-4 rounded-lg text-slate-700 leading-relaxed font-mono text-xs white-space-pre-line">{{ $bug->reproduce_steps }}</div>
+                            <div class="bg-slate-50 border border-slate-200 p-4 rounded-lg text-slate-700 leading-relaxed font-mono text-xs whitespace-pre-line">{{ $bug->reproduce_steps }}</div>
                         </div>
                     @endif
 
                     @if($bug->expected_result)
                         <div>
                             <h3 class="text-xs text-slate-600 font-mono uppercase mb-1">Ekspektasi Hasil:</h3>
-                            <div class="bg-slate-50 border border-slate-200 p-4 rounded-lg text-slate-700 leading-relaxed white-space-pre-line">{{ $bug->expected_result }}</div>
+                            <div class="bg-slate-50 border border-slate-200 p-4 rounded-lg text-slate-700 leading-relaxed whitespace-pre-line">{{ $bug->expected_result }}</div>
                         </div>
                     @endif
 
@@ -120,17 +110,16 @@
                 </div>
             </div>
 
-            <!-- Mechanic Resolution Log -->
             @if($bug->status === 'CLOSED')
                 <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm border-l-4 border-l-green-600">
                     <h2 class="text-md font-bold text-green-700 mb-6 flex items-center gap-2 uppercase tracking-wide">
-                        <i class="bi bi-check-circle-fill text-green-600"></i> LOG TINDAKAN PERBAIKAN MEKANIK
+                        <i class="bi bi-check-circle-fill text-green-600"></i> LOG PENYELESAIAN
                     </h2>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-xs">
                         <div>
                             <span class="text-slate-500 block font-mono uppercase mb-0.5">DITANGANI OLEH</span>
-                            <strong class="text-slate-800 font-bold text-sm">{{ $bug->fixer?->name ?? 'System' }}</strong>
+                            <strong class="text-slate-800 font-bold text-sm">{{ $bug->fixed_by ?? 'SYSTEM' }}</strong>
                         </div>
                         <div>
                             <span class="text-slate-500 block font-mono uppercase mb-0.5">TANGGAL SELESAI</span>
@@ -138,7 +127,7 @@
                         </div>
                         <div>
                             <span class="text-slate-500 block font-mono uppercase mb-0.5">AI DAMAGE CATEGORY</span>
-                            <strong class="inline-flex mt-0.5 text-[10px] font-bold font-mono bg-blue-55 text-blue-700 border border-blue-200 px-2 py-0.5 rounded uppercase">
+                            <strong class="inline-flex mt-0.5 text-[10px] font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded uppercase">
                                 {{ $bug->damage_category ?? 'Lain-lain' }}
                             </strong>
                         </div>
@@ -147,33 +136,27 @@
                     <div class="space-y-4 text-sm">
                         <div>
                             <h3 class="text-xs text-slate-650 font-mono uppercase mb-1">Temuan Penyebab Utama (Root Cause):</h3>
-                            <div class="bg-green-50/50 border border-green-200 p-4 rounded-lg text-green-800 leading-relaxed white-space-pre-line">{{ $bug->root_cause }}</div>
+                            <div class="bg-green-50/50 border border-green-200 p-4 rounded-lg text-green-800 leading-relaxed whitespace-pre-line">{{ $bug->root_cause ?? '-' }}</div>
                         </div>
                         <div>
                             <h3 class="text-xs text-slate-650 font-mono uppercase mb-1">Tindakan Perbaikan yang Diambil (Repair Action):</h3>
-                            <div class="bg-green-50/50 border border-green-200 p-4 rounded-lg text-green-800 leading-relaxed white-space-pre-line">{{ $bug->repair_action }}</div>
+                            <div class="bg-green-50/50 border border-green-200 p-4 rounded-lg text-green-800 leading-relaxed whitespace-pre-line">{{ $bug->repair_action ?? '-' }}</div>
                         </div>
                     </div>
                 </div>
             @endif
-
         </div>
 
-        <!-- Right Side: AI Analytics Box & Communication inbox -->
         <div class="space-y-6">
-            
-            <!-- AI Stage 1 box -->
-            @if(Auth::user()->role !== 'reporter')
             <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm border-t-4 border-t-blue-600">
                 <h2 class="text-md font-bold text-blue-600 mb-6 flex items-center gap-2 uppercase tracking-wide">
-                    <i class="bi bi-robot"></i> DIAGNOSIS AI ENGINE (STAGE 1)
+                    <i class="bi bi-robot"></i> DIAGNOSIS AI ENGINE
                 </h2>
 
                 <div class="space-y-5">
-                    <!-- Severity Audit -->
                     <div class="border-b border-slate-200 pb-4">
                         <span class="block text-xs font-mono text-slate-600 uppercase mb-2.5">Audit Derajat Keparahan:</span>
-                        <div class="flex items-center justify-between">
+                        <div class="flex items-center justify-between gap-3">
                             <div>
                                 <span class="block text-[10px] font-mono text-slate-500 uppercase mb-1">Reporter:</span>
                                 @if($bug->severity === 'Critical')
@@ -207,7 +190,6 @@
                         @endif
                     </div>
 
-                    <!-- Sentiment details -->
                     <div class="border-b border-slate-200 pb-4">
                         <span class="block text-xs font-mono text-slate-650 uppercase mb-2">Sentimen Teks Deskripsi:</span>
                         @if($bug->sentiment_label)
@@ -228,17 +210,16 @@
                         @endif
                     </div>
 
-                    <!-- Spam filter yield -->
                     <div>
                         <span class="block text-xs font-mono text-slate-650 uppercase mb-2">Spam / Keabsahan Laporan:</span>
                         @if($bug->sentiment_label)
                             @if($bug->is_spam)
-                                <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-755 text-xs space-y-1">
-                                    <div class="font-bold flex items-center gap-1.5 text-red-700"><i class="bi bi-shield-slash"></i> CRITICAL SPAM ALARM!</div>
+                                <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs space-y-1">
+                                    <div class="font-bold flex items-center gap-1.5"><i class="bi bi-shield-slash"></i> CRITICAL SPAM ALARM!</div>
                                     <p class="text-slate-600 font-mono text-[11px] leading-relaxed">{{ $bug->spam_reason }}</p>
                                 </div>
                             @else
-                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-green-750 text-xs font-mono font-bold">
+                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-green-700 text-xs font-mono font-bold">
                                     <i class="bi bi-shield-fill-check"></i> VALID (LAPORAN SERIUS)
                                 </div>
                             @endif
@@ -248,39 +229,7 @@
                     </div>
                 </div>
             </div>
-            @endif
-
-            @if(auth()->user()->role === 'admin')
-            <!-- Chat / Assignment Info Box -->
-            <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-                <h2 class="text-md font-bold text-slate-800 mb-4 flex items-center gap-2 uppercase tracking-wide">
-                    <i class="bi bi-chat-left-text-fill text-blue-600"></i> KOMUNIKASI & PENUGASAN
-                </h2>
-
-                @if(!is_null($bug->assigned_to))
-                    <div class="space-y-3 mb-4">
-                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs">
-                            <span class="block font-mono text-[10px] text-slate-500 uppercase mb-1">DITUGASKAN KE MEKANIK</span>
-                            <span class="font-bold text-slate-800">{{ $bug->assignee?->name ?? '-' }}</span>
-                            @if($bug->assigned_at)
-                                <span class="text-slate-500 font-mono ml-2">{{ $bug->assigned_at->format('d M Y, H:i') }}</span>
-                            @endif
-                        </div>
-                    </div>
-                    <a href="{{ route('bugs.chat.show', $bug) }}" class="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm">
-                        <i class="bi bi-chat-dots-fill"></i> BUKA RUANG CHAT
-                    </a>
-                @else
-                    <div class="text-center text-xs font-mono text-slate-400 py-12 uppercase tracking-wider">
-                        BELUM ADA MEKANIK YANG MENGAMBIL LAPORAN INI
-                    </div>
-                @endif
-            </div>
-            @endif
-
         </div>
-
     </div>
 </div>
 @endsection
-

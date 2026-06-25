@@ -16,8 +16,8 @@ Proyek ini terinspirasi dari arsitektur proyek sebelumnya (**SmartReport** — s
 
 - **Web Framework:** Laravel (Ingestion Gateway, Dashboard Presenter, & Role-based Access).
 - **Database:** MySQL/MariaDB (kompatibel dengan sumber data asli `mfg_record`).
-- **Analytics Engine:** Mikroservis Python (FastAPI) dengan pendekatan rule-based/keyword (sentiment, spam, severity recommendation, damage categorization) — dipanggil **SECARA SINKRON** dari Laravel, **BUKAN** via Queue/Job asinkron.
-- **TIDAK ADA Redis/Queue Worker.** Ini perbedaan arsitektur paling mendasar dari SmartReport. Semua pemanggilan ke Analytics Engine terjadi dalam siklus request-response yang sama, karena mekanik membutuhkan visibilitas bug secara langsung/real-time.
+- **Analytics Engine:** Mikroservis Python (FastAPI) dengan pendekatan rule-based/keyword (sentiment, spam, severity recommendation, damage categorization) — dipanggil dari Laravel saat import berjalan.
+- **Queue:** Laravel Queue driver `database` dipakai untuk import `.sql` volume besar. Tidak perlu Redis, tetapi developer wajib menjalankan `php artisan queue:work`.
 
 ---
 
@@ -74,21 +74,24 @@ bugs               : id, project_id (FK), title, severity (Critical|Major|Minor)
                       device_id (FK), description, product_version, environment,
                       reproduce_steps, root_cause, repair_action, is_rework,
                       attachment_path, expected_result,
-                      reported_by (FK users), status (OPEN|CLOSED),
+                      reported_by (string bebas), status (OPEN|CLOSED),
                       assigned_to (FK users, nullable), assigned_at (nullable),
-                      fixed_by (FK users, nullable), closed_at,
+                      fixed_by (string bebas, nullable), closed_at,
                       -- Hasil AI Tahap 1 (saat submit):
                       sentiment_label, sentiment_score, is_spam, spam_reason,
                       severity_recommended (varchar -- lihat Catatan Teknis),
                       severity_recommendation_reason,
                       -- Hasil AI Tahap 2 (saat ditutup):
                       damage_category
-bug_chats          : id, bug_id (FK), sender_id (FK users), message
+import_jobs        : id, filename, total_rows, processed_rows,
+                      inserted_count, updated_count, skipped_count, failed_count,
+                      status (pending|processing|completed|failed), error_message,
+                      started_at, finished_at, timestamps
 ```
 
 **Catatan:** `projects`, `devices`, dan `serial_numbers` adalah tabel master **MINIMAL/placeholder** — struktur tabel asli di database `mfg_record` tidak diketahui sepenuhnya. Data lama diimpor dengan nama generik ("Project #27", dst) dan **PERLU diedit manual** setelah data master asli didapat dari tempat magang.
 
-`reported_by`, `fixed_by`, dan `assigned_to` adalah **foreign key relasional** ke tabel `users` (BUKAN string bebas seperti pada data asli `bugcreatedby`/`bugfixby`).
+`reported_by` dan `fixed_by` adalah **string bebas** dari sumber `mfg_record.bug`, bukan FK ke `users`. Field ini hanya informasional dan tidak dipakai untuk permission.
 
 ---
 
@@ -175,12 +178,12 @@ analytics-service/
 
 ## ⚠️ Keputusan Desain Penting (Jangan Diubah Tanpa Diskusi Ulang)
 
-1. **TIDAK ADA Queue/Job/Redis.** Semua pemanggilan ke Python Analytics Service bersifat SINKRON dalam siklus request yang sama. Keputusan SENGAJA karena mekanik membutuhkan visibilitas bug secara real-time.
+1. **Import `.sql` memakai Queue driver `database`.** Pemrosesan ribuan baris dan pemanggilan Analytics Service dilakukan oleh worker queue agar request upload tidak timeout.
 2. **Severity manual TIDAK PERNAH di-override AI.** `severity` (reporter) dan `severity_recommended` (AI) adalah DUA KOLOM TERPISAH, keduanya disimpan dan ditampilkan berdampingan. Keputusan akhir tetap di tangan manusia.
 3. **Konsep "Spam" dipertahankan** meski pelapor staf internal — staf internal juga bisa membuat laporan tidak substantif/asal-asalan.
 4. **Assignment bersifat eksklusif (first-come-first-served).** Begitu satu mekanik mengklaim bug OPEN, mekanik lain tidak bisa mengklaimnya lagi. Chat per-bug hanya terbuka setelah assignment ada — reporter tidak bisa memulai percakapan sebelum ada mekanik yang menangani bug-nya.
 5. **Tabel master (`projects`, `devices`, `serial_numbers`) bersifat sementara/placeholder** sampai struktur asli dari `mfg_record` didapatkan.
-6. **`reported_by`/`fixed_by` adalah foreign key relasional**, bukan string bebas — akun dibuat untuk setiap nama unik yang ditemukan di data historis (Admin, Fioni Agriyani, Maneng, manufacture, program, dan nilai anomali "1").
+6. **`reported_by`/`fixed_by` adalah string bebas**, bukan relasi user. Jangan membuat akun `users` otomatis untuk nama dari dump SQL.
 
 ---
 
@@ -191,17 +194,20 @@ analytics-service/
 ### Fondasi
 - ✅ Skema database (users extend, projects, devices, serial_numbers, bugs, bug_chats)
 - ✅ Seeder import 24 baris data historis dari `mfg_record`
-- ✅ Auth & 3 role (reporter, mekanik, admin) + RoleMiddleware
+- ✅ Auth & runtime admin-only untuk aplikasi web; flow reporter/mekanik, chat, assignment, dan RoleMiddleware sudah dihapus
+- ✅ Register tetap dipertahankan, tetapi hanya membuat akun admin
 - ✅ Python Analytics Service (FastAPI) — sentiment, spam detection, severity recommendation, damage categorization
-- ✅ Pemanggilan SINKRON ke Analytics Service (tanpa Queue/Job)
+- ✅ Queue database siap dipakai untuk import `.sql`; `QUEUE_CONNECTION=database`
+- ✅ Skema `reported_by` dan `fixed_by` sudah menjadi string bebas, bukan FK `users`
 
-### Fitur Inti per Role
-- ✅ Submit bug oleh Reporter (`BugController::store`) dengan analisis AI Tahap 1 sinkron
-- ✅ Queue bug OPEN untuk Mekanik (`BugController::queue`)
-- ✅ Assignment/klaim bug eksklusif oleh Mekanik (`BugController::assign`) — *catatan: belum ada mekanisme "lepas klaim", lihat Catatan Teknis #2 di bawah*
-- ✅ Form tutup bug oleh Mekanik (`root_cause`, `repair_action`, `is_rework`) dengan analisis AI Tahap 2 sinkron (`damage_category`)
-- ✅ Chat dua arah Reporter ↔ Mekanik per-bug, polling AJAX (`BugChatController`) — menggantikan konsep "Feedback satu-arah" yang sudah ditinggalkan (tabel `bug_feedback` di-drop, diganti `bug_chats`)
-- ✅ Kelola master data Project, Serial Number, & Device (admin)
+### Fitur Inti Admin
+- ✅ Dashboard analitik admin tetap dipertahankan
+- ✅ Kelola master data Project, Serial Number, & Device
+- ✅ Detail bug historis tetap bisa dibaca dari dashboard/halaman detail
+- ✅ Fondasi tracking import: tabel `import_jobs` + model `ImportJob`
+- 📋 Parser `.sql` untuk dump `mfg_record.bug`
+- 📋 Job chunk untuk upsert + trigger AI kondisional
+- 📋 Controller upload + halaman progress polling `import_jobs/{id}`
 
 ### Dashboard Analitik Admin
 > ⚠️ **PERLU VERIFIKASI ULANG** — fitur di bawah sebelumnya tercatat ✅ berdasarkan laporan Antigravity, namun karena `dashboard/index.blade.php` kemungkinan ditulis ulang sebagai bagian dari perubahan arsitektur Assignment+Chat (lihat Changelog v0.6), status berikut **TIDAK BOLEH diasumsikan otomatis masih utuh** — agent yang mengerjakan task berikutnya WAJIB mengecek ulang isi kode, bukan hanya membaca status di sini.
@@ -285,6 +291,18 @@ analytics-service/
 
 ## 📝 Changelog
 
+### v0.8 — Fondasi Import Queue & Actor String
+- **[PERUBAHAN SKEMA]** `bugs.reported_by` dan `bugs.fixed_by` diubah menjadi string bebas nullable melalui migration forward-only; relasi `reporter()`/`fixer()` di `Bug.php` dihapus.
+- **[FITUR BARU]** Tabel `import_jobs` dan model `ImportJob` dibuat sebagai fondasi progress tracking import `.sql`.
+- **[QUEUE]** Import `.sql` akan memakai Laravel Queue driver `database`; `.env` sudah memakai `QUEUE_CONNECTION=database`, dan developer wajib menjalankan `php artisan queue:work`.
+- **[PENYESUAIAN DATA]** Seeder menyimpan nama pelapor/perbaikan historis langsung sebagai string dan tidak lagi membuat akun user untuk nama bebas dari sumber.
+
+### v0.7 — Peralihan ke Admin-Only Runtime
+- **[PERUBAHAN ARSITEKTUR]** Flow `reporter` dan `mekanik` dihapus dari runtime web. Route, controller, view, middleware, dan chat/assignment terkait sudah dibersihkan.
+- **[PENYESUAIAN AUTH]** Registrasi tetap dipertahankan, tetapi sekarang hanya membuat akun admin.
+- **[PEMELIHARAAN]** `bug_chats` dijadwalkan di-drop lewat migration forward-only, dan `DatabaseSeeder.php` diselaraskan ke akun admin-only.
+- **[STATUS]** Dashboard analitik dan service AI sengaja dipertahankan tanpa perubahan fungsional pada fase ini.
+
 ### v0.1 — Scaffold Awal
 - Setup skema database 6 tabel, migration forward-only.
 - Seeder import 24 baris data historis dari tabel `bug` milik database `mfg_record` (tempat magang).
@@ -339,10 +357,14 @@ php artisan migrate
 php artisan db:seed
 php artisan serve
 
+# Queue worker import SQL (terminal terpisah)
+php artisan queue:work
+
 # Python Analytics Service (terminal terpisah)
+# PENTING: Jalankan di port 8001 agar tidak konflik dengan Laravel (port 8000)
 cd analytics-service
 pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8001
 ```
 
-Akses aplikasi di `http://127.0.0.1:8000` (Laravel), Analytics Service berjalan di port yang dikonfigurasi terpisah (cek `analytics-service/README.md` untuk detail port).
+Akses aplikasi di `http://127.0.0.1:8000` (Laravel). Analytics Service berjalan di port `http://127.0.0.1:8001`.
