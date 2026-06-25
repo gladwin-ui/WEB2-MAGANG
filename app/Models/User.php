@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable(['name', 'email', 'phone', 'profile_photo_path', 'password', 'role'])]
 #[Hidden(['password', 'remember_token'])]
@@ -43,6 +44,15 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if (!$this->profile_photo_path || !Storage::disk('public')->exists($this->profile_photo_path)) {
+            return null;
+        }
+
+        return route('users.profile-photo', $this);
     }
 
     // Relationships

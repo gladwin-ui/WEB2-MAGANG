@@ -37,8 +37,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/bugs/my', [BugController::class, 'myBugs'])->name('bugs.my');
         Route::get('/pengaturan', [UserSettingsController::class, 'edit'])->name('users.settings.edit');
         Route::post('/pengaturan', [UserSettingsController::class, 'update'])->name('users.settings.update');
-
     });
+
+    Route::get('/users/{user}/profile-photo', [UserSettingsController::class, 'photo'])->name('users.profile-photo');
 
     // Hanya Mekanik
     Route::middleware(['role:mekanik'])->group(function () {

@@ -8,7 +8,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <!-- Tailwind CSS & ApexCharts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -65,7 +65,7 @@
                     fontFamily: {
                         mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
                         sans: ['Inter', 'sans-serif'],
-                        serif: ['Inter', 'sans-serif']
+                        serif: ['Montserrat', 'sans-serif']
                     }
                 }
             }
@@ -142,7 +142,7 @@
             color: var(--text-primary) !important;
         }
         h1, h2, h3, h4, h5, h6, .brand, .font-heading {
-            font-family: 'Inter', sans-serif !important;
+            font-family: 'Montserrat', sans-serif !important;
             font-weight: 800 !important;
             letter-spacing: 0.01em;
             color: var(--text-primary) !important;
@@ -575,12 +575,6 @@
                                 <span>Riwayat Obrolan</span>
                             </div>
                         </a>
-                        <a href="{{ route('users.settings.edit') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('users.settings.*') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                            <div class="flex items-center gap-3">
-                                <i class="bi bi-gear text-base"></i>
-                                <span>Pengaturan</span>
-                            </div>
-                        </a>
 
                     @elseif(auth()->user()->role === 'mekanik')
                         <a href="{{ route('bugs.queue') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.queue') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
@@ -601,6 +595,14 @@
                         <a href="{{ route('bugs.create') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('bugs.create') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
                             <i class="bi bi-plus-circle text-base"></i> Laporkan Bug Baru
                         </a>
+                        @if(auth()->user()->role === 'reporter')
+                            <a href="{{ route('users.settings.edit') }}" class="flex items-center justify-between w-full px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('users.settings.*') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
+                                <div class="flex items-center gap-3">
+                                    <i class="bi bi-gear text-base"></i>
+                                    <span>Pengaturan</span>
+                                </div>
+                            </a>
+                        @endif
                     @endif
                 @endauth
             </nav>
@@ -608,18 +610,23 @@
 
         <!-- User profile footer -->
         @auth
+            @php
+                $authUser = auth()->user();
+                $profilePhotoUrl = $authUser->profile_photo_url;
+                $profileInitials = strtoupper(substr($authUser->name ?? '', 0, 2));
+            @endphp
             <div class="border-t border-slate-200 pt-4 mt-8">
                 <div class="flex items-center gap-3">
-                    @if(auth()->user()->profile_photo_path)
-                        <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}" alt="Foto profil" class="h-9 w-9 rounded-full object-cover border border-slate-200">
+                    @if($profilePhotoUrl)
+                        <img src="{{ $profilePhotoUrl }}" alt="Foto profil" class="h-9 w-9 rounded-full object-cover border border-slate-200">
                     @else
                         <div class="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center font-bold text-sm text-slate-700">
-                            {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                            {{ $profileInitials }}
                         </div>
                     @endif
                     <div class="overflow-hidden">
-                        <div class="text-sm font-semibold text-slate-700 truncate">{{ auth()->user()->name }}</div>
-                        <div class="text-xs text-slate-400 font-mono tracking-wider uppercase">{{ auth()->user()->role }}</div>
+                        <div class="text-sm font-semibold text-slate-700 truncate">{{ $authUser->name }}</div>
+                        <div class="text-xs text-slate-400 font-mono tracking-wider uppercase">{{ $authUser->role }}</div>
                     </div>
                 </div>
                 <div class="flex gap-2 mt-3">

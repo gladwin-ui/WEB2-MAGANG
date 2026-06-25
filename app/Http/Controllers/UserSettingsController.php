@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -13,9 +14,20 @@ class UserSettingsController extends Controller
         return view('users.settings');
     }
 
+    public function photo(User $user)
+    {
+        abort_unless(
+            $user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path),
+            404
+        );
+
+        return Storage::disk('public')->response($user->profile_photo_path);
+    }
+
     public function update(Request $request)
     {
         $user = Auth::user();
+        $removePhoto = $request->boolean('remove_photo');
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -31,7 +43,13 @@ class UserSettingsController extends Controller
         $user->name = $validated['name'];
         $user->phone = $validated['phone'];
 
-        if ($request->hasFile('profile_photo')) {
+        if ($removePhoto) {
+            if (!empty($user->profile_photo_path)) {
+                Storage::disk('public')->delete($user->profile_photo_path);
+            }
+
+            $user->profile_photo_path = null;
+        } elseif ($request->hasFile('profile_photo')) {
             if (!empty($user->profile_photo_path)) {
                 Storage::disk('public')->delete($user->profile_photo_path);
             }

@@ -7,7 +7,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -23,7 +23,7 @@
                     fontFamily: {
                         mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
                         sans: ['Inter', 'sans-serif'],
-                        serif: ['Merriweather', 'Georgia', 'serif']
+                        serif: ['Montserrat', 'sans-serif']
                     }
                 }
             }
@@ -37,7 +37,8 @@
             transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
         h1, h2, h3, h4, h5, h6, .font-heading {
-            font-family: 'Merriweather', 'Georgia', serif !important;
+            font-family: 'Montserrat', sans-serif !important;
+            font-weight: 800 !important;
         }
         .font-mono, code {
             font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace !important;
@@ -138,7 +139,7 @@
         <div class="text-center mb-8">
             <img src="{{ asset('Logo.png') }}" alt="Logo PT Hariff" class="h-12 w-auto mx-auto mb-4 rounded-xl brand-logo-light">
             <img src="{{ asset('logo-darkmode.jpg') }}" alt="Logo PT Hariff" class="h-12 w-auto mx-auto mb-4 rounded-xl brand-logo-dark hidden">
-            <h1 class="text-2xl font-black tracking-tight text-slate-800">Registrasi Akun</h1>
+            <h1 class="text-2xl font-extrabold tracking-tight text-slate-800">Registrasi Akun</h1>
             <p class="text-xs text-slate-500 font-mono tracking-wider mt-1 uppercase">PT HARIFF STAFF ENROLLMENT</p>
         </div>
 
