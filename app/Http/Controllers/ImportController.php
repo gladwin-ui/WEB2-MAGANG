@@ -42,9 +42,8 @@ class ImportController extends Controller
     {
         $recentJobs = ImportJob::orderByDesc('created_at')->take(10)->get();
         $hasActiveJob = ImportJob::whereIn('status', ['pending', 'processing'])->exists();
-        $trashedCount = ImportJob::onlyTrashed()->count();
 
-        return view('import.upload', compact('recentJobs', 'hasActiveJob', 'trashedCount'));
+        return view('import.upload', compact('recentJobs', 'hasActiveJob'));
     }
 
     // ----------------------------------------------------------------
@@ -109,15 +108,15 @@ class ImportController extends Controller
 
         $originalFilename = $file->getClientOriginalName();
 
-        // Overwrite previous active imports with the same filename
+        // Overwrite previous imports with the same filename — permanently delete old data
         $existingJobs = ImportJob::where('filename', $originalFilename)->get();
         if ($existingJobs->isNotEmpty()) {
             DB::transaction(function () use ($existingJobs) {
                 foreach ($existingJobs as $oldJob) {
-                    // Soft-delete all bugs associated with this job ID
-                    Bug::where('import_job_id', $oldJob->id)->delete();
-                    // Soft-delete the job record itself
-                    $oldJob->delete();
+                    // Hard-delete all bugs associated with this job
+                    Bug::where('import_job_id', $oldJob->id)->forceDelete();
+                    // Hard-delete the job record itself
+                    $oldJob->forceDelete();
                 }
             });
         }
@@ -403,5 +402,47 @@ class ImportController extends Controller
         return redirect()
             ->route('import.progress', ['id' => $importJob->id])
             ->with('success', "Proses re-analisis dimulai. {$totalRows} baris sedang dianalisis ulang oleh sistem AI...");
+    }
+
+    // ----------------------------------------------------------------
+    // Delete an import job directly from history page.
+    // Hard-deletes all associated bugs, soft-deletes the job itself.
+    // ----------------------------------------------------------------
+    public function deleteFromHistory(Request $request, int $id)
+    {
+        $job = ImportJob::findOrFail($id);
+
+        // Prevent deletion while the job is actively running
+        if (in_array($job->status, ['pending', 'processing'])) {
+            $message = "Import #$id tidak dapat dihapus karena masih berstatus '{$job->status}'. Tunggu hingga proses selesai.";
+
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $message], 422);
+            }
+
+            return back()->withErrors(['delete' => $message]);
+        }
+
+        $filename  = $job->filename;
+        $bugCount  = Bug::where('import_job_id', $job->id)->count();
+
+        DB::transaction(function () use ($job) {
+            // Hard-delete all bugs linked to this job (permanent)
+            Bug::where('import_job_id', $job->id)->forceDelete();
+            // Hard-delete the import job record itself (permanent, no audit trail needed)
+            $job->forceDelete();
+        });
+
+        Log::info("ImportJob #{$id} ('{$filename}') permanently deleted from history: {$bugCount} bugs removed.");
+
+        $successMessage = "File '{$filename}' dan {$bugCount} data bug berhasil dihapus permanen.";
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => $successMessage]);
+        }
+
+        return redirect()
+            ->route('import.history')
+            ->with('success', $successMessage);
     }
 }

@@ -41,10 +41,12 @@ Route::middleware(['auth'])->group(function () {
 
     // Dashboard Reset & Trash Recovery routes
     Route::post('/import/reset',         [ImportController::class, 'reset'])->name('import.reset');
-    Route::get('/import/trash',          [ImportController::class, 'trash'])->name('import.trash');
     Route::post('/import/trash/restore-all', [ImportController::class, 'restoreAll'])->name('import.restore_all');
     Route::post('/import/trash/{id}/restore', [ImportController::class, 'restore'])->name('import.restore');
     Route::post('/import/trash/delete-selected', [ImportController::class, 'forceDeleteSelected'])->name('import.force_delete_selected');
     Route::delete('/import/trash/{id}/force-delete', [ImportController::class, 'forceDelete'])->name('import.force_delete');
+    // Trash page removed — redirect to history
+    Route::get('/import/trash', fn() => redirect()->route('import.history'))->name('import.trash');
     Route::post('/import/reanalyze',     [ImportController::class, 'reanalyze'])->name('import.reanalyze');
+    Route::delete('/import/history/{id}', [ImportController::class, 'deleteFromHistory'])->name('import.history.delete');
 });

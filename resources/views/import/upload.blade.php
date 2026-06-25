@@ -32,15 +32,6 @@
                 Upload file dump MySQL dari sistem produksi. Data diproses dalam antrian background.
             </p>
         </div>
-        @if($trashedCount > 0)
-            <div class="shrink-0">
-                <a href="{{ route('import.trash') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-all shadow-sm">
-                    <i class="bi bi-trash text-slate-500"></i>
-                    Keranjang Sampah
-                    <span class="bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded-full text-[10px] font-bold">{{ $trashedCount }}</span>
-                </a>
-            </div>
-        @endif
     </div>
 
     {{-- Error banner --}}
@@ -72,8 +63,8 @@
             <div class="mb-5 p-4 rounded-xl bg-amber-50 border border-amber-250 text-amber-800 text-sm flex items-start gap-3">
                 <i class="bi bi-exclamation-triangle-fill text-base shrink-0 mt-0.5 text-amber-600"></i>
                 <div>
-                    <strong class="font-bold block mb-1">Peringatan Import & Overwrite:</strong>
-                    Sistem mendeteksi nama file SQL yang Anda upload. Jika sebelumnya Anda sudah pernah mengimport file dengan nama yang sama, seluruh data bug dari import sebelumnya akan secara otomatis ditimpa (dipindahkan ke Keranjang Sampah) sebelum file baru diproses.
+                    <strong class="font-bold block mb-1">Peringatan Import &amp; Overwrite:</strong>
+                    Jika sebelumnya Anda sudah pernah mengimport file dengan nama yang sama, seluruh data bug dari import sebelumnya akan secara otomatis <strong>dihapus permanen</strong> sebelum file baru diproses. Pastikan Anda sudah mengekspor data yang dibutuhkan sebelum mengupload ulang.
                 </div>
             </div>
 

@@ -8,7 +8,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
     <!-- Tailwind CSS & ApexCharts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -63,7 +63,7 @@
                         'card': '0 1px 2px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.04)',
                     },
                     fontFamily: {
-                        mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace'],
+                        mono: ['Inter', 'sans-serif'],
                         sans: ['Inter', 'sans-serif'],
                         serif: ['Montserrat', 'sans-serif']
                     }
@@ -148,7 +148,7 @@
             color: var(--text-primary) !important;
         }
         .font-mono, code, kbd, samp, pre {
-            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace !important;
+            font-family: 'Inter', sans-serif !important;
         }
 
         /* Force text colors in dark mode to prevent illegible styles from tailwind default slate colors */
@@ -563,11 +563,11 @@
                     {{-- Divider --}}
                     <div class="my-2 border-t border-slate-100"></div>
 
-                    <a href="{{ route('import.upload') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.upload') || request()->routeIs('import.history') || request()->routeIs('import.progress') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
+                    <a href="{{ route('import.upload') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.upload') || request()->routeIs('import.progress') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
                         <i class="bi bi-cloud-upload text-base"></i> Import Data .sql
                     </a>
-                    <a href="{{ route('import.trash') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.trash') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
-                        <i class="bi bi-trash text-base"></i> Keranjang Sampah
+                    <a href="{{ route('import.history') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.history') ? 'text-blue-600 border-l-2 border-blue-600 bg-blue-50/30 font-bold' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100/50' }}">
+                        <i class="bi bi-clock-history text-base"></i> Riwayat Import
                     </a>
                 @endauth
             </nav>
@@ -706,5 +706,6 @@
             }
         });
     </script>
+    @stack('scripts')
 </body>
 </html>
