@@ -323,6 +323,37 @@ class ImportController extends Controller
     }
 
     // ----------------------------------------------------------------
+    // Permanently delete selected soft-deleted ImportJobs and their bugs.
+    // ----------------------------------------------------------------
+    public function forceDeleteSelected(Request $request)
+    {
+        $request->validate([
+            'selected_jobs'   => 'required|array|min:1',
+            'selected_jobs.*' => 'integer|distinct',
+        ], [
+            'selected_jobs.required' => 'Pilih setidaknya satu file atau batch untuk dihapus selamanya.',
+        ]);
+
+        $selectedIds = $request->input('selected_jobs', []);
+        $jobs = ImportJob::onlyTrashed()->whereIn('id', $selectedIds)->get();
+
+        if ($jobs->isEmpty()) {
+            return back()->withErrors(['selected_jobs' => 'Tidak ada file/batch yang valid dipilih untuk dihapus.']);
+        }
+
+        $deletedCount = $jobs->count();
+
+        DB::transaction(function () use ($jobs) {
+            foreach ($jobs as $job) {
+                Bug::onlyTrashed()->where('import_job_id', $job->id)->forceDelete();
+                $job->forceDelete();
+            }
+        });
+
+        return back()->with('success', "{$deletedCount} file/batch terpilih berhasil dihapus selamanya.");
+    }
+
+    // ----------------------------------------------------------------
     // Trigger batch re-analysis of pending bugs.
     // ----------------------------------------------------------------
     public function reanalyze()

@@ -44,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/import/trash',          [ImportController::class, 'trash'])->name('import.trash');
     Route::post('/import/trash/restore-all', [ImportController::class, 'restoreAll'])->name('import.restore_all');
     Route::post('/import/trash/{id}/restore', [ImportController::class, 'restore'])->name('import.restore');
+    Route::post('/import/trash/delete-selected', [ImportController::class, 'forceDeleteSelected'])->name('import.force_delete_selected');
     Route::delete('/import/trash/{id}/force-delete', [ImportController::class, 'forceDelete'])->name('import.force_delete');
     Route::post('/import/reanalyze',     [ImportController::class, 'reanalyze'])->name('import.reanalyze');
 });
