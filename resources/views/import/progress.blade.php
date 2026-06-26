@@ -123,25 +123,17 @@
         </div>
 
         {{-- Stat counters --}}
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div class="grid grid-cols-3 gap-3">
             <div class="stat-card">
                 <div id="count-inserted" class="stat-number text-blue-600">0</div>
                 <div class="stat-label">Baru (INSERT)</div>
-            </div>
-            <div class="stat-card">
-                <div id="count-updated" class="stat-number text-amber-600">0</div>
-                <div class="stat-label">Diperbarui</div>
             </div>
             <div class="stat-card">
                 <div id="count-skipped" class="stat-number text-slate-500">0</div>
                 <div class="stat-label">Dilewati</div>
             </div>
             <div class="stat-card">
-                <div id="count-deleted" class="stat-number text-red-500">0</div>
-                <div class="stat-label">Dihapus</div>
-            </div>
-            <div class="stat-card col-span-2 sm:col-span-1">
-                <div id="count-failed" class="stat-number text-red-650">0</div>
+                <div id="count-failed" class="stat-number text-red-600">0</div>
                 <div class="stat-label">Gagal</div>
             </div>
         </div>
@@ -229,9 +221,7 @@
 
         // Counters
         document.getElementById('count-inserted').textContent = formatNum(data.inserted_count);
-        document.getElementById('count-updated').textContent  = formatNum(data.updated_count);
         document.getElementById('count-skipped').textContent  = formatNum(data.skipped_count);
-        document.getElementById('count-deleted').textContent  = formatNum(data.deleted_count || 0);
         document.getElementById('count-failed').textContent   = formatNum(data.failed_count);
 
         // Status
@@ -265,15 +255,13 @@
             if (data.filename === 'Re-Analysis') {
                 document.getElementById('banner-title').textContent = 'Re-Analisis Selesai';
                 document.getElementById('banner-desc').innerHTML =
-                    `<strong>${formatNum(data.updated_count)}</strong> data bug berhasil dianalisis ulang oleh sistem AI, ` +
-                    `<strong>${formatNum(data.failed_count)}</strong> gagal dianalisis.`;
+                    `Re-analisis AI selesai. ` +
+                    `<strong>${formatNum(data.failed_count)}</strong> data gagal dianalisis.`;
             } else {
                 document.getElementById('banner-title').textContent = 'Import Selesai';
                 document.getElementById('banner-desc').innerHTML =
                     `<strong>${formatNum(data.inserted_count)}</strong> baris baru ditambahkan, ` +
-                    `<strong>${formatNum(data.updated_count)}</strong> diperbarui, ` +
-                    `<strong>${formatNum(data.skipped_count)}</strong> dilewati (identik), ` +
-                    `<strong>${formatNum(data.deleted_count || 0)}</strong> dihapus (rekonsiliasi), ` +
+                    `<strong>${formatNum(data.skipped_count)}</strong> dilewati (ID sudah ada), ` +
                     `<strong>${formatNum(data.failed_count)}</strong> gagal diproses.`;
             }
 

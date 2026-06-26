@@ -21,12 +21,11 @@ use Carbon\Carbon;
  * ProcessImportChunkJob
  *
  * Processes a chunk of rows parsed from an uploaded .sql dump file.
- * Each job handles up to CHUNK_SIZE rows and performs upsert logic:
+ * Each job handles up to CHUNK_SIZE rows and performs simple insert-only logic:
  *
  *   - INSERT  : row id does not exist locally → insert + run AI analysis.
- *   - UPDATE  : row id exists AND at least one field differs → update;
- *               re-run AI only when the relevant trigger fields changed.
- *   - SKIP    : row id exists AND all fields are identical → do nothing.
+ *   - SKIP    : row id already exists locally → do nothing (no update).
+ *   - FAIL    : row missing required fields or causes a DB exception.
  *
  * Foreign-key resolution (project_id, serial_number_id, device_id):
  *   If the referenced master-data record does not exist locally, the FK
@@ -53,14 +52,8 @@ class ProcessImportChunkJob implements ShouldQueue
     public int $timeout = 300;
 
     // ----------------------------------------------------------------
-    // Fields that trigger AI Tahap 1 re-analysis on UPDATE.
+    // AI is only run on INSERT. There is no UPDATE path.
     // ----------------------------------------------------------------
-    private const AI_STAGE1_FIELDS = ['description'];
-
-    // ----------------------------------------------------------------
-    // Fields that trigger AI Tahap 2 re-analysis on UPDATE.
-    // ----------------------------------------------------------------
-    private const AI_STAGE2_FIELDS = ['root_cause', 'repair_action'];
 
     // ----------------------------------------------------------------
     // All columns sourced from the .sql dump.
@@ -119,7 +112,6 @@ class ProcessImportChunkJob implements ShouldQueue
 
         // Counters for this chunk.
         $inserted  = 0;
-        $updated   = 0;
         $skipped   = 0;
         $failed    = 0;
 
@@ -154,57 +146,33 @@ class ProcessImportChunkJob implements ShouldQueue
                 // --------------------------------------------------------
                 $existing = Bug::withTrashed()->find($row['id']);
 
-                if ($existing === null) {
-                    // ---- INSERT -----------------------------------------
-                    $bugData = $this->buildBugData($row);
-                    $bugData['import_job_id'] = $this->importJobId;
-                    $bugData['is_spam']   = false;
-                    $bugData['is_rework'] = (bool) ($row['is_rework'] ?? false);
-
-                    $bug = Bug::create($bugData);
-
-                    // Run AI analysis on newly inserted rows.
-                    $this->runStage1IfNeeded($bug, $analytics, true);
-                    $this->runStage2IfNeeded($bug, $analytics, true);
-
-                    $inserted++;
-
-                } else {
-                    // ---- UPDATE or SKIP ---------------------------------
-                    $wasTrashed = $existing->trashed();
-                    if ($wasTrashed) {
-                        $existing->restore();
-                    }
-
-                    $changes = $this->detectChanges($existing, $row);
-
-                    // If it was trashed, we must save the new import_job_id even if no other fields changed
-                    if (!empty($changes) || $wasTrashed) {
-                        $changes['import_job_id'] = $this->importJobId;
-
-                        // Apply the changed source-column values.
-                        $existing->fill($changes);
-                        $existing->save();
-
-                        // Reload fresh instance for AI calls that need ->description etc.
-                        $existing->refresh();
-
-                        // Conditional AI re-trigger.
-                        $stage1Changed = !empty(array_intersect(array_keys($changes), self::AI_STAGE1_FIELDS));
-                        $stage2Changed = !empty(array_intersect(array_keys($changes), self::AI_STAGE2_FIELDS));
-
-                        if ($stage1Changed || $wasTrashed) {
-                            $this->runStage1IfNeeded($existing, $analytics, false);
-                        }
-                        if ($stage2Changed || $wasTrashed) {
-                            $this->runStage2IfNeeded($existing, $analytics, false);
-                        }
-
-                        $updated++;
+                if ($existing !== null) {
+                    if ($existing->trashed()) {
+                        // A trashed (previously deleted) bug exists. Permanently remove
+                        // it so the re-imported row can be inserted fresh and counted
+                        // as INSERT — no "memory" of the old record remains.
+                        $existing->forceDelete();
                     } else {
+                        // ---- SKIP ---------------------------------------
+                        // Active existing row: leave it untouched (no update).
                         $skipped++;
+                        continue;
                     }
                 }
+
+                // ---- INSERT ---------------------------------------------
+                $bugData = $this->buildBugData($row);
+                $bugData['import_job_id'] = $this->importJobId;
+                $bugData['is_spam']   = false;
+                $bugData['is_rework'] = (bool) ($row['is_rework'] ?? false);
+
+                $bug = Bug::create($bugData);
+
+                // Run AI analysis on newly inserted rows.
+                $this->runStage1IfNeeded($bug, $analytics);
+                $this->runStage2IfNeeded($bug, $analytics);
+
+                $inserted++;
 
             } catch (\Throwable $e) {
                 $failed++;
@@ -218,12 +186,11 @@ class ProcessImportChunkJob implements ShouldQueue
         // ----------------------------------------------------------------
         // Atomically increment the ImportJob counters.
         // ----------------------------------------------------------------
-        DB::transaction(function () use ($importJob, $inserted, $updated, $skipped, $failed, $fkWarnings) {
+        DB::transaction(function () use ($importJob, $inserted, $skipped, $failed, $fkWarnings) {
             $importJob->refresh(); // get latest values
 
-            $newProcessed = $importJob->processed_rows + $inserted + $updated + $skipped + $failed;
+            $newProcessed = $importJob->processed_rows + $inserted + $skipped + $failed;
             $newInserted  = $importJob->inserted_count  + $inserted;
-            $newUpdated   = $importJob->updated_count   + $updated;
             $newSkipped   = $importJob->skipped_count   + $skipped;
             $newFailed    = $importJob->failed_count    + $failed;
 
@@ -233,14 +200,10 @@ class ProcessImportChunkJob implements ShouldQueue
             // Determine whether all chunks have been processed.
             $allDone = $newProcessed >= $importJob->total_rows;
 
-            $deletedCount = $importJob->deleted_count;
-
             $importJob->update([
                 'processed_rows' => $newProcessed,
                 'inserted_count' => $newInserted,
-                'updated_count'  => $newUpdated,
                 'skipped_count'  => $newSkipped,
-                'deleted_count'  => $deletedCount,
                 'failed_count'   => $newFailed,
                 'error_message'  => $errorLog ?: null,
                 'status'         => $allDone ? 'completed' : $importJob->status,
@@ -372,64 +335,9 @@ class ProcessImportChunkJob implements ShouldQueue
     }
 
     /**
-     * Compare the existing Bug model with incoming row data and return
-     * only the fields that have actually changed (source columns only).
-     *
-     * Returns an empty array if the row is identical to what's stored.
-     */
-    private function detectChanges(Bug $existing, array $row): array
-    {
-        $comparableColumns = array_diff(self::SOURCE_COLUMNS, ['id', 'created_at', 'updated_at']);
-        $changes = [];
-
-        foreach ($comparableColumns as $col) {
-            $incoming = $row[$col] ?? null;
-            $stored   = $existing->{$col};
-
-            // Normalize both sides for comparison.
-            $storedNorm   = $this->normalizeForComparison($col, $stored);
-            $incomingNorm = $this->normalizeForComparison($col, $incoming);
-
-            if ($storedNorm !== $incomingNorm) {
-                $changes[$col] = $incoming;
-            }
-        }
-
-        return $changes;
-    }
-
-    /**
-     * Normalize a field value for diff comparison:
-     * - Coerce empty strings and null to the same sentinel.
-     * - Cast booleans consistently.
-     * - Truncate datetime to minute precision to avoid microsecond false-positives.
-     */
-    private function normalizeForComparison(string $col, mixed $value): mixed
-    {
-        if ($value === '' || $value === null) {
-            return null;
-        }
-
-        if ($col === 'is_rework') {
-            return (bool)(int)$value;
-        }
-
-        if (in_array($col, ['closed_at'], true)) {
-            if ($value instanceof \DateTimeInterface) {
-                return $value->format('Y-m-d H:i:s');
-            }
-            return (string) $value;
-        }
-
-        return $value;
-    }
-
-    /**
      * Run AI Stage 1 (sentiment, spam, severity_recommended) if description is present.
-     *
-     * @param  bool  $isNew  true for INSERT, false for UPDATE (affects log context).
      */
-    private function runStage1IfNeeded(Bug $bug, BugAnalyticsService $analytics, bool $isNew): void
+    private function runStage1IfNeeded(Bug $bug, BugAnalyticsService $analytics): void
     {
         if (empty($bug->description)) {
             return;
@@ -451,10 +359,8 @@ class ProcessImportChunkJob implements ShouldQueue
 
     /**
      * Run AI Stage 2 (damage_category) if root_cause or repair_action is present.
-     *
-     * @param  bool  $isNew  true for INSERT, false for UPDATE.
      */
-    private function runStage2IfNeeded(Bug $bug, BugAnalyticsService $analytics, bool $isNew): void
+    private function runStage2IfNeeded(Bug $bug, BugAnalyticsService $analytics): void
     {
         $rootCause    = $bug->root_cause    ?? '';
         $repairAction = $bug->repair_action ?? '';

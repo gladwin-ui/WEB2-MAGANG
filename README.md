@@ -75,9 +75,11 @@ bugs               : id, project_id (FK), title, severity (Critical|Major|Minor)
                       -- Hasil AI Tahap 2 (saat ditutup):
                       damage_category
 import_jobs        : id, filename, total_rows, processed_rows,
-                      inserted_count, updated_count, skipped_count, failed_count,
-                      deleted_count, status (pending|processing|completed|failed),
+                      inserted_count, skipped_count, failed_count,
+                      status (pending|processing|completed|failed),
                       error_message, started_at, finished_at, deleted_at, timestamps
+                      (Catatan: kolom `updated_count` dan `deleted_count` tetap ada di tabel untuk kompatibilitas,
+                      tetapi UI progress hanya menampilkan INSERT, SKIP, dan FAIL)
 ```
 
 **Catatan:** `projects`, `devices`, dan `serial_numbers` adalah tabel master **MINIMAL/placeholder** — struktur tabel asli di database `mfg_record` tidak diketahui sepenuhnya. Data lama diimpor dengan nama generik ("Project #27", dst) dan **PERLU diedit manual** setelah data master asli didapat dari tempat magang.
@@ -97,7 +99,7 @@ Admin upload file .sql (dump tabel bug dari mfg_record)
 Laravel parse file → buat ImportJob → dispatch chunk jobs ke queue
         │
         ▼
-Queue worker (ProcessImportChunkJob) upsert setiap baris ke tabel bugs
+Queue worker (ProcessImportChunkJob) insert setiap baris ke tabel bugs (insert-only; baris dengan ID yang sudah ada dilewati, tidak diupdate)
         │
         ▼
 Untuk baris dengan description:
@@ -192,7 +194,7 @@ analytics-service/
 - ✅ Detail bug historis tetap bisa dibaca dari dashboard/halaman detail
 - ✅ Fondasi tracking import: tabel `import_jobs` + model `ImportJob`
 - ✅ Parser `.sql` untuk dump `mfg_record.bug`
-- ✅ Job chunk untuk upsert + trigger AI kondisional
+- ✅ Job chunk untuk insert-only + trigger AI
 - ✅ Controller upload + halaman progress polling `import_jobs/{id}`
 
 ### Dashboard Analitik Admin
@@ -279,12 +281,21 @@ analytics-service/
 
 ## 📝 Changelog
 
+### v0.12 — Sederhanakan Proses Import: Hanya INSERT, SKIP, FAIL
+- **[IMPORT]** Logika import diubah dari **upsert** menjadi **insert-only**.
+  - `INSERT`: baris dengan `idbug` baru berhasil ditambahkan. Jika `idbug` tersebut sebelumnya sudah pernah diimport lalu **dihapus (soft-delete)**, data lama dihapus permanen terlebih dahulu sebelum baris baru dimasukkan — sehingga tetap dihitung sebagai INSERT.
+  - `SKIP`: baris dengan `idbug` yang **masih aktif** di database dilewati (tidak diupdate).
+  - `FAIL`: baris dengan data tidak valid (id/title kosong, status tidak dikenali, dll.) gagal diproses.
+- **[IMPORT]** Counter "Diperbarui" dan "Dihapus" dihapus dari halaman progress import dan riwayat import.
+- **[IMPORT]** Banner completion diperbarui: hanya menyebutkan jumlah INSERT, SKIP, dan FAIL.
+
 ### v0.11 — Revisi Dashboard: Hapus Protokol Rekomendasi, Log Aktivitas per Laporan, Spam Marker di Audit, 7 Hari, Urgency Fix
 - **[DASHBOARD]** Blok expandable "// PROTOCOL RECOMMENDATION" dihapus dari kolom "AI Automation Diagnosis" tabel audit.
 - **[DASHBOARD]** SPAM marker dipindahkan dari tabel "Top 5 Project" ke setiap baris tabel Audit Bug (Live Manufacturing Logs Feed), dengan badge merah dan alasan spam.
 - **[DASHBOARD]** Log aktivitas ditambahkan secara per-laporan — setiap baris audit bug memiliki expandable "Log Aktivitas Laporan" yang menampilkan: laporan masuk (reported_by, created_at) dan pengerjaan selesai (fixed_by, closed_at, root cause, repair action).
 - **[DASHBOARD]** Tren volume laporan diubah dari 15 hari menjadi **7 hari terakhir**.
 - **[DASHBOARD]** Perhitungan skor urgency dikoreksi: nilai `sentiment_score` yang NULL sekarang dianggap **netral (0.5)**, bukan 0.0, sehingga laporan belum dianalisis tidak lagi mendapat skor urgency tinggi secara artifisial.
+- **[IMPORT]** Status `RESOLVED` dan `IN PROGRESS` dari file SQL kini dipetakan ke `CLOSED`/`OPEN`, mengatasi error `Data truncated for column 'status'` saat import.
 
 ### v0.10 — Revisi Dashboard: Hapus Distribusi Sentimen, Tambah Marker Spam per Project
 - **[DASHBOARD]** Chart "Distribusi Sentimen" dihapus dari dashboard.

@@ -50,7 +50,8 @@
                         <th class="px-4 py-3 text-center">Status</th>
                         <th class="px-4 py-3 text-right">Baris</th>
                         <th class="px-4 py-3 text-right">+Baru</th>
-                        <th class="px-4 py-3 text-right">~Diperbarui</th>
+                        <th class="px-4 py-3 text-right">Dilewati</th>
+                        <th class="px-4 py-3 text-right">Gagal</th>
                         <th class="px-4 py-3 text-left">Waktu</th>
                         <th class="px-4 py-3 text-right">Aksi</th>
                     </tr>
@@ -98,8 +99,11 @@
                         <td class="px-4 py-3 text-right font-mono text-blue-600 font-semibold text-xs">
                             +{{ number_format($job->inserted_count) }}
                         </td>
-                        <td class="px-4 py-3 text-right font-mono text-amber-600 font-semibold text-xs">
-                            ~{{ number_format($job->updated_count) }}
+                        <td class="px-4 py-3 text-right font-mono text-slate-500 font-semibold text-xs">
+                            {{ number_format($job->skipped_count) }}
+                        </td>
+                        <td class="px-4 py-3 text-right font-mono text-red-600 font-semibold text-xs">
+                            {{ number_format($job->failed_count) }}
                         </td>
 
                         {{-- Time --}}

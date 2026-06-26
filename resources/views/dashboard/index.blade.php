@@ -122,16 +122,16 @@
         </div>
 
         <!-- Card 4: Active Critical Alerts -->
-        <div class="bg-white border border-slate-200 border-l-4 border-l-red-650 rounded-xl p-5 flex items-center gap-4 shadow-sm hover:bg-slate-50/50 transition-all hover:-translate-y-1 hover:shadow-md duration-300">
-            <div class="h-12 w-12 rounded-lg bg-red-50 flex items-center justify-center text-red-600 shrink-0">
+        <div class="bg-white border border-slate-200 border-l-4 border-l-red-600 rounded-xl p-5 flex items-center gap-4 shadow-sm hover:bg-red-50/30 transition-all hover:-translate-y-1 hover:shadow-md duration-300">
+            <div class="h-12 w-12 rounded-lg bg-red-100 flex items-center justify-center text-red-600 shrink-0">
                 <i class="bi bi-exclamation-triangle text-2xl"></i>
             </div>
             <div>
                 <span class="block text-[10px] font-mono tracking-widest text-slate-500 uppercase">ACTIVE CRITICALS</span>
                 <div class="flex items-baseline gap-2">
-                    <span class="text-2xl font-black font-mono text-red-650">{{ $criticalOpenBugs }}</span>
+                    <span class="text-2xl font-black font-mono text-red-600">{{ $criticalOpenBugs }}</span>
                     @if($criticalOpenBugs > 0)
-                        <span class="text-[9px] font-bold font-mono bg-red-100 text-red-700 px-1.5 py-0.5 rounded border border-red-200 uppercase tracking-wider">CRITICAL</span>
+                        <span class="text-[9px] font-bold font-mono bg-red-600 text-white px-1.5 py-0.5 rounded uppercase tracking-wider">CRITICAL</span>
                     @endif
                 </div>
             </div>

@@ -270,10 +270,11 @@ class SqlImportParser
         }
         $upper = strtoupper(trim($value));
         return match ($upper) {
-            'OPEN', 'BUKA', 'NEW'      => 'OPEN',
+            'OPEN', 'BUKA', 'NEW', 'IN PROGRESS',
+            'IN-PROGRESS', 'ONGOING', 'PROGRESS'     => 'OPEN',
             'CLOSED', 'CLOSE', 'TUTUP',
-            'SELESAI', 'DONE', 'FIXED' => 'CLOSED',
-            default                     => $upper !== '' ? $upper : null,
+            'SELESAI', 'DONE', 'FIXED', 'RESOLVED'   => 'CLOSED',
+            default                                   => $upper !== '' ? $upper : null,
         };
     }
 
