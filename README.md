@@ -199,10 +199,14 @@ analytics-service/
 - ✅ Export CSV (`DashboardController::exportCsv`)
 - ✅ Summary cards (Total Bug, Open, Closed, Critical, Rework Rate, Spam Blocked)
 - ✅ Tabel Audit Bug dengan filter (status/severity/project/tanggal) + pagination
-- ✅ Distribusi Sentimen (Positive/Neutral/Negative/Spam) — donut chart
+- ❌ **Dihapus:** Distribusi Sentimen (Positive/Neutral/Negative/Spam) — donut chart tidak lagi ditampilkan.
+- ❌ **Dihapus:** Protokol Rekomendasi / detail AI Stage 1 expandable dari kolom "AI Automation Diagnosis".
+- ✅ **SPAM Marker** pada setiap baris tabel Audit Bug (Live Manufacturing Logs Feed) jika laporan terdeteksi spam, lengkap dengan alasan (`spam_reason`).
+- ✅ **Log Aktivitas per Laporan** — setiap baris audit bug memiliki expandable "Log Aktivitas Laporan" yang menampilkan timeline per laporan: laporan masuk (reported_by, created_at) dan pengerjaan selesai (fixed_by, closed_at, root cause, repair action).
 - ✅ Project Paling Banyak Bug (Top 5)
-- ✅ Tren Volume Laporan (line chart)
+- ✅ Tren Volume Laporan (line chart, **7 hari terakhir**)
 - ✅ Analytics Penyebab Kerusakan (distribusi `damage_category`)
+- ✅ Skor Urgency dihitung berdasarkan data per laporan: `round((severity_weight + (1 - sentiment_score)) / 2, 2)`. Nilai `sentiment_score` yang NULL dianggap netral (**0.5**) agar laporan yang belum dianalisis tidak mendapat skor urgency tinggi secara artifisial.
 
 ### 🎨 Arah Visual/Styling
 - ✅ **Light Mode Profesional/Korporat** — token dasar sudah diimplementasikan di `resources/css/app.css`: putih bersih (`#FFFFFF`), biru korporat `#2563EB` sebagai aksen utama, serta 4 pasang warna badge standar untuk severity/status.
@@ -274,6 +278,18 @@ analytics-service/
 ---
 
 ## 📝 Changelog
+
+### v0.11 — Revisi Dashboard: Hapus Protokol Rekomendasi, Log Aktivitas per Laporan, Spam Marker di Audit, 7 Hari, Urgency Fix
+- **[DASHBOARD]** Blok expandable "// PROTOCOL RECOMMENDATION" dihapus dari kolom "AI Automation Diagnosis" tabel audit.
+- **[DASHBOARD]** SPAM marker dipindahkan dari tabel "Top 5 Project" ke setiap baris tabel Audit Bug (Live Manufacturing Logs Feed), dengan badge merah dan alasan spam.
+- **[DASHBOARD]** Log aktivitas ditambahkan secara per-laporan — setiap baris audit bug memiliki expandable "Log Aktivitas Laporan" yang menampilkan: laporan masuk (reported_by, created_at) dan pengerjaan selesai (fixed_by, closed_at, root cause, repair action).
+- **[DASHBOARD]** Tren volume laporan diubah dari 15 hari menjadi **7 hari terakhir**.
+- **[DASHBOARD]** Perhitungan skor urgency dikoreksi: nilai `sentiment_score` yang NULL sekarang dianggap **netral (0.5)**, bukan 0.0, sehingga laporan belum dianalisis tidak lagi mendapat skor urgency tinggi secara artifisial.
+
+### v0.10 — Revisi Dashboard: Hapus Distribusi Sentimen, Tambah Marker Spam per Project
+- **[DASHBOARD]** Chart "Distribusi Sentimen" dihapus dari dashboard.
+- **[DASHBOARD]** Deteksi spam tetap dipertahankan: summary card "AI Spam Blocked", marker spam pada baris audit, dan deteksi di Analytics Service.
+- **[DASHBOARD]** Tabel "Project Paling Banyak Bug (Top 5)" ditambahkan marker **SPAM** (badge merah + jumlah laporan spam) untuk project yang memiliki laporan spam.
 
 ### v0.9 — Sinkronisasi Dokumen & Optimasi Bulk Delete
 - **[DOKUMENTASI]** README.md diselaraskan dengan struktur proyek saat ini: runtime admin-only, penghapusan fitur assignment/chat/feedback, serta struktur file terbaru (`ImportController`, `SqlImportParser`, `ProcessImportChunkJob`, `ReanalyzeBugsJob`).

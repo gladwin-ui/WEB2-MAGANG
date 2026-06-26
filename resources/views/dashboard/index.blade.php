@@ -32,16 +32,6 @@
     $criticalOpenBugs = $criticalBugs;
     $spamCount = $spamBlocked;
 
-    // Mapped sentiments
-    $sentMap = $sentimentDistribution->pluck('total', 'sentiment_label')->toArray();
-    $sentiments = [
-        'positive'   => $sentMap['positive']   ?? $sentMap['Positive']   ?? 0,
-        'neutral'    => $sentMap['neutral']    ?? $sentMap['Neutral']    ?? 0,
-        'negative'   => $sentMap['negative']   ?? $sentMap['Negative']   ?? 0,
-        'spam'       => $sentMap['spam']       ?? $sentMap['Spam']       ?? 0,
-        'unanalyzed' => $sentMap['Unanalyzed'] ?? $sentMap['unanalyzed'] ?? 0,
-    ];
-
     // Mapped damage categories
     $damageCategories = $damageDistribution->map(function($item) {
         return (object)[
@@ -53,7 +43,7 @@
     // Mapped trend data
     $trendMap = $volumeTrend->pluck('total', 'date')->toArray();
     $trendData = [];
-    for ($i = 15; $i >= 0; $i--) {
+    for ($i = 6; $i >= 0; $i--) {
         $dateStr = now()->subDays($i)->format('Y-m-d');
         $trendData[$dateStr] = $trendMap[$dateStr] ?? 0;
     }
@@ -62,7 +52,7 @@
     $mappedTopProjects = $topProjects->map(function($tp) {
         return (object)[
             'project_name' => $tp->project?->name ?? 'Unknown Proyek',
-            'bug_count'    => $tp->total
+            'bug_count'    => $tp->total,
         ];
     });
 
@@ -188,30 +178,19 @@
     </div>
 
     <!-- ZONE 2.5: SYSTEM STABILITY & VOLUME DYNAMICS (NEW ROW) -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <!-- Sentiment Donut Chart (Card 1) -->
-        <div class="premium-card premium-card-accent p-6">
-            <h2 class="text-xs font-mono font-bold tracking-widest text-slate-600 mb-6 uppercase flex items-center gap-2">
-                <i class="bi bi-chat-heart text-blue-600"></i>
-                DISTRIBUSI SENTIMEN LAPORAN (NLP STAGE 1)
-            </h2>
-            <div class="flex flex-col items-center justify-center min-h-[290px]">
-                <div id="sentimentChart" class="w-full"></div>
-            </div>
-        </div>
-
-        <!-- Volume Trend Line Chart (Card 2) -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <!-- Volume Trend Line Chart (Card 1) -->
         <div class="premium-card premium-card-accent p-6">
             <h2 class="text-xs font-mono font-bold tracking-widest text-slate-600 mb-6 uppercase flex items-center gap-2">
                 <i class="bi bi-graph-up-arrow text-blue-600"></i>
-                TREN VOLUME LAPORAN (15 HARI TERAKHIR)
+                TREN VOLUME LAPORAN (7 HARI TERAKHIR)
             </h2>
             <div class="flex flex-col justify-center min-h-[290px]">
                 <div id="volumeChart" class="w-full"></div>
             </div>
         </div>
 
-        <!-- Top 5 Projects Table (Card 3) -->
+        <!-- Top 5 Projects Table (Card 2) -->
         <div class="premium-card premium-card-accent p-6">
             <h2 class="text-xs font-mono font-bold tracking-widest text-slate-600 mb-6 uppercase flex items-center gap-2">
                 <i class="bi bi-trophy text-blue-600"></i>
@@ -228,7 +207,9 @@
                     <tbody class="divide-y divide-slate-100 text-xs font-mono">
                         @forelse($mappedTopProjects as $tp)
                             <tr class="hover:bg-slate-50">
-                                <td class="py-2.5 px-3 font-semibold text-slate-700 uppercase">{{ $tp->project_name }}</td>
+                                <td class="py-2.5 px-3 font-semibold text-slate-700 uppercase">
+                                    {{ $tp->project_name }}
+                                </td>
                                 <td class="py-2.5 px-3 text-right text-blue-600 font-bold">{{ $tp->bug_count }}</td>
                             </tr>
                         @empty
@@ -334,7 +315,9 @@
                                 $urgencyScore = 0.0;
                             } else {
                                 $sevWeight = $b->severity === 'Critical' ? 0.8 : ($b->severity === 'Major' ? 0.5 : 0.2);
-                                $sentScore = $b->sentiment_score !== null ? $b->sentiment_score : 0.0;
+                                // Treat missing sentiment_score as neutral (0.5) so unanalyzed bugs
+                                // do not artificially score as highly urgent.
+                                $sentScore = $b->sentiment_score !== null ? $b->sentiment_score : 0.5;
                                 // Score formula: (severity weight + (1 - sentiment score)) / 2
                                 $urgencyScore = round(($sevWeight + (1.0 - $sentScore)) / 2.0, 2);
                                 $urgencyScore = min(1.0, max(0.0, $urgencyScore));
@@ -370,6 +353,12 @@
                                         @else
                                             <span class="text-[9px] font-bold font-mono bg-green-100 text-green-700 border border-green-200 px-2 py-0.2 rounded uppercase">MINOR</span>
                                         @endif
+
+                                        @if($isSpam)
+                                            <span class="inline-flex items-center gap-1 bg-red-100 text-red-700 border border-red-200 px-1.5 py-0.2 rounded text-[9px] font-bold font-mono uppercase tracking-wider" title="Laporan terdeteksi sebagai spam: {{ $b->spam_reason ?? 'Tidak substantif' }}">
+                                                <i class="bi bi-exclamation-octagon"></i> SPAM
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
                             </td>
@@ -401,37 +390,7 @@
                                         AI Category: <span class="text-blue-600">{{ $b->damage_category ?? 'PENDING MECHANIC CLOSE' }}</span>
                                     </div>
 
-                                    <!-- Details drawer details summary -->
-                                    <details class="text-[10px] text-slate-500 hover:text-slate-700 transition-all cursor-pointer">
-                                        <summary class="focus:outline-none font-bold text-blue-600 font-mono tracking-wider uppercase select-none py-0.5 hover:underline">
-                                            // PROTOCOL RECOMMENDATION
-                                        </summary>
-                                        <div class="mt-2.5 p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2 font-mono leading-relaxed shadow-inner">
-                                            <div>
-                                                <span class="text-slate-500 block text-[9px] uppercase tracking-wider">// AI STAGE 1 (SENTIMENT & SPAM)</span>
-                                                <p class="text-slate-700">
-                                                    Label: <span class="capitalize text-slate-800">{{ $b->sentiment_label ?? 'Unanalyzed' }}</span> (Score: {{ $b->sentiment_score ?? '0.0' }})
-                                                    @if($b->is_spam)
-                                                        <span class="bg-red-100 text-red-700 border border-red-200 rounded px-1.5 py-0.5 ml-1 text-[9px] font-bold font-sans">(! SPAM DETECTED: {{ $b->spam_reason }})</span>
-                                                    @endif
-                                                </p>
-                                            </div>
-                                            <div class="pt-2 border-t border-slate-200">
-                                                <span class="text-slate-500 block text-[9px] uppercase tracking-wider">// AI STAGE 1 (SEVERITY RECOMMENDED)</span>
-                                                <p class="text-slate-700">
-                                                    Recommended: <span class="text-blue-600 font-bold">{{ $b->severity_recommended ?? 'N/A' }}</span>
-                                                    <span class="block text-slate-500 text-[10px] mt-0.5">Reason: {{ $b->severity_recommendation_reason ?? 'Belum dianalisis.' }}</span>
-                                                </p>
-                                            </div>
-                                            @if($b->status === 'CLOSED')
-                                                <div class="pt-2 border-t border-slate-200">
-                                                    <span class="text-slate-500 block text-[9px] uppercase tracking-wider">// TECHNICAL ACTION LOG (STAGE 2)</span>
-                                                    <p class="text-slate-800"><span class="text-yellow-600 font-semibold">Root Cause:</span> {{ $b->root_cause }}</p>
-                                                    <p class="text-slate-800 mt-1"><span class="text-green-600 font-semibold">Repair Action:</span> {{ $b->repair_action }}</p>
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </details>
+
                                 </div>
                             </td>
 
@@ -459,6 +418,58 @@
                                         <i class="bi bi-arrow-clockwise"></i> REPROCESS AI
                                     </button>
                                 </div>
+                            </td>
+                        </tr>
+
+                        <!-- Per-Report Activity Log -->
+                        <tr class="bg-slate-50/50">
+                            <td colspan="4" class="py-0 px-4 border-b border-slate-100">
+                                <details class="group py-2.5">
+                                    <summary class="flex items-center gap-2 text-[10px] font-mono font-bold uppercase tracking-wider text-blue-600 cursor-pointer hover:underline select-none focus:outline-none">
+                                        <i class="bi bi-journal-text"></i>
+                                        Log Aktivitas Laporan
+                                        <span class="text-slate-400 font-normal normal-case">— {{ $b->title }}</span>
+                                    </summary>
+                                    <div class="pl-5 pr-2 py-3">
+                                        <div class="relative">
+                                            <div class="absolute left-2 top-0 bottom-0 w-px bg-slate-200"></div>
+                                            <div class="space-y-3">
+                                                <!-- Reported event -->
+                                                <div class="relative pl-7">
+                                                    <div class="absolute left-0 top-0.5 h-4 w-4 rounded-full bg-blue-50 border border-blue-400 text-blue-600 flex items-center justify-center">
+                                                        <i class="bi bi-plus-lg text-[8px]"></i>
+                                                    </div>
+                                                    <div class="text-[10px] font-mono uppercase tracking-wider text-blue-600 font-bold">Laporan Masuk</div>
+                                                    <div class="text-[10px] text-slate-600 font-mono mt-0.5">
+                                                        Oleh <span class="font-semibold text-slate-800">{{ $b->reported_by ?: 'Tidak diketahui' }}</span>
+                                                        pada <span class="font-semibold text-slate-800">{{ $b->created_at->format('d M Y H:i') }}</span>
+                                                    </div>
+                                                </div>
+
+                                                @if($b->status === 'CLOSED' && $b->closed_at)
+                                                    <!-- Closed event -->
+                                                    <div class="relative pl-7">
+                                                        <div class="absolute left-0 top-0.5 h-4 w-4 rounded-full bg-green-50 border border-green-400 text-green-600 flex items-center justify-center">
+                                                            <i class="bi bi-check-lg text-[8px]"></i>
+                                                        </div>
+                                                        <div class="text-[10px] font-mono uppercase tracking-wider text-green-600 font-bold">Pengerjaan Selesai</div>
+                                                        <div class="text-[10px] text-slate-600 font-mono mt-0.5">
+                                                            Oleh <span class="font-semibold text-slate-800">{{ $b->fixed_by ?: 'Tidak diketahui' }}</span>
+                                                            pada <span class="font-semibold text-slate-800">{{ \Carbon\Carbon::parse($b->closed_at)->format('d M Y H:i') }}</span>
+                                                        </div>
+                                                        @if($b->root_cause || $b->repair_action)
+                                                            <div class="mt-1.5 text-[10px] text-slate-600 font-mono">
+                                                                <span class="text-yellow-600 font-semibold">Root Cause:</span> {{ $b->root_cause ?: '-' }}
+                                                                <span class="mx-1.5 text-slate-300">|</span>
+                                                                <span class="text-green-600 font-semibold">Repair Action:</span> {{ $b->repair_action ?: '-' }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </details>
                             </td>
                         </tr>
                     @empty
@@ -689,103 +700,7 @@
         var componentsChart = new ApexCharts(document.querySelector("#componentsChart"), componentsOptions);
         componentsChart.render();
 
-        // 3. Sentiment Donut Chart
-        var sentimentCounts = {
-            positive: {{ $sentiments['positive'] ?? $sentiments['Positive'] ?? 0 }},
-            neutral: {{ $sentiments['neutral'] ?? $sentiments['Neutral'] ?? 0 }},
-            negative: {{ $sentiments['negative'] ?? $sentiments['Negative'] ?? 0 }},
-            spam: {{ $sentiments['spam'] ?? $sentiments['Spam'] ?? 0 }},
-            unanalyzed: {{ $sentiments['Unanalyzed'] ?? $sentiments['unanalyzed'] ?? 0 }}
-        };
-
-        var sentimentOptions = {
-            series: [
-                sentimentCounts.positive,
-                sentimentCounts.neutral,
-                sentimentCounts.negative,
-                sentimentCounts.spam,
-                sentimentCounts.unanalyzed
-            ],
-            chart: {
-                type: 'donut',
-                height: 290,
-                background: 'transparent',
-                foreColor: textSecondaryColor
-            },
-            labels: ['Positive', 'Neutral', 'Negative', 'Spam Warning', 'Unanalyzed'],
-            colors: ['#16A34A', '#475569', '#DC2626', '#8B5CF6', '#94A3B8'], // professional palette
-            dataLabels: {
-                enabled: false
-            },
-            stroke: {
-                show: true,
-                width: 2,
-                colors: [strokeColor]
-            },
-            legend: {
-                position: 'bottom',
-                fontSize: '9px',
-                fontFamily: 'Inter, sans-serif',
-                markers: {
-                    radius: 4,
-                    width: 8,
-                    height: 8
-                },
-                itemMargin: {
-                    horizontal: 5,
-                    vertical: 5
-                }
-            },
-            plotOptions: {
-                pie: {
-                    donut: {
-                        size: '72%',
-                        background: 'transparent',
-                        labels: {
-                            show: true,
-                            name: {
-                                show: true,
-                                fontSize: '10px',
-                                fontFamily: 'Inter, sans-serif',
-                                color: textSecondaryColor,
-                                offsetY: -8
-                            },
-                            value: {
-                                show: true,
-                                fontSize: '20px',
-                                fontFamily: 'Inter, sans-serif',
-                                color: textPrimaryColor,
-                                fontWeight: 'bold',
-                                offsetY: 6,
-                                formatter: function (val) {
-                                    return val;
-                                }
-                            },
-                            total: {
-                                show: true,
-                                label: 'TOTAL SENTIMENT',
-                                color: textSecondaryColor,
-                                fontSize: '9px',
-                                fontFamily: 'Inter, sans-serif',
-                                formatter: function (w) {
-                                    return w.globals.seriesTotals.reduce(function(a, b) {
-                                        return a + b;
-                                    }, 0);
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            tooltip: {
-                theme: tooltipTheme
-            }
-        };
-
-        var sentimentChart = new ApexCharts(document.querySelector("#sentimentChart"), sentimentOptions);
-        sentimentChart.render();
-
-        // 4. Volume Trend Line/Area Chart
+        // 3. Volume Trend Line/Area Chart
         var trendData = {!! json_encode($trendData) !!};
         var trendKeys = Object.keys(trendData).map(function(date) {
             var d = new Date(date);
@@ -871,7 +786,7 @@
         var volumeChart = new ApexCharts(document.querySelector("#volumeChart"), volumeOptions);
         volumeChart.render();
 
-        // 5. Dynamic Theme-Changed Event Listener to update all charts on the fly
+        // 4. Dynamic Theme-Changed Event Listener to update all charts on the fly
         document.addEventListener('theme-changed', function(e) {
             const newTheme = e.detail.theme;
             const newIsDark = newTheme === 'dark';
@@ -905,23 +820,6 @@
                     labels: {
                         style: {
                             colors: newTextSecondary
-                        }
-                    }
-                },
-                tooltip: { theme: newTheme }
-            });
-
-            sentimentChart.updateOptions({
-                chart: { foreColor: newTextSecondary },
-                stroke: { colors: [newStrokeColor] },
-                plotOptions: {
-                    pie: {
-                        donut: {
-                            labels: {
-                                name: { color: newTextSecondary },
-                                value: { color: newTextPrimary },
-                                total: { color: newTextSecondary }
-                            }
                         }
                     }
                 },

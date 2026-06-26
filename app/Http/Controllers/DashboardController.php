@@ -34,7 +34,6 @@ class DashboardController extends Controller
                 'reworkRate'           => 0,
                 'spamBlocked'          => 0,
                 'damageDistribution'   => collect(),
-                'sentimentDistribution'=> collect(),
                 'topProjects'          => collect(),
                 'volumeTrend'          => collect(),
                 'auditBugs'            => Bug::whereRaw('1=0')->paginate(20),
@@ -101,11 +100,6 @@ class DashboardController extends Controller
             ->selectRaw('damage_category, count(*) as total')
             ->get();
 
-        $sentimentDistribution = $applyJobFilter(Bug::whereNotNull('sentiment_label'))
-            ->groupBy('sentiment_label')
-            ->selectRaw('sentiment_label, count(*) as total')
-            ->get();
-
         $topProjects = $applyJobFilter(Bug::with('project'))
             ->groupBy('project_id')
             ->selectRaw('project_id, count(*) as total')
@@ -115,7 +109,7 @@ class DashboardController extends Controller
 
         $volumeTrend = $applyJobFilter(
                 Bug::selectRaw('DATE(created_at) as date, count(*) as total')
-                   ->where('created_at', '>=', now()->subDays(15))
+                   ->where('created_at', '>=', now()->subDays(7))
             )
             ->groupBy('date')
             ->orderBy('date')
@@ -154,7 +148,7 @@ class DashboardController extends Controller
                                 WHEN bugs.severity = 'Major' THEN 0.5
                                 ELSE 0.2
                             END
-                            + (1 - COALESCE(bugs.sentiment_score, 0))
+                            + (1 - COALESCE(bugs.sentiment_score, 0.5))
                         ) / 2,
                     2)
                 END AS urgency_score
@@ -178,7 +172,7 @@ class DashboardController extends Controller
         return view('dashboard.index', compact(
             'hasImportedData',
             'totalBugs', 'openBugs', 'closedBugs', 'criticalBugs', 'reworkRate', 'spamBlocked',
-            'damageDistribution', 'sentimentDistribution', 'topProjects', 'volumeTrend',
+            'damageDistribution', 'topProjects', 'volumeTrend',
             'auditBugs', 'projects', 'sqlFiles', 'selectedJobId', 'severityCounts'
         ));
     }

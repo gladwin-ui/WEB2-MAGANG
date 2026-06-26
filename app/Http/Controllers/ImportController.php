@@ -40,10 +40,7 @@ class ImportController extends Controller
     // ----------------------------------------------------------------
     public function showUploadForm()
     {
-        $recentJobs = ImportJob::orderByDesc('created_at')->take(10)->get();
-        $hasActiveJob = ImportJob::whereIn('status', ['pending', 'processing'])->exists();
-
-        return view('import.upload', compact('recentJobs', 'hasActiveJob'));
+        return view('import.upload');
     }
 
     // ----------------------------------------------------------------
