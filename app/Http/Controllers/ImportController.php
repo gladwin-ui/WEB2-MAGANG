@@ -342,11 +342,17 @@ class ImportController extends Controller
 
         $deletedCount = $jobs->count();
 
-        DB::transaction(function () use ($jobs) {
-            foreach ($jobs as $job) {
-                Bug::onlyTrashed()->where('import_job_id', $job->id)->forceDelete();
-                $job->forceDelete();
-            }
+        $jobIds = $jobs->pluck('id')->toArray();
+        $placeholders = implode(',', array_fill(0, count($jobIds), '?'));
+
+        DB::transaction(function () use ($jobIds, $placeholders) {
+            // Bulk hard-delete trashed bugs for all selected jobs in one query.
+            DB::statement(
+                'DELETE FROM bugs WHERE import_job_id IN (' . $placeholders . ') AND deleted_at IS NOT NULL',
+                $jobIds
+            );
+            // Hard-delete all selected import jobs in one query.
+            ImportJob::whereIn('id', $jobIds)->forceDelete();
         });
 
         return back()->with('success', "{$deletedCount} file/batch terpilih berhasil dihapus selamanya.");
@@ -427,8 +433,8 @@ class ImportController extends Controller
         $bugCount  = Bug::where('import_job_id', $job->id)->count();
 
         DB::transaction(function () use ($job) {
-            // Hard-delete all bugs linked to this job (permanent)
-            Bug::where('import_job_id', $job->id)->forceDelete();
+            // Hard-delete all bugs linked to this job in a single query.
+            DB::statement('DELETE FROM bugs WHERE import_job_id = ?', [$job->id]);
             // Hard-delete the import job record itself (permanent, no audit trail needed)
             $job->forceDelete();
         });

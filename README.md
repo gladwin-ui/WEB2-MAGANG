@@ -1,6 +1,6 @@
 # 🔧 BugTrack MFG — Manufacturing Bug Tracking System
 
-> **CATATAN UNTUK AI CODING AGENT (Antigravity):** Dokumen ini adalah **satu-satunya sumber acuan** (single source of truth) untuk proyek ini. Baca dokumen ini SECARA PENUH sebelum mengerjakan task apapun. Setiap kali requirement baru ditambahkan oleh pengguna, dokumen ini akan DIPERBARUI (bagian "Requirement & Status Implementasi" dan "Changelog") — anggap versi TERBARU dari file ini sebagai instruksi yang berlaku, dan bagian "Changelog" sebagai riwayat keputusan yang SUDAH diputuskan (jangan diulang tanya/diskusikan ulang kecuali ada perubahan baru yang eksplisit diminta).
+> **CATATAN UNTUK AI CODING AGENT (Antigravity/Qoder):** Dokumen ini adalah **satu-satunya sumber acuan** (single source of truth) untuk proyek ini. Baca dokumen ini SECARA PENUH sebelum mengerjakan task apapun. Setiap kali requirement baru ditambahkan oleh pengguna, dokumen ini akan DIPERBARUI (bagian "Requirement & Status Implementasi" dan "Changelog") — anggap versi TERBARU dari file ini sebagai instruksi yang berlaku, dan bagian "Changelog" sebagai riwayat keputusan yang SUDAH diputuskan (jangan diulang tanya/diskusikan ulang kecuali ada perubahan baru yang eksplisit diminta).
 
 ---
 
@@ -23,10 +23,12 @@ Proyek ini terinspirasi dari arsitektur proyek sebelumnya (**SmartReport** — s
 
 ## 🧩 Konsep Domain Utama
 
-### Tiga Role Pengguna
-1. **Reporter** — siapa saja yang menemukan & melaporkan bug (operator produksi, QA, dsb). Submit laporan baru, isi deskripsi, lampiran, lihat riwayat laporannya sendiri, dan menerima **feedback** dari mekanik.
-2. **Mekanik** — menangani bug berstatus `OPEN` (queue kerja), mengisi `root_cause` dan `repair_action`, menandai `is_rework` jika ini perbaikan ulang, mengubah status menjadi `CLOSED`, dan dapat mengirim **feedback** langsung ke akun reporter terkait satu bug spesifik.
-3. **Admin** — memantau dashboard analitik penuh (tanpa menangani bug secara langsung), mengelola data master (Project, Serial Number, Device).
+### Role Pengguna
+
+> **Status saat ini:** Runtime web adalah **admin-only**. Fitur reporter/mekanik, assignment, dan chat telah dihapus dari aplikasi web. Registrasi hanya membuat akun admin.
+
+
+Pada implementasi saat ini, hanya **Admin** yang tersedia di aplikasi web: login, dashboard analytics, master data, import `.sql`, dan detail bug historis.
 
 ### Dua Tahap Analisis AI (Keduanya SINKRON, Tanpa Job)
 
@@ -40,20 +42,9 @@ Dari kolom `description`, Analytics Engine menghasilkan:
 Dari kolom `root_cause` + `repair_action`, Analytics Engine menghasilkan:
 - `damage_category` — kategori penyebab kerusakan (contoh: "Overheat/Panas Berlebih", "Korosi/Kelembapan", "Hubungan Pendek/Short Circuit", "Kesalahan Pemasangan", "Kualitas Komponen", "Lain-lain"). Basis untuk dashboard **"Penyebab Kerusakan Paling Sering Terjadi"**.
 
-### Assignment & Chat Mekanik ↔ Reporter
+### Assignment & Chat Mekanik ↔ Reporter (Dihapus)
 
-> **Catatan:** Konsep `bug_feedback` (pesan sekali kirim mekanik→reporter) yang sebelumnya direncanakan **telah digantikan total** dengan mekanisme Assignment + Chat dua arah. Tabel `bug_feedback` sudah di-drop, diganti `bug_chats`.
-
-**Assignment (Claim Bug):**
-- Bug berstatus `OPEN` terlihat oleh SEMUA mekanik di queue.
-- Mekanik mana pun bisa **klaim/assign** bug tersebut ke dirinya sendiri (`assigned_to`, `assigned_at` pada tabel `bugs`).
-- Begitu sebuah bug sudah di-assign, mekanik LAIN tidak bisa mengklaimnya lagi — mencegah dua mekanik menangani bug yang sama tanpa koordinasi.
-
-**Chat (Dua Arah, Per-Bug):**
-- Setiap bug punya ruang chat sendiri (tabel `bug_chats`: `bug_id`, `sender_id`, `message`).
-- **Reporter** HANYA bisa membuka/mengirim chat JIKA bug miliknya SUDAH di-assign ke seorang mekanik.
-- **Mekanik** HANYA bisa membuka/mengirim chat pada bug yang **dia sendiri** yang assign.
-- Chat menggunakan pola **polling AJAX sederhana**, BUKAN WebSocket.
+> **Status saat ini:** Fitur assignment, chat dua arah, dan feedback mekanik→reporter **telah dihapus total** dari runtime web. Tabel `bug_feedback` dan `bug_chats` sudah di-drop. Kolom `assigned_to`/`assigned_at` juga telah dibersihkan dari tabel `bugs`. Semua bug dianggap data historis/analitik yang dikelola admin.
 
 ### Arti `reporter_type` ('produk' vs 'sub')
 Menunjukkan **level/cakupan objek fisik** yang dilaporkan bermasalah, BUKAN siapa yang melapor:
@@ -65,7 +56,7 @@ Menunjukkan **level/cakupan objek fisik** yang dilaporkan bermasalah, BUKAN siap
 ## 📐 Skema Database (Ringkasan)
 
 ```
-users              : id, name, email, password, role (reporter|mekanik|admin)
+users              : id, name, email, password, role (admin)  -- runtime saat ini hanya admin
 projects           : id, name                              -- tabel master MINIMAL/placeholder
 devices            : id, name                               -- tabel master MINIMAL/placeholder
 serial_numbers     : id, project_id (FK), sn_code, type (unit|sub)
@@ -75,8 +66,8 @@ bugs               : id, project_id (FK), title, severity (Critical|Major|Minor)
                       reproduce_steps, root_cause, repair_action, is_rework,
                       attachment_path, expected_result,
                       reported_by (string bebas), status (OPEN|CLOSED),
-                      assigned_to (FK users, nullable), assigned_at (nullable),
                       fixed_by (string bebas, nullable), closed_at,
+                      import_job_id (FK, nullable), deleted_at (nullable),
                       -- Hasil AI Tahap 1 (saat submit):
                       sentiment_label, sentiment_score, is_spam, spam_reason,
                       severity_recommended (varchar -- lihat Catatan Teknis),
@@ -85,8 +76,8 @@ bugs               : id, project_id (FK), title, severity (Critical|Major|Minor)
                       damage_category
 import_jobs        : id, filename, total_rows, processed_rows,
                       inserted_count, updated_count, skipped_count, failed_count,
-                      status (pending|processing|completed|failed), error_message,
-                      started_at, finished_at, timestamps
+                      deleted_count, status (pending|processing|completed|failed),
+                      error_message, started_at, finished_at, deleted_at, timestamps
 ```
 
 **Catatan:** `projects`, `devices`, dan `serial_numbers` adalah tabel master **MINIMAL/placeholder** — struktur tabel asli di database `mfg_record` tidak diketahui sepenuhnya. Data lama diimpor dengan nama generik ("Project #27", dst) dan **PERLU diedit manual** setelah data master asli didapat dari tempat magang.
@@ -97,41 +88,32 @@ import_jobs        : id, filename, total_rows, processed_rows,
 
 ## 🔁 Alur Kerja Utama (Core Workflow)
 
+> **Catatan:** Alur di bawah ini mencerminkan **implementasi saat ini (admin-only + import `.sql`)**. Secara historis sistem juga dirancang untuk alur reporter-submit → mekanik-close, tetapi fitur tersebut telah dihapus dari runtime web.
+
 ```
-Reporter submit bug (deskripsi, severity manual, lampiran, dsb)
+Admin upload file .sql (dump tabel bug dari mfg_record)
         │
         ▼
-Laravel simpan bug (status: OPEN)
+Laravel parse file → buat ImportJob → dispatch chunk jobs ke queue
         │
         ▼
-Laravel PANGGIL Python Analytics Service /analyze-bug-report SECARA SINKRON
+Queue worker (ProcessImportChunkJob) upsert setiap baris ke tabel bugs
+        │
+        ▼
+Untuk baris dengan description:
+   Laravel PANGGIL Python Analytics Service /analyze-bug-report SECARA SINKRON
    (sentiment, spam check, severity_recommended)
         │
         ▼
-Laravel UPDATE bug dengan hasil analisis (dalam request yang SAMA)
+Untuk baris dengan root_cause / repair_action:
+   Laravel PANGGIL Python Analytics Service /analyze-damage-cause SECARA SINKRON
+   (damage_category)
         │
         ▼
-Response ke Reporter SELESAI -- bug SUDAH lengkap dengan hasil AI,
-SUDAH terlihat oleh Mekanik di queue OPEN tanpa delay job
-
-   --- Mekanik menangani ---
-
-Mekanik pilih bug dari queue OPEN
+ImportJob UPDATE counters & status completed
         │
         ▼
-Mekanik isi root_cause + repair_action, tandai is_rework jika perlu,
-(opsional) kirim feedback ke reporter, ubah status -> CLOSED
-        │
-        ▼
-Laravel PANGGIL Python Analytics Service /analyze-damage-cause SECARA SINKRON
-   (damage_category dari root_cause + repair_action)
-        │
-        ▼
-Laravel UPDATE bug dengan damage_category, closed_at
-        │
-        ▼
-Response ke Mekanik SELESAI -- bug CLOSED, kategori penyebab tercatat
-untuk dashboard analitik Admin
+Admin lihat dashboard analitik lengkap (summary, chart, audit table, export CSV)
 ```
 
 ---
@@ -142,35 +124,39 @@ untuk dashboard analitik Admin
 app/
 ├── Http/
 │   ├── Controllers/
-│   │   ├── LoginController.php
-│   │   ├── BugController.php          <- Submit, queue, assign (mekanik), close
-│   │   ├── BugChatController.php      <- Chat dua arah per-bug (show, send, poll)
-│   │   ├── DashboardController.php    <- Analitik (admin)
-│   │   ├── ProjectController.php      <- Kelola master project (admin)
-│   │   ├── SerialNumberController.php <- Kelola master SN (admin)
-│   │   └── DeviceController.php       <- Kelola master device (admin)
-│   └── Middleware/
-│       └── RoleMiddleware.php          <- Role-based access (reporter|mekanik|admin)
+│   │   ├── LoginController.php          <- Login, register, logout
+│   │   ├── UserSettingsController.php   <- Profile photo serving
+│   │   ├── BugController.php            <- Detail bug historis (admin)
+│   │   ├── DashboardController.php      <- Analitik & export CSV (admin)
+│   │   ├── ProjectController.php        <- Kelola master project (admin)
+│   │   ├── SerialNumberController.php   <- Kelola master SN (admin)
+│   │   ├── DeviceController.php         <- Kelola master device (admin)
+│   │   └── ImportController.php         <- Upload, progress, history, reset, trash, reanalyze
+│   └── Middleware/                      <- (kosong setelah role middleware dihapus)
+├── Jobs/
+│   ├── ProcessImportChunkJob.php        <- Proses chunk row SQL + trigger AI
+│   └── ReanalyzeBugsJob.php             <- Re-analisis batch bug
 ├── Models/
 │   ├── User.php (dengan kolom role)
 │   ├── Project.php
 │   ├── Device.php
 │   ├── SerialNumber.php
-│   ├── Bug.php (relasi 'reporter', 'fixer', 'assignee' ke User; 'project', 'serialNumber', 'device'; 'chats')
-│   └── BugChat.php (relasi 'sender' ke User, 'bug')
+│   ├── ImportJob.php                    <- Tracking progress import & trash
+│   └── Bug.php (relasi 'project', 'serialNumber', 'device', 'importJob')
 ├── Services/
-│   └── BugAnalyticsService.php   <- HTTP Client SINKRON ke Python service (TIDAK ADA Job)
+│   ├── BugAnalyticsService.php          <- HTTP Client SINKRON ke Python service
+│   └── SqlImportParser.php              <- Parser .sql mfg_record.bug
 database/
-├── migrations/                    <- Skema tabel (Strict Forward-Only)
-└── seeders/                       <- Import 24 baris data asli dari mfg_record
+├── migrations/                          <- Skema tabel (Strict Forward-Only)
+└── seeders/                             <- Admin + master data + 24 baris bug historis
 
 analytics-service/
 ├── main.py
 ├── services/
-│   ├── sentiment.py               <- Adaptasi konteks teknis manufaktur
-│   ├── spam_detection.py          <- Adaptasi konteks staf internal (BUKAN customer)
-│   ├── severity_recommendation.py <- Usulkan severity dari description
-│   └── damage_categorization.py   <- Kategorikan penyebab dari root_cause+repair_action
+│   ├── sentiment.py                     <- Adaptasi konteks teknis manufaktur
+│   ├── spam_detection.py                <- Adaptasi konteks staf internal (BUKAN customer)
+│   ├── severity_recommendation.py       <- Usulkan severity dari description
+│   └── damage_categorization.py         <- Kategorikan penyebab dari root_cause+repair_action
 └── requirements.txt
 ```
 
@@ -181,7 +167,7 @@ analytics-service/
 1. **Import `.sql` memakai Queue driver `database`.** Pemrosesan ribuan baris dan pemanggilan Analytics Service dilakukan oleh worker queue agar request upload tidak timeout.
 2. **Severity manual TIDAK PERNAH di-override AI.** `severity` (reporter) dan `severity_recommended` (AI) adalah DUA KOLOM TERPISAH, keduanya disimpan dan ditampilkan berdampingan. Keputusan akhir tetap di tangan manusia.
 3. **Konsep "Spam" dipertahankan** meski pelapor staf internal — staf internal juga bisa membuat laporan tidak substantif/asal-asalan.
-4. **Assignment bersifat eksklusif (first-come-first-served).** Begitu satu mekanik mengklaim bug OPEN, mekanik lain tidak bisa mengklaimnya lagi. Chat per-bug hanya terbuka setelah assignment ada — reporter tidak bisa memulai percakapan sebelum ada mekanik yang menangani bug-nya.
+4. **Runtime web adalah admin-only.** Fitur reporter/mechanic workflow, assignment, chat, dan feedback telah dihapus dari aplikasi web. Registrasi hanya membuat akun admin.
 5. **Tabel master (`projects`, `devices`, `serial_numbers`) bersifat sementara/placeholder** sampai struktur asli dari `mfg_record` didapatkan.
 6. **`reported_by`/`fixed_by` adalah string bebas**, bukan relasi user. Jangan membuat akun `users` otomatis untuk nama dari dump SQL.
 
@@ -189,10 +175,10 @@ analytics-service/
 
 ## ✅ Requirement & Status Implementasi
 
-> Bagian ini mencerminkan **kondisi terkini** proyek (terakhir diperbarui setelah Audit Menyeluruh v3). Status: `✅ Selesai` / `🔄 Sedang dikerjakan` / `📋 Direncanakan, belum dikerjakan` / `🐛 Ada bug, perlu fix`. **Ini SATU-SATUNYA section status di README ini** — semua fitur (termasuk dashboard analitik) dan bug/catatan teknis terkait digabung di sini per kategori, TIDAK ADA section status terpisah lainnya.
+> Bagian ini mencerminkan **kondisi terkini** proyek (terakhir disinkronkan dengan kode saat ini — v0.9). Status: `✅ Selesai` / `🔄 Sedang dikerjakan` / `📋 Direncanakan, belum dikerjakan` / `🐛 Ada bug, perlu fix`. **Ini SATU-SATUNYA section status di README ini** — semua fitur (termasuk dashboard analitik) dan bug/catatan teknis terkait digabung di sini per kategori, TIDAK ADA section status terpisah lainnya.
 
 ### Fondasi
-- ✅ Skema database (users extend, projects, devices, serial_numbers, bugs, bug_chats)
+- ✅ Skema database (users extend, projects, devices, serial_numbers, bugs, import_jobs; soft deletes pada `bugs` & `import_jobs`)
 - ✅ Seeder import 24 baris data historis dari `mfg_record`
 - ✅ Auth & runtime admin-only untuk aplikasi web; flow reporter/mekanik, chat, assignment, dan RoleMiddleware sudah dihapus
 - ✅ Register tetap dipertahankan, tetapi hanya membuat akun admin
@@ -205,23 +191,22 @@ analytics-service/
 - ✅ Kelola master data Project, Serial Number, & Device
 - ✅ Detail bug historis tetap bisa dibaca dari dashboard/halaman detail
 - ✅ Fondasi tracking import: tabel `import_jobs` + model `ImportJob`
-- 📋 Parser `.sql` untuk dump `mfg_record.bug`
-- 📋 Job chunk untuk upsert + trigger AI kondisional
-- 📋 Controller upload + halaman progress polling `import_jobs/{id}`
+- ✅ Parser `.sql` untuk dump `mfg_record.bug`
+- ✅ Job chunk untuk upsert + trigger AI kondisional
+- ✅ Controller upload + halaman progress polling `import_jobs/{id}`
 
 ### Dashboard Analitik Admin
-> ⚠️ **PERLU VERIFIKASI ULANG** — fitur di bawah sebelumnya tercatat ✅ berdasarkan laporan Antigravity, namun karena `dashboard/index.blade.php` kemungkinan ditulis ulang sebagai bagian dari perubahan arsitektur Assignment+Chat (lihat Changelog v0.6), status berikut **TIDAK BOLEH diasumsikan otomatis masih utuh** — agent yang mengerjakan task berikutnya WAJIB mengecek ulang isi kode, bukan hanya membaca status di sini.
-- 🔄 Export CSV (`DashboardController::exportCsv`)
-- 🔄 Summary cards (Total Bug, Open, Closed, Critical, Rework Rate, Spam Blocked)
-- 🔄 Tabel Audit Bug dengan filter (status/severity/project/tanggal) + pagination
-- 🔄 Distribusi Sentimen (Positive/Neutral/Negative/Spam) — donut chart
-- 🔄 Project Paling Banyak Bug (Top 5)
-- 🔄 Tren Volume Laporan (line chart)
-- 🔄 Analytics Penyebab Kerusakan (distribusi `damage_category`)
+- ✅ Export CSV (`DashboardController::exportCsv`)
+- ✅ Summary cards (Total Bug, Open, Closed, Critical, Rework Rate, Spam Blocked)
+- ✅ Tabel Audit Bug dengan filter (status/severity/project/tanggal) + pagination
+- ✅ Distribusi Sentimen (Positive/Neutral/Negative/Spam) — donut chart
+- ✅ Project Paling Banyak Bug (Top 5)
+- ✅ Tren Volume Laporan (line chart)
+- ✅ Analytics Penyebab Kerusakan (distribusi `damage_category`)
 
 ### 🎨 Arah Visual/Styling
-- ❌ **DITOLAK & WAJIB DIGANTI:** Tema "Cyberpunk/Neon" (`neon-cyan`, `neon-pink`, `neon-amber`, `neon-green`, `obsidian`/`panel-bg`) — diimplementasikan sepihak oleh AI coding agent tanpa pernah disepakati. **Status verifikasi terbaru: token neon INI MASIH ADA di `resources/css/app.css`, BELUM diganti.**
-- 📋 **Spesifikasi resmi pengganti — Light Mode Profesional/Korporat** (lihat detail design token lengkap di bawah). **BELUM diimplementasikan ke kode.**
+- ✅ **Light Mode Profesional/Korporat** — token dasar sudah diimplementasikan di `resources/css/app.css`: putih bersih (`#FFFFFF`), biru korporat `#2563EB` sebagai aksen utama, serta 4 pasang warna badge standar untuk severity/status.
+- 🔄 **Penyempurnaan visual:** membersihkan sisa utility class/gradient non-standar (contoh: `premium-card-accent`, `btn-premium-gradient` yang memakai ungu `#7C3AED`) dan menyederhanakan tampilan dashboard yang masih terlalu padat dengan label uppercase/mono.
 
 **Karakter visual yang dituju:** bersih, formal, dipercaya — cocok untuk laporan ke atasan/manajemen di lingkungan manufaktur. TIDAK ADA efek glow/shadow warna mencolok, TIDAK ADA background gelap sebagai default, TIDAK ADA istilah "neon"/"cyberpunk" dalam penamaan apapun (class CSS, variable, komentar kode).
 
@@ -272,11 +257,11 @@ analytics-service/
 - HAPUS seluruh elemen `animate-pulse`/efek berkedip yang sifatnya dekoratif murni — PERTAHANKAN HANYA untuk badge counter notifikasi unread (fungsional, bukan dekoratif).
 
 ### Housekeeping Repository
-- 🐛 `Gemini.md` di root — dokumen acuan LAMA yang sudah usang (isinya sudah digabung ke README.md ini). **HARUS DIHAPUS.**
-- 🐛 `index.html` di root — file HTML statis tidak relevan, kemungkinan mockup yang tidak sengaja tersimpan. **HARUS DIHAPUS.**
+- ✅ `Gemini.md` di root sudah dihapus.
+- ✅ `index.html` di root sudah dihapus.
 
 ### Belum Diputuskan / Direncanakan
-- 📋 Mekanisme "lepas klaim" assignment — saat ini belum ada requirement untuk ini, belum diputuskan apakah dibutuhkan.
+- 📋 Penyempurnaan UI/UX dashboard: menyederhanakan tabel audit, mengurangi penggunaan uppercase/mono berlebihan, dan menyelaraskan warna chart sepenuhnya ke design token resmi.
 
 ---
 
@@ -285,11 +270,18 @@ analytics-service/
 *(Bukan bug yang menghalangi fungsi, tapi perlu diketahui untuk pengembangan lanjutan)*
 
 1. **`severity_recommended` adalah `varchar(50)`, bukan `enum`.** Sengaja dilonggarkan karena Python Analytics Service kadang mengembalikan nilai yang tidak persis cocok dengan 3 pilihan enum, dan `enum` ketat MySQL menolak insert untuk nilai di luar daftar. Trade-off: kode yang MEMBACA kolom ini (badge, filter) harus defensif terhadap nilai yang mungkin tidak persis "Critical"/"Major"/"Minor".
-2. **Belum ada mekanisme "lepas klaim" assignment.** Jika mekanik assign bug tapi tidak jadi menanganinya, saat ini TIDAK ADA cara mengembalikan bug ke status "belum di-assign" — bug tetap terkunci ke mekanik tersebut sampai di-CLOSE.
 
 ---
 
 ## 📝 Changelog
+
+### v0.9 — Sinkronisasi Dokumen & Optimasi Bulk Delete
+- **[DOKUMENTASI]** README.md diselaraskan dengan struktur proyek saat ini: runtime admin-only, penghapusan fitur assignment/chat/feedback, serta struktur file terbaru (`ImportController`, `SqlImportParser`, `ProcessImportChunkJob`, `ReanalyzeBugsJob`).
+- **[DOKUMENTASI]** Status implementasi diperbarui: parser `.sql`, job chunk, upload/progress, dan seluruh dashboard analitik terverifikasi ✅.
+- **[PERFORMANCE]** `ImportController::deleteFromHistory()` dioptimasi dengan raw SQL `DELETE FROM bugs WHERE import_job_id = ?` untuk menghindari N+1 `forceDelete()`.
+- **[PERFORMANCE]** `ImportController::forceDeleteSelected()` dioptimasi dengan raw SQL `DELETE FROM bugs WHERE import_job_id IN (...) AND deleted_at IS NOT NULL` + `ImportJob::whereIn()->forceDelete()` untuk bulk delete beberapa job sekaligus.
+- **[HOUSEKEEPING]** `Gemini.md` dan `index.html` di root sudah dihapus.
+- **[VISUAL]** Token Light Mode Profesional/Korporat sudah diterapkan di `resources/css/app.css`; sisa penyempurnaan visual masih dalam progres.
 
 ### v0.8 — Fondasi Import Queue & Actor String
 - **[PERUBAHAN SKEMA]** `bugs.reported_by` dan `bugs.fixed_by` diubah menjadi string bebas nullable melalui migration forward-only; relasi `reporter()`/`fixer()` di `Bug.php` dihapus.
