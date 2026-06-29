@@ -14,6 +14,7 @@ app = FastAPI(title="Manufacturing Tracking System by PT Hariff Analytics AI Ser
 class BugReportRequest(BaseModel):
     text: str
     gemini_api_key: Optional[str] = None
+    gemini_model: Optional[str] = "gemini-2.0-flash-lite"
 
 class BugReportResponse(BaseModel):
     sentiment_label: Optional[str]
@@ -34,16 +35,22 @@ class DamageCauseResponse(BaseModel):
 def analyze_bug_report(request: BugReportRequest):
     description = request.text
     
-    # 1. Spam Detection
-    is_spam, spam_reason = is_spam_report(description, request.gemini_api_key)
+    # 1. Spam Detection (with confidence)
+    is_spam, spam_reason, spam_confidence = is_spam_report(
+        description, 
+        request.gemini_api_key, 
+        request.gemini_model
+    )
     
     # 2. Sentiment Analysis
     sentiment_label, sentiment_score = analyze_sentiment(description)
     
-    # If spam is detected, we can force sentiment to spam
-    if is_spam:
+    # If spam detected (high confidence), force sentiment to spam
+    if is_spam and (spam_confidence is None or spam_confidence > 0.65):
         sentiment_label = "spam"
-        
+    elif is_spam and spam_confidence and spam_confidence < 0.65:
+        sentiment_label = "uncertain_spam"  # Flag for manual review
+    
     # 3. Severity Recommendation
     severity_rec, severity_reason = recommend_severity(description)
     
