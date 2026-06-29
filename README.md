@@ -184,7 +184,7 @@ analytics-service/
 - ✅ Seeder import 24 baris data historis dari `mfg_record`
 - ✅ Auth & runtime admin-only untuk aplikasi web; flow reporter/mekanik, chat, assignment, dan RoleMiddleware sudah dihapus
 - ✅ Register tetap dipertahankan, tetapi hanya membuat akun admin
-- ✅ Python Analytics Service (FastAPI) — sentiment, spam detection, severity recommendation, damage categorization
+- ✅ Python Analytics Service (FastAPI) — sentiment, spam detection (Offline Hybrid Context-Aware & ML), severity recommendation, damage categorization
 - ✅ Queue database siap dipakai untuk import `.sql`; `QUEUE_CONNECTION=database`
 - ✅ Skema `reported_by` dan `fixed_by` sudah menjadi string bebas, bukan FK `users`
 
@@ -280,6 +280,14 @@ analytics-service/
 ---
 
 ## 📝 Changelog
+
+### v0.13 — Deteksi Spam Hibrida Peka Konteks & ML Lokal (Offline)
+- **[SPAM DETECTION]** Migrasi penuh dari API Gemini ke deteksi spam offline menggunakan **Pendekatan Hibrida Peka Konteks & Machine Learning Lokal** (Ensemble Voting dari 5 model ML lokal via `spam-detector-ai`).
+- **[SPAM DETECTION]** Menerapkan hotfix dinamis pada kelas `sklearn.svm.SVC` untuk mengatasi ketidakcocokan versi model *scikit-learn* (menambal properti internal `_effective_probability` di memori).
+- **[SPAM DETECTION]** Menambahkan list **`OUT_OF_CONTEXT_KEYWORDS`** untuk mendepak teks promosi non-manufaktur (saham, resep kue, wisata, loker, dll.) yang kebetulan mengandung kata kunci teknis minor (seperti `aplikasi`, `mobile`).
+- **[SPAM DETECTION]** Memperbaiki aturan batas kata (`\b`) pada deteksi judi (`slot` hanya dideteksi jika berupa pola judi online/gacor, bukan slot fisik perangkat keras seperti *slot SD card*).
+- **[SPAM DETECTION]** Mengecualikan format hexadesimal hardware (seperti `0xFFFFFF`) dari filter deteksi karakter berulang.
+- **[CLEANUP]** Menghapus file `verify_api.py` karena verifikasi API key Gemini sudah tidak lagi diperlukan.
 
 ### v0.12 — Sederhanakan Proses Import: Hanya INSERT, SKIP, FAIL
 - **[IMPORT]** Logika import diubah dari **upsert** menjadi **insert-only**.

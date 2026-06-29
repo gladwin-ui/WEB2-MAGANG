@@ -72,7 +72,7 @@ LEGITIMATE_SAMPLES = [
     "Overtemperature shutdown palsu akibat sensor suhu terlalu sensitif"
 ]
 
-def test_spam_detection(api_key, model_name="gemini-2.0-flash-lite"):
+def test_spam_detection(api_key=None, model_name="Local Python Rule-Based & Context-Aware"):
     """Test accuracy on sample data"""
     
     print(f"\n{'='*50}")
@@ -108,13 +108,9 @@ def test_spam_detection(api_key, model_name="gemini-2.0-flash-lite"):
             
     print(f"\nFalse Positive Rate: {false_positives}/{total_legit} ({round(false_positives/total_legit*100, 2)}%)")
     print(f"{'='*50}\n")
-
+ 
 if __name__ == "__main__":
     api_key = sys.argv[1] if len(sys.argv) > 1 else None
-    model_name = sys.argv[2] if len(sys.argv) > 2 else "gemini-2.0-flash-lite"
-    
-    if not api_key:
-        print("Usage: python3 test_spam_detection.py YOUR_API_KEY [MODEL_NAME]")
-        sys.exit(1)
+    model_name = sys.argv[2] if len(sys.argv) > 2 else "Local Python Rule-Based & Context-Aware"
     
     test_spam_detection(api_key, model_name)
