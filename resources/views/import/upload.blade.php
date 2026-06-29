@@ -9,7 +9,7 @@
         transition: all 0.25s ease;
     }
     #drop-zone.drag-over {
-        border-color: #2563EB !important;
+        border-color: #0046BF !important;
         background-color: #EFF6FF !important;
     }
     /* Progress ring animation for file selected state */
@@ -102,7 +102,7 @@
                     type="submit"
                     disabled
                     class="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                    style="background-color: #2563EB !important; color: #fff !important; border-color: #2563EB !important;"
+                    style="background-color: #0046BF !important; color: #fff !important; border-color: #0046BF !important;"
                 >
                     <i class="bi bi-cloud-upload text-base"></i>
                     Proses Import

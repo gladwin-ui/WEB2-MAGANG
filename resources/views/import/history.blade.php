@@ -6,14 +6,14 @@
 <div class="max-w-4xl mx-auto">
 
     {{-- Header --}}
-    <div class="mb-8 flex items-center justify-between">
+    <div class="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight mb-1">Riwayat Import</h1>
             <p class="text-sm text-slate-500">Seluruh riwayat proses import file .sql</p>
         </div>
         <a href="{{ route('import.upload') }}"
-           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-           style="background-color: #2563EB !important; color: #fff !important;">
+           class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
+           style="background-color: #0046BF !important; color: #fff !important;">
             <i class="bi bi-cloud-upload"></i> Import Baru
         </a>
     </div>
@@ -33,7 +33,7 @@
     @endif
 
     {{-- Table --}}
-    <div class="bg-white border border-slate-200 rounded-xl shadow-card overflow-hidden">
+    <div class="bg-white border border-slate-200 rounded-xl shadow-card overflow-hidden overflow-x-auto w-full">
         @if($jobs->count() === 0)
             <div class="flex flex-col items-center justify-center py-16 text-center">
                 <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">

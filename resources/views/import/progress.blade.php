@@ -15,7 +15,7 @@
     .progress-fill {
         height: 100%;
         border-radius: 999px;
-        background-color: #2563EB;
+        background-color: #0046BF;
         transition: width 0.5s ease;
         min-width: 4px;
     }
@@ -123,7 +123,7 @@
         </div>
 
         {{-- Stat counters --}}
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div class="stat-card">
                 <div id="count-inserted" class="stat-number text-blue-600">0</div>
                 <div class="stat-label">Baru (INSERT)</div>
@@ -165,7 +165,7 @@
             <i class="bi bi-cloud-upload"></i> Import Lagi
         </a>
         <a href="{{ route('dashboard') }}" class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-            style="background-color: #2563EB !important; color: #fff !important;">
+            style="background-color: #0046BF !important; color: #fff !important;">
             <i class="bi bi-speedometer2"></i> Ke Dashboard
         </a>
     </div>

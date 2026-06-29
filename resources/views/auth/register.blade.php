@@ -45,15 +45,12 @@
         }
 
         /* Global Color Theme Overrides */
-        body {
-            background-color: #FFFFFF !important;
+        body:not(.dark) {
+            background-color: #C9C1B1 !important;
             color: #1E293B !important;
         }
-        .bg-slate-950 {
-            background-color: #FFFFFF !important;
-        }
-        .bg-slate-900\/60 {
-            background-color: #FFFFFF !important;
+        body:not(.dark) .bg-white {
+            background-color: #D8D1C1 !important;
         }
         .border-slate-800, .border-slate-850 {
             border-color: #E2E8F0 !important;
@@ -63,38 +60,40 @@
             border-color: #E2E8F0 !important;
             color: #1E293B !important;
         }
+        body:not(.dark) input, body:not(.dark) select {
+            background-color: #D8D1C1 !important;
+        }
         input:focus, select:focus {
-            border-color: #2563EB !important;
-            box-shadow: 0 0 10px rgba(37, 99, 235, 0.2) !important;
+            border-color: #0046BF !important;
+            box-shadow: 0 0 10px rgba(0, 70, 191, 0.2) !important;
         }
 
-        /* Dark mode overrides */
         body.dark {
-            background-color: #0B0F19 !important;
+            background-color: #2C3B4D !important;
             color: #F9FAFB !important;
         }
         body.dark .bg-white {
-            background-color: #1F2937 !important;
+            background-color: #35475C !important;
         }
         body.dark .border-slate-200 {
-            border-color: #374151 !important;
+            border-color: #475B73 !important;
         }
         body.dark .text-slate-800 {
             color: #F9FAFB !important;
         }
         body.dark .text-slate-655, body.dark .text-slate-600 {
-            color: #9CA3AF !important;
+            color: #CBD5E1 !important;
         }
         body.dark .text-slate-500 {
-            color: #9CA3AF !important;
+            color: #94A3B8 !important;
         }
         body.dark input, body.dark select {
-            background-color: #111827 !important;
-            border-color: #374151 !important;
+            background-color: #1E2834 !important;
+            border-color: #475B73 !important;
             color: #F9FAFB !important;
         }
         body.dark input::placeholder {
-            color: #6B7280 !important;
+            color: #94A3B8 !important;
         }
         body.dark a.text-blue-600 {
             color: #60a5fa !important;

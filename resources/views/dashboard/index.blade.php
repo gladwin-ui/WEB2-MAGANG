@@ -22,7 +22,7 @@
     </p>
     <a href="{{ route('import.upload') }}"
        class="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold text-white shadow-sm transition-colors"
-       style="background-color: #2563EB;">
+       style="background-color: #0046BF;">
         <i class="bi bi-cloud-upload"></i>
         Import Data .sql Sekarang
     </a>
@@ -238,8 +238,8 @@
             
             <!-- Sleek Cyber Filter Panel -->
             <form action="{{ route('dashboard') }}" method="GET" class="w-full xl:w-auto">
-                <div class="flex flex-wrap gap-2 text-xs font-mono">
-                    <select name="import_job_id" class="bg-white border rounded px-3 py-1.5 text-slate-700 focus:outline-none focus:border-blue-600 font-bold" style="border-color: #2563EB;">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:flex xl:flex-wrap gap-2 text-xs font-mono w-full">
+                    <select name="import_job_id" class="w-full xl:w-auto bg-white border rounded px-3 py-1.5 text-slate-700 focus:outline-none focus:border-blue-600 font-bold" style="border-color: #0046BF;">
                         <option value="all" {{ $selectedJobId === 'all' ? 'selected' : '' }}>[SEMUA FILE SQL]</option>
                         @foreach($sqlFiles as $file)
                             <option value="{{ $file->id }}" {{ $selectedJobId == $file->id ? 'selected' : '' }}>
@@ -248,46 +248,46 @@
                         @endforeach
                     </select>
 
-                    <select name="project_id" class="bg-white border border-slate-200 rounded px-3 py-1.5 text-slate-700 focus:outline-none focus:border-blue-600">
+                    <select name="project_id" class="w-full xl:w-auto bg-white border border-slate-200 rounded px-3 py-1.5 text-slate-700 focus:outline-none focus:border-blue-600">
                         <option value="">[SEMUA PROYEK]</option>
                         @foreach($projects as $p)
                             <option value="{{ $p->id }}" {{ request('project_id') == $p->id ? 'selected' : '' }}>{{ strtoupper($p->name) }}</option>
                         @endforeach
                     </select>
 
-                    <select name="status" class="bg-white border border-slate-200 rounded px-3 py-1.5 text-slate-700 focus:outline-none focus:border-blue-600">
+                    <select name="status" class="w-full xl:w-auto bg-white border border-slate-200 rounded px-3 py-1.5 text-slate-700 focus:outline-none focus:border-blue-600">
                         <option value="">[SEMUA STATUS]</option>
                         <option value="OPEN" {{ request('status') === 'OPEN' ? 'selected' : '' }}>OPEN</option>
                         <option value="CLOSED" {{ request('status') === 'CLOSED' ? 'selected' : '' }}>CLOSED</option>
                     </select>
 
-                    <select name="severity" class="bg-white border border-slate-200 rounded px-3 py-1.5 text-slate-700 focus:outline-none focus:border-blue-600">
+                    <select name="severity" class="w-full xl:w-auto bg-white border border-slate-200 rounded px-3 py-1.5 text-slate-700 focus:outline-none focus:border-blue-600">
                         <option value="">[SEMUA SEVERITY]</option>
                         <option value="Critical" {{ request('severity') === 'Critical' ? 'selected' : '' }}>CRITICAL</option>
                         <option value="Major" {{ request('severity') === 'Major' ? 'selected' : '' }}>MAJOR</option>
                         <option value="Minor" {{ request('severity') === 'Minor' ? 'selected' : '' }}>MINOR</option>
                     </select>
 
-                    <select name="urgency_sort" class="bg-white border border-slate-200 rounded px-3 py-1.5 text-slate-700 focus:outline-none focus:border-blue-600">
+                    <select name="urgency_sort" class="w-full xl:w-auto bg-white border border-slate-200 rounded px-3 py-1.5 text-slate-700 focus:outline-none focus:border-blue-600">
                         <option value="">[URUTAN DEFAULT: TERBARU]</option>
                         <option value="desc" {{ request('urgency_sort') === 'desc' ? 'selected' : '' }}>URGENCY TERTINGGI KE TERENDAH</option>
                         <option value="asc" {{ request('urgency_sort') === 'asc' ? 'selected' : '' }}>URGENCY TERENDAH KE TERTINGGI</option>
                     </select>
 
-                    <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded px-2.5 py-1 text-slate-700">
+                    <div class="w-full xl:w-auto flex items-center justify-between xl:justify-start gap-1.5 bg-white border border-slate-200 rounded px-2.5 py-1 text-slate-700">
                         <span class="text-[9px] text-slate-400 uppercase font-mono">FROM:</span>
-                        <input type="date" name="date_from" value="{{ request('date_from') }}" class="bg-transparent border-none text-slate-800 text-xs focus:outline-none focus:ring-0 p-0 font-mono w-28" style="color-scheme: light;">
+                        <input type="date" name="date_from" value="{{ request('date_from') }}" class="bg-transparent border-none text-slate-800 text-xs focus:outline-none focus:ring-0 p-0 font-mono w-full xl:w-28" style="color-scheme: light;">
                     </div>
 
-                    <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded px-2.5 py-1 text-slate-700">
+                    <div class="w-full xl:w-auto flex items-center justify-between xl:justify-start gap-1.5 bg-white border border-slate-200 rounded px-2.5 py-1 text-slate-700">
                         <span class="text-[9px] text-slate-400 uppercase font-mono">TO:</span>
-                        <input type="date" name="date_to" value="{{ request('date_to') }}" class="bg-transparent border-none text-slate-800 text-xs focus:outline-none focus:ring-0 p-0 font-mono w-28" style="color-scheme: light;">
+                        <input type="date" name="date_to" value="{{ request('date_to') }}" class="bg-transparent border-none text-slate-800 text-xs focus:outline-none focus:ring-0 p-0 font-mono w-full xl:w-28" style="color-scheme: light;">
                     </div>
 
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded font-bold transition-all shadow-sm">
+                    <button type="submit" class="w-full xl:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded font-bold transition-all shadow-sm">
                         EXECUTE
                     </button>
-                    <a href="{{ route('dashboard') }}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-1.5 rounded transition-all">
+                    <a href="{{ route('dashboard') }}" class="w-full xl:w-auto text-center bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-1.5 rounded transition-all">
                         RESET
                     </a>
                 </div>
@@ -656,10 +656,10 @@
                     }
                 }
             },
-            colors: ['#2563EB'], // corporate primary blue
+            colors: ['#0046BF'], // corporate primary blue
             stroke: {
                 width: 1,
-                colors: ['#2563EB']
+                colors: ['#0046BF']
             },
             fill: {
                 type: 'gradient',
@@ -667,7 +667,7 @@
                     shade: 'light',
                     type: "horizontal",
                     shadeIntensity: 0.5,
-                    gradientToColors: ['#1D4ED8'], // darker blue
+                    gradientToColors: ['#003693'], // darker blue
                     inverseColors: true,
                     opacityFrom: 0.9,
                     opacityTo: 0.6
@@ -741,7 +741,7 @@
                     show: false
                 }
             },
-            colors: ['#2563EB'], // corporate primary blue
+            colors: ['#0046BF'], // corporate primary blue
             stroke: {
                 curve: 'smooth',
                 width: 3

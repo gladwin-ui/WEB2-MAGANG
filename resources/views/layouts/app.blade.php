@@ -29,10 +29,10 @@
                         'text-secondary': 'var(--text-secondary)',
                         'text-tertiary': 'var(--text-tertiary)',
 
-                        'accent-primary': '#2563EB',
-                        'accent-primary-hover': '#1D4ED8',
+                         'accent-primary': '#0046BF',
+                        'accent-primary-hover': '#003693',
                         'accent-primary-soft': 'var(--accent-primary-soft)',
-
+ 
                         'badge-success-bg': 'var(--badge-success-bg)',
                         'badge-success-text': 'var(--badge-success-text)',
                         'badge-warning-bg': 'var(--badge-warning-bg)',
@@ -41,12 +41,12 @@
                         'badge-danger-text': 'var(--badge-danger-text)',
                         'badge-neutral-bg': 'var(--badge-neutral-bg)',
                         'badge-neutral-text': 'var(--badge-neutral-text)',
-
+ 
                         // Fallback/Legacy properties
                         obsidian: 'var(--bg-card)',
                         'panel-bg': 'var(--bg-card)',
                         'panel-border': 'var(--border-default)',
-                        accent: '#2563EB',
+                        accent: '#0046BF',
                         slate: {
                             950: 'var(--bg-main)',
                         },
@@ -75,23 +75,23 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         :root {
-            --bg-main: #FFFFFF;
-            --bg-sidebar: #FFFFFF;
-            --bg-card: #FFFFFF;
-            --bg-card-hover: #F8FAFC;
+            --bg-main: #C9C1B1;
+            --bg-sidebar: #B8B0A0;
+            --bg-card: #D8D1C1;
+            --bg-card-hover: #CEC7B7;
             
-            --border-default: #E2E8F0;
+            --border-default: #ABA293;
             --text-primary: #1E293B;
-            --text-secondary: #64748B;
-            --text-tertiary: #94A3B8;
+            --text-secondary: #475569;
+            --text-tertiary: #64748B;
             
-            --bg-input: #FFFFFF;
-            --border-input: #E2E8F0;
+            --bg-input: #D8D1C1;
+            --border-input: #ABA293;
             --text-input: #1E293B;
 
-            --bg-hover-item: #F8FAFC;
+            --bg-hover-item: #CEC7B7;
             
-            --accent-primary-soft: #EFF6FF;
+            --accent-primary-soft: #EBE5DB;
             --badge-success-bg: #DCFCE7;
             --badge-success-text: #16A34A;
             --badge-warning-bg: #FEF9C3;
@@ -103,30 +103,30 @@
         }
 
         body.dark {
-            --bg-main: #0B0F19;
-            --bg-sidebar: #111827;
-            --bg-card: #1F2937;
-            --bg-card-hover: #374151;
+            --bg-main: #1B2632;
+            --bg-sidebar: #131B24;
+            --bg-card: #22303F;
+            --bg-card-hover: #2B3D50;
             
-            --border-default: #374151;
+            --border-default: #2E4054;
             --text-primary: #F9FAFB;
-            --text-secondary: #9CA3AF;
-            --text-tertiary: #6B7280;
+            --text-secondary: #CBD5E1;
+            --text-tertiary: #94A3B8;
             
-            --bg-input: #111827;
-            --border-input: #374151;
+            --bg-input: #131B24;
+            --border-input: #2E4054;
             --text-input: #F9FAFB;
 
-            --bg-hover-item: #374151;
+            --bg-hover-item: #2B3D50;
             
-            --accent-primary-soft: #1E3A8A;
-            --badge-success-bg: rgba(22, 163, 74, 0.2);
+            --accent-primary-soft: #1B2632;
+            --badge-success-bg: rgba(74, 222, 128, 0.15);
             --badge-success-text: #4ADE80;
-            --badge-warning-bg: rgba(202, 138, 4, 0.2);
+            --badge-warning-bg: rgba(251, 191, 36, 0.15);
             --badge-warning-text: #FBBF24;
-            --badge-danger-bg: rgba(220, 38, 38, 0.2);
+            --badge-danger-bg: rgba(248, 113, 113, 0.15);
             --badge-danger-text: #F87171;
-            --badge-neutral-bg: rgba(71, 85, 105, 0.2);
+            --badge-neutral-bg: rgba(148, 163, 184, 0.15);
             --badge-neutral-text: #94A3B8;
         }
 
@@ -136,6 +136,12 @@
         }
 
         /* Force font override globally to prevent CDN/Tailwind fallback conflicts */
+        body:not(.dark) .bg-white {
+            background-color: var(--bg-card) !important;
+        }
+        body:not(.dark) .bg-slate-50 {
+            background-color: var(--bg-main) !important;
+        }
         body {
             font-family: 'Inter', sans-serif !important;
             background-color: var(--bg-main) !important;
@@ -189,8 +195,8 @@
             color: var(--text-tertiary) !important;
         }
         input:focus, select:focus, textarea:focus {
-            border-color: #2563EB !important; /* Focus corporate blue */
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+            border-color: #0046BF !important; /* Focus corporate blue */
+            box-shadow: 0 0 0 3px rgba(0, 70, 191, 0.15) !important;
         }
 
         /* Global overrides for standard Light Mode classes when Dark Mode is active */
@@ -275,14 +281,14 @@
             background-color: transparent !important;
             border-left-width: 2px !important;
             border-left-style: solid !important;
-            border-left-color: #2563EB !important;
-            color: #2563EB !important;
+            border-left-color: #0046BF !important;
+            color: #0046BF !important;
         }
 
         /* Hover states for menu items in Light Mode */
         .hover\:bg-slate-100\/50:hover {
             background-color: var(--bg-card-hover) !important;
-            color: #2563EB !important;
+            color: #0046BF !important;
         }
 
         /* Sidebar links active & hover overrides to ensure no yellow background */
@@ -293,14 +299,14 @@
         aside nav a.bg-blue-50\/30,
         aside nav a[class*="bg-blue-50"] {
             background-color: transparent !important;
-            border-left: 2px solid #2563EB !important;
-            color: #2563EB !important;
+            border-left: 2px solid #0046BF !important;
+            color: #0046BF !important;
             font-weight: 700 !important;
         }
         /* Hover states */
         aside nav a:hover {
             background-color: var(--bg-card-hover) !important;
-            color: #2563EB !important;
+            color: #0046BF !important;
         }
 
         /* Dark mode overrides for active/hover states */
@@ -371,36 +377,48 @@
 
         /* Collapsible Sidebar Styles */
         .sidebar-transition {
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
-        .sidebar-collapsed aside {
-            width: 0px !important;
-            padding-left: 0px !important;
-            padding-right: 0px !important;
-            border-right-width: 0px !important;
-            overflow: hidden !important;
+        @media (min-width: 768px) {
+            .sidebar-collapsed aside {
+                width: 0px !important;
+                padding-left: 0px !important;
+                padding-right: 0px !important;
+                border-right-width: 0px !important;
+                overflow: hidden !important;
+            }
+            body.sidebar-collapsed #floating-controls {
+                display: flex !important;
+            }
+            body.sidebar-collapsed .content-wrapper {
+                padding-left: 6.5rem !important; /* pl-26 to give space for absolute controls container */
+            }
         }
 
         /* Show floating controls only when collapsed */
         #floating-controls {
             display: none;
         }
-        body.sidebar-collapsed #floating-controls {
-            display: flex !important;
+
+        /* Mobile Drawer Sidebar Styles */
+        @media (max-width: 767.98px) {
+            body.sidebar-mobile-open aside {
+                transform: translateX(0) !important;
+            }
+            body.sidebar-mobile-open #sidebar-overlay {
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
         }
 
-        /* Shift main content's child to the right when collapsed to avoid overlapping with floating controls */
         .content-wrapper {
             transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        body.sidebar-collapsed .content-wrapper {
-            padding-left: 6.5rem !important; /* pl-26 to give space for absolute controls container */
         }
 
         /* Premium Styling Upgrades */
         .premium-card {
-            background-color: #FFFFFF !important;
-            border: 1px solid #E2E8F0 !important;
+            background-color: var(--bg-card) !important;
+            border: 1px solid var(--border-default) !important;
             border-radius: 12px !important;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -423,21 +441,21 @@
             left: 0 !important;
             width: 100% !important;
             height: 3px !important;
-            background: #F59E0B !important;
+            background: #FEEF22 !important;
             z-index: 10 !important;
         }
 
         /* Primary Button / Gradient Accent */
         .btn-premium-gradient {
-            background: #F59E0B !important;
+            background: #FEEF22 !important;
             color: #1E293B !important;
             transition: all 0.2s ease-in-out !important;
         }
 
         .btn-premium-gradient:hover {
-            background: #D97706 !important;
+            background: #E5D71F !important;
             transform: translateY(-1px) !important;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+            box-shadow: 0 4px 12px rgba(254, 239, 34, 0.3) !important;
         }
 
         .btn-premium-gradient:active {
@@ -466,10 +484,10 @@
         button.bg-blue-600,
         a.bg-blue-600,
         a.btn-premium-gradient {
-            background-color: #F59E0B !important;
+            background-color: #FEEF22 !important;
             background-image: none !important;
             color: #1E293B !important;
-            border-color: #F59E0B !important;
+            border-color: #FEEF22 !important;
         }
         button[type="submit"]:hover,
         .btn-primary:hover,
@@ -477,10 +495,10 @@
         a.bg-blue-600:hover,
         a.btn-premium-gradient:hover,
         .hover\:bg-blue-700:hover {
-            background-color: #D97706 !important;
+            background-color: #E5D71F !important;
             background-image: none !important;
             color: #1E293B !important;
-            border-color: #D97706 !important;
+            border-color: #E5D71F !important;
         }
 
         /* Custom scrollbar for data dense tables */
@@ -512,7 +530,7 @@
     </style>
     @yield('styles')
 </head>
-<body class="bg-[#F8FAFC] text-slate-800 font-sans min-h-screen flex">
+<body class="bg-[#F8FAFC] text-slate-800 font-sans min-h-screen flex flex-col md:flex-row">
     <script>
         (function() {
             const theme = localStorage.getItem('theme');
@@ -523,8 +541,28 @@
         })();
     </script>
 
+    <!-- Mobile Sticky Top Header -->
+    <header class="md:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-card border-b border-panel-border z-30 sticky top-0 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 relative">
+                <img src="{{ asset('Logo.png') }}" alt="Logo PT Hariff" class="absolute inset-0 w-full h-full object-contain rounded brand-logo-light">
+                <img src="{{ asset('logo-darkmode.jpg') }}" alt="Logo PT Hariff" class="absolute inset-0 w-full h-full object-contain rounded brand-logo-dark hidden">
+            </div>
+            <div>
+                <span class="font-extrabold text-[10px] text-slate-800 dark:text-slate-200 block leading-tight uppercase tracking-wider">BugTrack MFG</span>
+                <span class="block text-[6px] text-slate-400 font-mono tracking-widest uppercase leading-none">PT HARIFF</span>
+            </div>
+        </div>
+        <button id="mobile-menu-toggle" class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-600 dark:bg-gray-800 dark:border-gray-700 transition-all flex items-center justify-center cursor-pointer shadow-sm">
+            <i class="bi bi-list text-xl"></i>
+        </button>
+    </header>
+
+    <!-- Mobile Sidebar Dark Overlay Backdrop -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/50 z-40 hidden transition-opacity duration-300"></div>
+
     <!-- Sidebar Navigation -->
-    <aside class="w-64 bg-white border-r border-panel-border flex flex-col justify-between p-6 shrink-0 sidebar-transition">
+    <aside class="w-64 bg-white border-r border-panel-border flex flex-col justify-between p-6 shrink-0 sidebar-transition max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:-translate-x-full max-md:shadow-2xl">
         <div>
             <!-- Brand Logo & Toggle -->
             <div class="flex items-center justify-between gap-3 mb-8">
@@ -610,9 +648,9 @@
     </aside>
 
     <!-- Main Workspace -->
-    <main class="flex-1 p-8 overflow-y-auto relative">
-        <!-- Floating Controls Container (Visible only when sidebar is collapsed) -->
-        <div id="floating-controls" class="hidden absolute top-8 left-8 flex items-center gap-2 z-50">
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto relative">
+        <!-- Floating Controls Container (Visible only when sidebar is collapsed on desktop) -->
+        <div id="floating-controls" class="hidden md:flex absolute top-8 left-8 flex items-center gap-2 z-50">
             <button id="sidebar-toggle-out" class="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center cursor-pointer" title="Tampilkan Sidebar">
                 <i class="bi bi-list text-lg"></i>
             </button>
@@ -647,6 +685,8 @@
             const toggleOut = document.getElementById('sidebar-toggle-out');
             const themeToggle = document.getElementById('theme-toggle');
             const themeToggleOut = document.getElementById('theme-toggle-out');
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
             const body = document.body;
             
             // Load sidebar state from localStorage
@@ -656,8 +696,12 @@
             }
             
             function toggleSidebar() {
-                body.classList.toggle('sidebar-collapsed');
-                localStorage.setItem('sidebar-collapsed', body.classList.contains('sidebar-collapsed'));
+                if (window.innerWidth < 768) {
+                    body.classList.remove('sidebar-mobile-open');
+                } else {
+                    body.classList.toggle('sidebar-collapsed');
+                    localStorage.setItem('sidebar-collapsed', body.classList.contains('sidebar-collapsed'));
+                }
             }
 
             if (toggleIn) {
@@ -665,6 +709,18 @@
             }
             if (toggleOut) {
                 toggleOut.addEventListener('click', toggleSidebar);
+            }
+
+            // Mobile specific drawer listeners
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    body.classList.add('sidebar-mobile-open');
+                });
+            }
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', function() {
+                    body.classList.remove('sidebar-mobile-open');
+                });
             }
 
             // Theme toggle UI updater
