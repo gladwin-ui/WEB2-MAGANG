@@ -220,7 +220,7 @@ class DashboardController extends Controller
             $query->latest();
         }
 
-        $auditBugs = $query->paginate(20)->withQueryString();
+        $auditBugs = $query->paginate(10)->withQueryString();
 
         // Fetch projects for filter dropdown
         $projects = Project::orderBy('name')->get();
