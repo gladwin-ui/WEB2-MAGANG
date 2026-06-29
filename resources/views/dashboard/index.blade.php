@@ -387,7 +387,7 @@
                                     
                                     <!-- Auto-category and expander details -->
                                     <div class="text-[10px] font-mono uppercase font-semibold text-slate-650">
-                                        AI Category: <span class="text-blue-600">{{ $b->damage_category ?? 'PENDING MECHANIC CLOSE' }}</span>
+                                        AI Category: <span class="text-blue-600">{{ $b->damage_category ?? ($b->status === 'CLOSED' ? 'UNANALYZED' : 'PENDING MECHANIC CLOSE') }}</span>
                                     </div>
 
 
@@ -495,19 +495,38 @@
 @section('scripts')
 @if($hasImportedData)
 <script>
-    function reprocessAI(bugId, btnElement) {
+    async function reprocessAI(bugId, btnElement) {
         // Toggle icon spin animation
         const icon = btnElement.querySelector('i');
         if(icon) icon.classList.add('animate-spin');
         
-        // Show status log in console/toast simulation
         console.log(`[QA CONTROL LOG]: Sending reprocess request for Ticket #${bugId}`);
         
-        // Call backend or mock trigger
-        setTimeout(() => {
-            alert(`[QA TERMINAL CONTROL]: Reprocessing AI algorithms (Sentiment, Spam check, Severity recommendation) for Bug Ticket #${bugId} succeeded.`);
-            window.location.reload();
-        }, 800);
+        try {
+            const token = document.querySelector('meta[name="csrf-token"]')?.content;
+            const res = await fetch(`/bugs/${bugId}/reprocess`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                alert(`[QA TERMINAL CONTROL]: Reprocessing AI algorithms for Bug Ticket #${bugId} succeeded.`);
+                window.location.reload();
+            } else {
+                if(icon) icon.classList.remove('animate-spin');
+                alert(data.message || 'Gagal memproses ulang AI.');
+            }
+        } catch (err) {
+            if(icon) icon.classList.remove('animate-spin');
+            console.error(err);
+            alert('Terjadi kesalahan koneksi saat memproses ulang AI.');
+        }
     }
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -608,8 +627,8 @@
 
         // 2. Culpable Hardware Components Bar Chart (Right Column)
         @php
-            $catNames = $damageCategories->isNotEmpty() ? $damageCategories->pluck('damage_category')->toArray() : ['Daya / Power', 'Konektivitas / Signal', 'Interface / Komponen Fisik', 'Firmware / Embedded OS'];
-            $catCounts = $damageCategories->isNotEmpty() ? $damageCategories->pluck('count')->toArray() : [0, 0, 0, 0];
+            $catNames = $damageCategories->isNotEmpty() ? $damageCategories->pluck('damage_category')->toArray() : ['Hubungan Pendek/Short Circuit', 'Overheat/Panas Berlebih', 'Korosi/Kelembapan', 'Kesalahan Pemasangan', 'Kualitas Komponen'];
+            $catCounts = $damageCategories->isNotEmpty() ? $damageCategories->pluck('count')->toArray() : [0, 0, 0, 0, 0];
         @endphp
 
         var componentsOptions = {

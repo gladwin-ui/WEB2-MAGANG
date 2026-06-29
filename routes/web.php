@@ -48,5 +48,6 @@ Route::middleware(['auth'])->group(function () {
     // Trash page removed — redirect to history
     Route::get('/import/trash', fn() => redirect()->route('import.history'))->name('import.trash');
     Route::post('/import/reanalyze',     [ImportController::class, 'reanalyze'])->name('import.reanalyze');
+    Route::post('/bugs/{bug}/reprocess', [BugController::class, 'reprocess'])->name('bugs.reprocess');
     Route::delete('/import/history/{id}', [ImportController::class, 'deleteFromHistory'])->name('import.history.delete');
 });

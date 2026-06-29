@@ -11,7 +11,7 @@ class BugAnalyticsService
 
     public function __construct()
     {
-        $this->baseUrl = env('PYTHON_ANALYTICS_SERVICE_URL', 'http://127.0.0.1:8000');
+        $this->baseUrl = env('PYTHON_ANALYTICS_SERVICE_URL', 'http://127.0.0.1:8001');
     }
 
     /**
@@ -30,6 +30,7 @@ class BugAnalyticsService
             $response = Http::timeout(10)
                 ->post("{$this->baseUrl}/analyze-bug-report", [
                     'text' => $fullText,
+                    'gemini_api_key' => env('GEMINI_API_KEY'),
                 ]);
 
             $result = [];

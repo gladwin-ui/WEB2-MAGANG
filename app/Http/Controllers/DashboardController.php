@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Bug;
 use App\Models\ImportJob;
 use App\Models\Project;
+use App\Services\BugAnalyticsService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Response;
@@ -23,6 +24,56 @@ class DashboardController extends Controller
             ->get();
 
         $hasImportedData = $sqlFiles->isNotEmpty();
+
+        if ($hasImportedData) {
+            $analytics = app(BugAnalyticsService::class);
+
+            // 1. Auto-analyze Stage 2 (damage category) for CLOSED bugs (critical for chart/table)
+            $unanalyzedStage2 = Bug::whereNull('damage_category')
+                ->where('status', 'CLOSED')
+                ->where(function($q) {
+                    $q->whereNotNull('root_cause')->where('root_cause', '!=', '')
+                      ->orWhereNotNull('repair_action')->where('repair_action', '!=', '');
+                })
+                ->limit(500)
+                ->get();
+
+            if ($unanalyzedStage2->isNotEmpty()) {
+                foreach ($unanalyzedStage2 as $bug) {
+                    $rootCause    = $bug->root_cause    ?? '';
+                    $repairAction = $bug->repair_action ?? '';
+                    if (!empty(trim($rootCause)) || !empty(trim($repairAction))) {
+                        $res2 = $analytics->analyzeDamageCause($rootCause, $repairAction);
+                        if (!empty($res2['damage_category'])) {
+                            $bug->damage_category = $res2['damage_category'];
+                            $bug->save();
+                        }
+                    }
+                }
+            }
+
+            // 2. Auto-analyze Stage 1 (sentiment/spam/severity)
+            $unanalyzedStage1 = Bug::whereNull('sentiment_label')
+                ->whereNotNull('description')
+                ->where('description', '!=', '')
+                ->limit(500)
+                ->get();
+
+            if ($unanalyzedStage1->isNotEmpty()) {
+                foreach ($unanalyzedStage1 as $bug) {
+                    $res1 = $analytics->analyzeBugReport($bug);
+                    if (!empty($res1)) {
+                        $bug->sentiment_label                  = $res1['sentiment_label'] ?? null;
+                        $bug->sentiment_score                  = $res1['sentiment_score'] ?? null;
+                        $bug->is_spam                          = (bool) ($res1['is_spam'] ?? false);
+                        $bug->spam_reason                      = $res1['spam_reason'] ?? null;
+                        $bug->severity_recommended             = $res1['severity_recommended'] ?? null;
+                        $bug->severity_recommendation_reason   = $res1['severity_recommendation_reason'] ?? null;
+                        $bug->save();
+                    }
+                }
+            }
+        }
 
         if (!$hasImportedData) {
             return view('dashboard.index', [
@@ -94,10 +145,15 @@ class DashboardController extends Controller
         // 6. spamBlocked
         $spamBlocked = $applyJobFilter(Bug::where('is_spam', true))->count();
 
-        // Charts
-        $damageDistribution = $applyJobFilter(Bug::whereNotNull('damage_category'))
+        // Charts (Top 5 damage categories, excluding 'Lain-lain')
+        $damageDistribution = $applyJobFilter(
+            Bug::whereNotNull('damage_category')
+               ->where('damage_category', '!=', 'Lain-lain')
+        )
             ->groupBy('damage_category')
             ->selectRaw('damage_category, count(*) as total')
+            ->orderByDesc('total')
+            ->limit(5)
             ->get();
 
         $topProjects = $applyJobFilter(Bug::with('project'))

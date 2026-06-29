@@ -13,6 +13,7 @@ app = FastAPI(title="Manufacturing Tracking System by PT Hariff Analytics AI Ser
 # Request Models
 class BugReportRequest(BaseModel):
     text: str
+    gemini_api_key: Optional[str] = None
 
 class BugReportResponse(BaseModel):
     sentiment_label: Optional[str]
@@ -34,7 +35,7 @@ def analyze_bug_report(request: BugReportRequest):
     description = request.text
     
     # 1. Spam Detection
-    is_spam, spam_reason = is_spam_report(description)
+    is_spam, spam_reason = is_spam_report(description, request.gemini_api_key)
     
     # 2. Sentiment Analysis
     sentiment_label, sentiment_score = analyze_sentiment(description)
