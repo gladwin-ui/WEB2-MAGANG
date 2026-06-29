@@ -156,7 +156,7 @@ analytics-service/
 ├── main.py
 ├── services/
 │   ├── sentiment.py                     <- Adaptasi konteks teknis manufaktur
-│   ├── spam_detection.py                <- Adaptasi konteks staf internal (BUKAN customer)
+│   ├── spam_detection_improved.py       <- Sistem deteksi spam 3-Tier (Lokal & AI)
 │   ├── severity_recommendation.py       <- Usulkan severity dari description
 │   └── damage_categorization.py         <- Kategorikan penyebab dari root_cause+repair_action
 └── requirements.txt
@@ -280,6 +280,15 @@ analytics-service/
 ---
 
 ## 📝 Changelog
+
+### v0.14 — Deteksi Spam 3-Tier Peka Konteks & ML Lokal (Offline / AI Hybrid)
+- **[SPAM DETECTION]** Mengimplementasikan arsitektur sistem deteksi spam 3-Tier lengkap dengan pemisahan berkas ke [spam_detection_improved.py](file:///d:/MAGANG/WEB2-MAGANG/analytics-service/services/spam_detection_improved.py).
+  - **Tier 1:** Deteksi kata kunci promosi, out-of-context filter (saham, skincare, dll.), dan judi slot online.
+  - **Tier 2:** Validasi panjang teks, regex karakter berulang (dengan pengecualian format hex hardware), teks tanpa spasi, dan gibberish.
+  - **Tier 3:** Menggunakan Gemini API jika API Key tersedia, atau otomatis *fallback* menggunakan model Machine Learning Ensemble lokal (`VotingSpamDetector`) secara 100% offline.
+- **[SPAM DETECTION]** Menghapus kata kunci pengujian generik (`test`, `testing`, `uji`, `pengujian`, `coba`, `cobain`, `run`, `running`, `jalan`) dari *context whitelist* agar tidak disalahgunakan untuk meloloskan laporan palsu/sampah.
+- **[SPAM DETECTION]** Menambahkan kolom `spam_confidence` ke dalam schema response `BugReportResponse`.
+- **[CLEANUP]** Menghapus berkas lama `spam_detection.py` karena fungsinya sudah digantikan sepenuhnya oleh `spam_detection_improved.py`.
 
 ### v0.13 — Deteksi Spam Hibrida Peka Konteks & ML Lokal (Offline)
 - **[SPAM DETECTION]** Migrasi penuh dari API Gemini ke deteksi spam offline menggunakan **Pendekatan Hibrida Peka Konteks & Machine Learning Lokal** (Ensemble Voting dari 5 model ML lokal via `spam-detector-ai`).

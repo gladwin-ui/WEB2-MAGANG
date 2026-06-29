@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Test spam detection accuracy with sample data"""
 
-from services.spam_detection import is_spam_report
+from services.spam_detection_improved import is_spam_improved
 import sys
 
 # 50 obvious spam samples
@@ -85,7 +85,7 @@ def test_spam_detection(api_key=None, model_name="Local Python Rule-Based & Cont
     total_spam = len(SPAM_SAMPLES[:15])
     print(f"Testing {total_spam} spam samples...")
     for i, sample in enumerate(SPAM_SAMPLES[:15], 1):
-        is_spam, reason, confidence = is_spam_report(sample, api_key, model_name)
+        is_spam, reason, confidence = is_spam_improved(sample, api_key)
         status = "[OK]" if is_spam else "[FAIL]"
         if i <= 10:  # Print first 10 for display
             print(f"{status} Spam Sample {i}: {sample[:40]}... (confidence: {confidence})")
@@ -100,7 +100,7 @@ def test_spam_detection(api_key=None, model_name="Local Python Rule-Based & Cont
     print(f"\n{'='*50}\n")
     print(f"Testing {total_legit} legitimate samples...")
     for i, sample in enumerate(LEGITIMATE_SAMPLES, 1):
-        is_spam, reason, confidence = is_spam_report(sample, api_key, model_name)
+        is_spam, reason, confidence = is_spam_improved(sample, api_key)
         status = "[OK]" if not is_spam else "[FAIL]"
         print(f"{status} Legit Sample {i}: {sample[:40]}... (is_spam: {is_spam})")
         if is_spam:

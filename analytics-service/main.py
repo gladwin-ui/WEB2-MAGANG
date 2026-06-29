@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 from services.sentiment import analyze_sentiment
-from services.spam_detection import is_spam_report
+from services.spam_detection_improved import is_spam_improved
 from services.severity_recommendation import recommend_severity
 from services.damage_categorization import categorize_damage
 
@@ -21,6 +21,7 @@ class BugReportResponse(BaseModel):
     sentiment_score: Optional[float]
     is_spam: bool
     spam_reason: Optional[str]
+    spam_confidence: Optional[float] = None
     severity_recommended: str
     severity_recommendation_reason: str
 
@@ -35,23 +36,20 @@ class DamageCauseResponse(BaseModel):
 def analyze_bug_report(request: BugReportRequest):
     description = request.text
     
-    # 1. Spam Detection (with confidence)
-    is_spam, spam_reason, spam_confidence = is_spam_report(
-        description, 
-        request.gemini_api_key, 
-        request.gemini_model
-    )
+    # Use improved 3-tier spam detection
+    is_spam, spam_reason, confidence = is_spam_improved(description, request.gemini_api_key)
     
-    # 2. Sentiment Analysis
+    # Sentiment analysis
     sentiment_label, sentiment_score = analyze_sentiment(description)
     
-    # If spam detected (high confidence), force sentiment to spam
-    if is_spam and (spam_confidence is None or spam_confidence > 0.65):
+    # Override sentiment if spam (high confidence)
+    if is_spam and (confidence is None or confidence > 0.70):
         sentiment_label = "spam"
-    elif is_spam and spam_confidence and spam_confidence < 0.65:
-        sentiment_label = "uncertain_spam"  # Flag for manual review
+    elif is_spam and confidence and confidence < 0.70:
+        # Borderline case
+        sentiment_label = "uncertain_spam"
     
-    # 3. Severity Recommendation
+    # Severity recommendation
     severity_rec, severity_reason = recommend_severity(description)
     
     return BugReportResponse(
@@ -59,6 +57,7 @@ def analyze_bug_report(request: BugReportRequest):
         sentiment_score=sentiment_score,
         is_spam=is_spam,
         spam_reason=spam_reason,
+        spam_confidence=confidence,
         severity_recommended=severity_rec,
         severity_recommendation_reason=severity_reason
     )
