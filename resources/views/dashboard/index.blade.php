@@ -16,6 +16,10 @@
         Belum ada file <code class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">.sql</code> yang berhasil diimport.
         Dashboard analitik akan tampil setelah proses import pertama selesai.
     </p>
+    <p class="text-xs text-slate-400 mb-8">
+        Pastikan <code class="font-mono bg-slate-100 px-1 rounded">php artisan queue:work</code> sudah berjalan
+        agar job import diproses.
+    </p>
     <a href="{{ route('import.upload') }}"
        class="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold text-white shadow-sm transition-colors"
        style="background-color: #0046BF;">
@@ -403,12 +407,10 @@
                                         @endif
                                     </div>
                                     
-                                    @unless($isSpam)
-                                        <!-- Reprocess AI Button -->
-                                        <button onclick="reprocessAI({{ $b->id }}, this)" class="text-[9px] font-bold font-mono border border-slate-200 hover:border-blue-600 bg-slate-50 text-slate-600 hover:text-blue-600 px-2.5 py-1 rounded transition-all flex items-center gap-1 select-none active:scale-95 shadow-sm">
-                                            <i class="bi bi-arrow-clockwise"></i> REPROCESS AI
-                                        </button>
-                                    @endunless
+                                    <!-- Reprocess AI Button -->
+                                    <button onclick="reprocessAI({{ $b->id }}, this)" class="text-[9px] font-bold font-mono border border-slate-200 hover:border-blue-600 bg-slate-50 text-slate-600 hover:text-blue-600 px-2.5 py-1 rounded transition-all flex items-center gap-1 select-none active:scale-95 shadow-sm">
+                                        <i class="bi bi-arrow-clockwise"></i> REPROCESS AI
+                                    </button>
                                 </div>
                             </td>
                         </tr>
