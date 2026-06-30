@@ -72,6 +72,66 @@ def get_ml_detector():
                 _detector_instance = None
     return _detector_instance
 
+
+def _first_prediction_value(value):
+    try:
+        return value[0]
+    except (TypeError, IndexError):
+        return value
+
+
+def _is_spam_label(label) -> bool:
+    if isinstance(label, bool):
+        return label
+    if isinstance(label, (int, float)):
+        return int(label) == 1
+
+    label_text = str(label).strip().lower()
+    return label_text in {"1", "true", "spam", "is_spam", "yes"}
+
+
+def _get_custom_model_confidence(model, text: str, predicted_label) -> Optional[float]:
+    if not hasattr(model, "predict_proba"):
+        return 0.90
+
+    try:
+        probabilities = model.predict_proba([text])[0]
+        classes = getattr(model, "classes_", None)
+
+        if classes is not None:
+            predicted_text = str(predicted_label).strip().lower()
+            for index, class_label in enumerate(classes):
+                class_text = str(class_label).strip().lower()
+                if class_text == predicted_text:
+                    return round(float(probabilities[index]), 4)
+
+                if _is_spam_label(class_label) and _is_spam_label(predicted_label):
+                    return round(float(probabilities[index]), 4)
+
+        return round(float(max(probabilities)), 4)
+    except Exception as e:
+        print(f"[WARNING] Failed to calculate custom spam model confidence: {e}")
+        return 0.90
+
+
+def predict_with_custom_model(text: str) -> Optional[Tuple[bool, str, Optional[float]]]:
+    if CUSTOM_MODEL is None:
+        return None
+
+    try:
+        raw_prediction = CUSTOM_MODEL.predict([text])
+        predicted_label = _first_prediction_value(raw_prediction)
+        is_spam = _is_spam_label(predicted_label)
+        confidence = _get_custom_model_confidence(CUSTOM_MODEL, text, predicted_label)
+
+        if is_spam:
+            return True, "Terdeteksi sebagai spam oleh custom trained model", confidence
+
+        return False, "Dinyatakan valid oleh custom trained model", confidence
+    except Exception as e:
+        print(f"[WARNING] Custom spam model prediction failed: {e}")
+        return None
+
 # ===== TIER 1: Obvious Spam Keywords (English & Indonesian) =====
 OBVIOUS_SPAM_KEYWORDS = {
     # Financial scams
@@ -168,7 +228,7 @@ CONTEXT_KEYWORDS = [
 
 def is_spam_improved(text: str, api_key=None) -> Tuple[bool, Optional[str], Optional[float]]:
     """
-    3-tier spam detection system
+    4-tier spam detection system
     Returns: (is_spam: bool, reason: str, confidence: 0.0-1.0)
     """
     if not text or not isinstance(text, str):
@@ -240,10 +300,12 @@ def is_spam_improved(text: str, api_key=None) -> Tuple[bool, Optional[str], Opti
     if context_matches >= 1:
         return False, None, None
 
-    # ===== TIER 3: Local ML Ensemble (Uncertain Cases) =====
-    # Cost: Free Local ML
-    
-    # Use local VotingSpamDetector ML Model
+    # ===== TIER 4: Custom Model or Local ML Ensemble (Uncertain Cases) =====
+    # Prefer custom trained model. Fall back to VotingSpamDetector.
+    custom_result = predict_with_custom_model(text_stripped)
+    if custom_result is not None:
+        return custom_result
+
     ml_detector = get_ml_detector()
     if ml_detector is not None:
         try:

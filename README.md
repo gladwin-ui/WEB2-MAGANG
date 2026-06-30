@@ -298,7 +298,7 @@ analytics-service/
 - **[ANALYTICS SERVICE]** Response `/analyze-bug-report` menambahkan `spam_tier`, `duplicates`, `duplicate_count`, dan `processing_time_ms`.
 - **[ANALYTICS SERVICE]** Menambahkan endpoint `/health` untuk status service, versi, dan daftar model.
 - **[SPAM DETECTION]** Menambahkan facade `services/spam_detection.py` dan wrapper `detect_spam()` dengan return `(is_spam, reason, confidence, tier)`.
-- **[SPAM DETECTION]** Menyiapkan slot custom trained model di `analytics-service/models/spam_detector_model.pkl`; model diload saat startup jika file tersedia.
+- **[SPAM DETECTION]** Menyiapkan dan menghubungkan custom trained model di `analytics-service/models/spam_detector_model.pkl`; Tier 4 memakai model ini lebih dulu, lalu fallback ke `VotingSpamDetector`.
 - **[DUPLICATE DETECTION]** Menambahkan `services/duplicate_detection.py` sebagai placeholder future duplicate AI.
 - **[LARAVEL]** `BugAnalyticsService` mengirim `bug_id` ke Analytics Service dan tetap hanya memanggil satu endpoint Stage 1.
 - **[CLEANUP]** README disinkronkan: Gemini API tidak digunakan dan tidak boleh ditambahkan kembali.

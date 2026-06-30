@@ -187,7 +187,7 @@ Example:
 analytics-service/models/spam_detector_model.pkl
 ```
 
-At startup, service checks for that file and loads it with `joblib` if present. If no custom model exists, service keeps using local rule tiers and `VotingSpamDetector`.
+At startup, service checks for that file and loads it with `joblib` if present. Tier 4 uses the custom model first. If no custom model exists or prediction fails, service falls back to `VotingSpamDetector`.
 
 Models must be loaded during startup, not per request.
 

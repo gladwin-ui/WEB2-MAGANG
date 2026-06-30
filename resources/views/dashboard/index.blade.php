@@ -16,10 +16,6 @@
         Belum ada file <code class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">.sql</code> yang berhasil diimport.
         Dashboard analitik akan tampil setelah proses import pertama selesai.
     </p>
-    <p class="text-xs text-slate-400 mb-8">
-        Pastikan <code class="font-mono bg-slate-100 px-1 rounded">php artisan queue:work</code> sudah berjalan
-        agar job import diproses.
-    </p>
     <a href="{{ route('import.upload') }}"
        class="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold text-white shadow-sm transition-colors"
        style="background-color: #0046BF;">
@@ -347,11 +343,6 @@
                                             <span class="text-[9px] font-bold font-mono bg-green-100 text-green-700 border border-green-200 px-2 py-0.2 rounded uppercase">MINOR</span>
                                         @endif
 
-                                        @if($isSpam)
-                                            <span class="inline-flex items-center gap-1 bg-red-100 text-red-700 border border-red-200 px-1.5 py-0.2 rounded text-[9px] font-bold font-mono uppercase tracking-wider" title="Laporan terdeteksi sebagai spam: {{ $b->spam_reason ?? 'Tidak substantif' }}">
-                                                <i class="bi bi-exclamation-octagon"></i> SPAM
-                                            </span>
-                                        @endif
                                     </div>
                                 </div>
                             </td>
@@ -391,25 +382,33 @@
                             <td class="py-4 px-4 text-right">
                                 <div class="flex flex-col items-end gap-2.5">
                                     <div class="flex items-center gap-2">
-                                        @if($b->is_rework)
-                                            <span class="inline-flex bg-red-100 text-red-700 border border-red-200 px-2 py-0.5 rounded text-[9px] font-bold font-mono uppercase tracking-widest">REWORK</span>
-                                        @endif
-
-                                        @if($b->status === 'CLOSED')
-                                            <span class="inline-flex items-center gap-1.5 bg-green-100 text-green-700 border border-green-200 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono uppercase tracking-wider">
-                                                CLOSED // {{ strtoupper($b->fixed_by ?? 'System') }}
+                                        @if($isSpam)
+                                            <span class="inline-flex items-center gap-1 bg-red-100 text-red-700 border border-red-200 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono uppercase tracking-wider" title="Laporan terdeteksi sebagai spam: {{ $b->spam_reason ?? 'Tidak substantif' }}">
+                                                <i class="bi bi-exclamation-octagon"></i> SPAM
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center gap-1.5 bg-yellow-100 text-yellow-700 border border-yellow-250 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono uppercase tracking-wider">
-                                                <span class="h-1.5 w-1.5 rounded-full bg-yellow-500"></span> OPEN QUEUE
-                                            </span>
+                                            @if($b->is_rework)
+                                                <span class="inline-flex bg-red-100 text-red-700 border border-red-200 px-2 py-0.5 rounded text-[9px] font-bold font-mono uppercase tracking-widest">REWORK</span>
+                                            @endif
+
+                                            @if($b->status === 'CLOSED')
+                                                <span class="inline-flex items-center gap-1.5 bg-green-100 text-green-700 border border-green-200 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono uppercase tracking-wider">
+                                                    CLOSED // {{ strtoupper($b->fixed_by ?? 'System') }}
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1.5 bg-yellow-100 text-yellow-700 border border-yellow-250 px-2.5 py-0.5 rounded text-[9px] font-bold font-mono uppercase tracking-wider">
+                                                    <span class="h-1.5 w-1.5 rounded-full bg-yellow-500"></span> OPEN QUEUE
+                                                </span>
+                                            @endif
                                         @endif
                                     </div>
                                     
-                                    <!-- Reprocess AI Button -->
-                                    <button onclick="reprocessAI({{ $b->id }}, this)" class="text-[9px] font-bold font-mono border border-slate-200 hover:border-blue-600 bg-slate-50 text-slate-600 hover:text-blue-600 px-2.5 py-1 rounded transition-all flex items-center gap-1 select-none active:scale-95 shadow-sm">
-                                        <i class="bi bi-arrow-clockwise"></i> REPROCESS AI
-                                    </button>
+                                    @unless($isSpam)
+                                        <!-- Reprocess AI Button -->
+                                        <button onclick="reprocessAI({{ $b->id }}, this)" class="text-[9px] font-bold font-mono border border-slate-200 hover:border-blue-600 bg-slate-50 text-slate-600 hover:text-blue-600 px-2.5 py-1 rounded transition-all flex items-center gap-1 select-none active:scale-95 shadow-sm">
+                                            <i class="bi bi-arrow-clockwise"></i> REPROCESS AI
+                                        </button>
+                                    @endunless
                                 </div>
                             </td>
                         </tr>
@@ -536,6 +535,10 @@
             major: {{ $severityCounts['major'] ?? 0 }},
             minor: {{ $severityCounts['minor'] ?? 0 }}
         };
+        var severityLegendFormatter = function(seriesName, opts) {
+            var count = opts.w.globals.series[opts.seriesIndex] || 0;
+            return seriesName + ' ' + count.toLocaleString('id-ID');
+        };
 
         var severityOptions = {
             series: [severityCounts.critical, severityCounts.major, severityCounts.minor],
@@ -567,7 +570,8 @@
                 itemMargin: {
                     horizontal: 10,
                     vertical: 5
-                }
+                },
+                formatter: severityLegendFormatter
             },
             plotOptions: {
                 pie: {
