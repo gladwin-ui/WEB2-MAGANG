@@ -136,7 +136,7 @@ CONTEXT_KEYWORDS = [
     'memory', 'sd card', 'flash', 'eeprom', 'produksi'
 ]
 
-def is_spam_improved(text: str, api_key: Optional[str]) -> Tuple[bool, Optional[str], Optional[float]]:
+def is_spam_improved(text: str) -> Tuple[bool, Optional[str], Optional[float]]:
     """
     3-tier spam detection system
     Returns: (is_spam: bool, reason: str, confidence: 0.0-1.0)
@@ -210,19 +210,10 @@ def is_spam_improved(text: str, api_key: Optional[str]) -> Tuple[bool, Optional[
     if context_matches >= 1:
         return False, None, None
 
-    # ===== TIER 3: Gemini AI / Local ML Ensemble (Uncertain Cases) =====
-    # Cost: ~$0.001 per call / Free Local ML
+    # ===== TIER 3: Local ML Ensemble (Uncertain Cases) =====
+    # Cost: Free Local ML
     
-    # If Gemini API key is provided, use it
-    if api_key and api_key != "your-gemini-api-key-here" and api_key.strip() != "":
-        print(f"[DEBUG] Calling Gemini API for uncertain case (text_len={len(text_stripped)})")
-        is_spam, reason, confidence = _call_gemini_api(text_stripped, api_key)
-        # Handle borderline case
-        if is_spam and confidence and confidence < 0.60:
-            return is_spam, reason, confidence
-        return is_spam, reason, confidence
-        
-    # Else fallback to local VotingSpamDetector ML Model
+    # Use local VotingSpamDetector ML Model
     ml_detector = get_ml_detector()
     if ml_detector is not None:
         try:
@@ -234,59 +225,3 @@ def is_spam_improved(text: str, api_key: Optional[str]) -> Tuple[bool, Optional[
             
     # Since it has 0 manufacturing context and was not classified as ham, it is out of context
     return True, "Laporan berada di luar konteks fungsional (tidak berkaitan dengan manufaktur/sistem)", 0.85
-
-
-def _call_gemini_api(text: str, api_key: str) -> Tuple[bool, Optional[str], Optional[float]]:
-    """
-    Call Gemini API for uncertain cases
-    """
-    prompt = (
-        "Classify bug report sebagai SPAM atau GENUINE untuk manufacturing system PT Hariff.\n\n"
-        "SPAM adalah:\n"
-        "- Tidak tentang manufacturing defect (iklan, promosi, dating, sosial)\n"
-        "- Obvious scam/fraud patterns (money, lottery, pharmacy, forex)\n"
-        "- Gibberish tanpa tujuan\n"
-        "- Test data atau dummy text\n\n"
-        "GENUINE adalah:\n"
-        "- Deskripsi technical defect (component, failure, error)\n"
-        "- Ada context: environment, observation, atau reproduction\n"
-        "- Professional tone, clear intention reporting bug\n\n"
-        f"Text ({len(text)} chars):\n\"{text}\"\n\n"
-        'JSON response only: {"is_spam": boolean, "confidence": 0.0-1.0, "reason": "concise reason"}'
-    )
-    
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
-    headers = {"Content-Type": "application/json"}
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    
-    try:
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers=headers,
-            method="POST"
-        )
-        
-        with urllib.request.urlopen(req, timeout=10) as response:
-            res_data = json.loads(response.read().decode("utf-8"))
-            candidates = res_data.get("candidates", [])
-            
-            if not candidates or len(candidates) == 0:
-                return False, "API no response", 0.40
-            
-            text_response = candidates[0]["content"]["parts"][0]["text"].strip()
-            
-            if text_response.startswith("```"):
-                text_response = re.sub(r"^```(?:json)?\n|```$", "", text_response, flags=re.MULTILINE).strip()
-            
-            parsed = json.loads(text_response)
-            
-            is_spam = bool(parsed.get("is_spam", False))
-            confidence = float(parsed.get("confidence", 0.5))
-            reason = parsed.get("reason", "")
-            
-            return is_spam, reason, confidence
-            
-    except Exception as e:
-        print(f"[ERROR] Gemini API call failed: {e}")
-        return False, str(e), 0.0
