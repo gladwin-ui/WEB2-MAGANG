@@ -1,7 +1,37 @@
+import os
 import urllib.request
 import json
 import re
 from typing import Tuple, Optional
+
+# ============================================================
+# Custom Trained Model Loading (Phase 2 - akan diisi nanti)
+# ============================================================
+CUSTOM_MODEL = None
+CUSTOM_MODEL_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)),
+    "models",
+    "spam_detector_model.pkl",
+)
+
+
+def _load_custom_model():
+    """Load custom trained model jika file tersedia."""
+    global CUSTOM_MODEL
+    if os.path.exists(CUSTOM_MODEL_PATH):
+        try:
+            import joblib
+
+            CUSTOM_MODEL = joblib.load(CUSTOM_MODEL_PATH)
+            print(f"[INFO] Custom spam model loaded: {CUSTOM_MODEL_PATH}")
+        except Exception as e:
+            print(f"[WARNING] Failed to load custom model: {e}")
+            CUSTOM_MODEL = None
+    else:
+        print(f"[INFO] No custom model found at {CUSTOM_MODEL_PATH}, using VotingSpamDetector")
+
+
+_load_custom_model()
 
 # Hotfix for scikit-learn version mismatch in unpickled SVM models
 try:
@@ -136,7 +166,7 @@ CONTEXT_KEYWORDS = [
     'memory', 'sd card', 'flash', 'eeprom', 'produksi'
 ]
 
-def is_spam_improved(text: str) -> Tuple[bool, Optional[str], Optional[float]]:
+def is_spam_improved(text: str, api_key=None) -> Tuple[bool, Optional[str], Optional[float]]:
     """
     3-tier spam detection system
     Returns: (is_spam: bool, reason: str, confidence: 0.0-1.0)
@@ -225,3 +255,34 @@ def is_spam_improved(text: str) -> Tuple[bool, Optional[str], Optional[float]]:
             
     # Since it has 0 manufacturing context and was not classified as ham, it is out of context
     return True, "Laporan berada di luar konteks fungsional (tidak berkaitan dengan manufaktur/sistem)", 0.85
+
+
+# ============================================================
+# UNIFIED INTERFACE (dipanggil oleh main.py)
+# ============================================================
+
+def detect_spam(text: str) -> Tuple[bool, Optional[str], Optional[float], Optional[str]]:
+    """
+    Unified 4-tier spam detection wrapper.
+
+    Returns: (is_spam, reason, confidence, tier)
+    """
+    result = is_spam_improved(text)
+
+    is_spam = result[0] if isinstance(result, tuple) else result
+    reason = result[1] if isinstance(result, tuple) and len(result) > 1 else None
+    confidence = result[2] if isinstance(result, tuple) and len(result) > 2 else None
+
+    tier = "TIER4_ML"
+    if reason:
+        reason_lower = reason.lower() if isinstance(reason, str) else ""
+        if "kata kunci" in reason_lower or "keyword" in reason_lower or "judi slot" in reason_lower:
+            tier = "TIER1_KEYWORDS"
+        elif "pattern" in reason_lower or "pola" in reason_lower or "gibberish" in reason_lower:
+            tier = "TIER2_PATTERNS"
+        elif "test" in reason_lower or "dummy" in reason_lower or "terlalu pendek" in reason_lower:
+            tier = "TIER2_PATTERNS"
+        elif "whitelist" in reason_lower or "manufaktur" in reason_lower or "manufacturing" in reason_lower:
+            tier = "TIER3_WHITELIST"
+
+    return bool(is_spam), reason, confidence, tier

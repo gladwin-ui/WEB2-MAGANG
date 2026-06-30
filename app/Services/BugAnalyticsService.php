@@ -30,6 +30,7 @@ class BugAnalyticsService
             $response = Http::timeout(10)
                 ->post("{$this->baseUrl}/analyze-bug-report", [
                     'text' => $fullText,
+                    'bug_id' => $bug->id ?? null,
                 ]);
 
             $result = [];

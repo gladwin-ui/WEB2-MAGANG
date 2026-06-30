@@ -16,7 +16,7 @@ Proyek ini terinspirasi dari arsitektur proyek sebelumnya (**SmartReport** — s
 
 - **Web Framework:** Laravel (Ingestion Gateway, Dashboard Presenter, & Role-based Access).
 - **Database:** MySQL/MariaDB (kompatibel dengan sumber data asli `mfg_record`).
-- **Analytics Engine:** Mikroservis Python (FastAPI) dengan pendekatan rule-based/keyword (sentiment, spam, severity recommendation, damage categorization) — dipanggil dari Laravel saat import berjalan.
+- **Analytics Engine:** Mikroservis Python (FastAPI) dengan spam-first orchestrated flow: deteksi spam lokal 4-tier dijalankan pertama, lalu sentiment, severity recommendation, dan duplicate detection placeholder hanya dijalankan untuk laporan valid. Damage categorization tetap tersedia lewat endpoint terpisah.
 - **Queue:** Laravel Queue driver `database` dipakai untuk import `.sql` volume besar. Tidak perlu Redis, tetapi developer wajib menjalankan `php artisan queue:work`.
 
 ---
@@ -35,8 +35,11 @@ Pada implementasi saat ini, hanya **Admin** yang tersedia di aplikasi web: login
 **Tahap 1 — Saat Bug Disubmit (oleh Reporter):**
 Dari kolom `description`, Analytics Engine menghasilkan:
 - `sentiment_label` (positive/neutral/negative/**spam**) & `sentiment_score`
-- `is_spam` & `spam_reason` (deteksi laporan asal-asalan/tidak substantif dari staf internal)
+- `is_spam`, `spam_reason`, `spam_confidence`, dan `spam_tier` (deteksi laporan asal-asalan/tidak substantif dari staf internal)
 - `severity_recommended` & `severity_recommendation_reason` — **REKOMENDASI AI yang TERPISAH** dari `severity` asli yang diisi manual oleh reporter. **Tidak pernah saling override** — keduanya disimpan dan ditampilkan berdampingan.
+- `duplicates` & `duplicate_count` — placeholder untuk future duplicate report detection.
+
+Spam detection selalu berjalan paling awal. Jika laporan terdeteksi spam dengan confidence tinggi, Analytics Service langsung mengembalikan response spam dan **tidak menjalankan** sentiment, severity, atau duplicate detection.
 
 **Tahap 2 — Saat Bug Ditutup (oleh Mekanik):**
 Dari kolom `root_cause` + `repair_action`, Analytics Engine menghasilkan:
@@ -104,7 +107,7 @@ Queue worker (ProcessImportChunkJob) insert setiap baris ke tabel bugs (insert-o
         ▼
 Untuk baris dengan description:
    Laravel PANGGIL Python Analytics Service /analyze-bug-report SECARA SINKRON
-   (sentiment, spam check, severity_recommended)
+   (spam-first: spam check → return early jika spam → sentiment/severity/duplicate jika valid)
         │
         ▼
 Untuk baris dengan root_cause / repair_action:
@@ -154,10 +157,15 @@ database/
 
 analytics-service/
 ├── main.py
+├── models/
+│   ├── .gitkeep
+│   └── README.md                         <- Placeholder trained model artifact
 ├── services/
 │   ├── sentiment.py                     <- Adaptasi konteks teknis manufaktur
-│   ├── spam_detection_improved.py       <- Sistem deteksi spam 3-Tier (Lokal & AI)
+│   ├── spam_detection.py                <- Facade stabil untuk detect_spam()
+│   ├── spam_detection_improved.py       <- Sistem deteksi spam 4-Tier lokal + custom model slot
 │   ├── severity_recommendation.py       <- Usulkan severity dari description
+│   ├── duplicate_detection.py           <- Placeholder duplicate report detection
 │   └── damage_categorization.py         <- Kategorikan penyebab dari root_cause+repair_action
 └── requirements.txt
 ```
@@ -172,6 +180,8 @@ analytics-service/
 4. **Runtime web adalah admin-only.** Fitur reporter/mechanic workflow, assignment, chat, dan feedback telah dihapus dari aplikasi web. Registrasi hanya membuat akun admin.
 5. **Tabel master (`projects`, `devices`, `serial_numbers`) bersifat sementara/placeholder** sampai struktur asli dari `mfg_record` didapatkan.
 6. **`reported_by`/`fixed_by` adalah string bebas**, bukan relasi user. Jangan membuat akun `users` otomatis untuk nama dari dump SQL.
+7. **Gemini API tidak digunakan.** Jangan menambahkan kembali Gemini API key, `google-generativeai`, atau request ke Gemini. Spam detection harus tetap lokal/offline.
+8. **Laravel hanya memanggil satu endpoint Stage 1:** `POST /analyze-bug-report`. Orkestrasi spam, sentiment, severity, dan duplicate dilakukan di FastAPI.
 
 ---
 
@@ -184,7 +194,7 @@ analytics-service/
 - ✅ Seeder import 24 baris data historis dari `mfg_record`
 - ✅ Auth & runtime admin-only untuk aplikasi web; flow reporter/mekanik, chat, assignment, dan RoleMiddleware sudah dihapus
 - ✅ Register tetap dipertahankan, tetapi hanya membuat akun admin
-- ✅ Python Analytics Service (FastAPI) — sentiment, spam detection (Offline Hybrid Context-Aware & ML), severity recommendation, damage categorization
+- ✅ Python Analytics Service (FastAPI) — spam-first orchestration, 4-tier local spam detection, sentiment, severity recommendation, duplicate placeholder, damage categorization
 - ✅ Queue database siap dipakai untuk import `.sql`; `QUEUE_CONNECTION=database`
 - ✅ Skema `reported_by` dan `fixed_by` sudah menjadi string bebas, bukan FK `users`
 
@@ -196,6 +206,8 @@ analytics-service/
 - ✅ Parser `.sql` untuk dump `mfg_record.bug`
 - ✅ Job chunk untuk insert-only + trigger AI
 - ✅ Controller upload + halaman progress polling `import_jobs/{id}`
+- ✅ FastAPI health endpoint `/health`
+- ✅ Folder `analytics-service/models/` untuk trained model artifact future phase
 
 ### Dashboard Analitik Admin
 - ✅ Export CSV (`DashboardController::exportCsv`)
@@ -281,14 +293,25 @@ analytics-service/
 
 ## 📝 Changelog
 
-### v0.14 — Deteksi Spam 3-Tier Peka Konteks & ML Lokal (Offline / AI Hybrid)
-- **[SPAM DETECTION]** Mengimplementasikan arsitektur sistem deteksi spam 3-Tier lengkap dengan pemisahan berkas ke [spam_detection_improved.py](file:///d:/MAGANG/WEB2-MAGANG/analytics-service/services/spam_detection_improved.py).
+### v0.15 — FastAPI Spam-First Orchestrated Flow & README Sync
+- **[ANALYTICS SERVICE]** `main.py` direstruktur menjadi flow spam-first: `detect_spam()` berjalan pertama, lalu return early jika spam confidence tinggi.
+- **[ANALYTICS SERVICE]** Response `/analyze-bug-report` menambahkan `spam_tier`, `duplicates`, `duplicate_count`, dan `processing_time_ms`.
+- **[ANALYTICS SERVICE]** Menambahkan endpoint `/health` untuk status service, versi, dan daftar model.
+- **[SPAM DETECTION]** Menambahkan facade `services/spam_detection.py` dan wrapper `detect_spam()` dengan return `(is_spam, reason, confidence, tier)`.
+- **[SPAM DETECTION]** Menyiapkan slot custom trained model di `analytics-service/models/spam_detector_model.pkl`; model diload saat startup jika file tersedia.
+- **[DUPLICATE DETECTION]** Menambahkan `services/duplicate_detection.py` sebagai placeholder future duplicate AI.
+- **[LARAVEL]** `BugAnalyticsService` mengirim `bug_id` ke Analytics Service dan tetap hanya memanggil satu endpoint Stage 1.
+- **[CLEANUP]** README disinkronkan: Gemini API tidak digunakan dan tidak boleh ditambahkan kembali.
+
+### v0.14 — Deteksi Spam 4-Tier Peka Konteks & ML Lokal (Offline)
+- **[SPAM DETECTION]** Mengimplementasikan arsitektur sistem deteksi spam lokal lengkap dengan pemisahan berkas ke `analytics-service/services/spam_detection_improved.py`.
   - **Tier 1:** Deteksi kata kunci promosi, out-of-context filter (saham, skincare, dll.), dan judi slot online.
   - **Tier 2:** Validasi panjang teks, regex karakter berulang (dengan pengecualian format hex hardware), teks tanpa spasi, dan gibberish.
-  - **Tier 3:** Menggunakan Gemini API jika API Key tersedia, atau otomatis *fallback* menggunakan model Machine Learning Ensemble lokal (`VotingSpamDetector`) secara 100% offline.
+  - **Tier 3:** Manufacturing context whitelist untuk meloloskan laporan teknis valid.
+  - **Tier 4:** Model Machine Learning Ensemble lokal (`VotingSpamDetector`) secara 100% offline.
 - **[SPAM DETECTION]** Menghapus kata kunci pengujian generik (`test`, `testing`, `uji`, `pengujian`, `coba`, `cobain`, `run`, `running`, `jalan`) dari *context whitelist* agar tidak disalahgunakan untuk meloloskan laporan palsu/sampah.
 - **[SPAM DETECTION]** Menambahkan kolom `spam_confidence` ke dalam schema response `BugReportResponse`.
-- **[CLEANUP]** Menghapus berkas lama `spam_detection.py` karena fungsinya sudah digantikan sepenuhnya oleh `spam_detection_improved.py`.
+- **[CLEANUP]** Gemini API tidak lagi dipakai; `spam_detection.py` sekarang menjadi facade stabil ke implementation file.
 
 ### v0.13 — Deteksi Spam Hibrida Peka Konteks & ML Lokal (Offline)
 - **[SPAM DETECTION]** Migrasi penuh dari API Gemini ke deteksi spam offline menggunakan **Pendekatan Hibrida Peka Konteks & Machine Learning Lokal** (Ensemble Voting dari 5 model ML lokal via `spam-detector-ai`).
