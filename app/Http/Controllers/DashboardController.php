@@ -9,6 +9,11 @@ use App\Services\BugAnalyticsService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Response;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class DashboardController extends Controller
 {
@@ -234,9 +239,9 @@ class DashboardController extends Controller
     }
 
     /**
-     * Export bug reports to CSV.
+     * Export bug reports to Excel.
      */
-    public function exportCsv(Request $request)
+    public function exportExcel(Request $request)
     {
         $selectedJobId = $request->input('import_job_id');
         if ($selectedJobId === null) {
@@ -268,62 +273,128 @@ class DashboardController extends Controller
 
         $bugs = $auditQuery->orderBy('created_at', 'desc')->get();
 
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Bug Reports');
+
+        // Headers
         $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=bugs_report_export_" . date('Ymd_His') . ".csv",
+            'ID Bug', 'Project', 'Title', 'Severity', 'SN Code Snapshot',
+            'Reporter Type', 'Description', 'Version', 'Environment',
+            'Root Cause', 'Repair Action', 'Rework?', 'Status',
+            'Reported By', 'Fixed By', 'Closed At', 'Created At',
+            'Sentiment Label', 'Sentiment Score', 'Spam?', 'Spam Reason',
+            'Severity Recommended', 'Severity Rec Reason', 'Damage Category'
+        ];
+
+        // Write Headers
+        foreach ($headers as $colIndex => $header) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
+            $cellCoordinate = $colLetter . '1';
+            $sheet->setCellValue($cellCoordinate, $header);
+            
+            // Format ID Bug and SN Code Snapshot explicitly as text
+            if ($header === 'ID Bug' || $header === 'SN Code Snapshot') {
+                $sheet->getStyle($colLetter)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
+            }
+        }
+
+        // Style header row
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+                'name' => 'Inter',
+                'size' => 10,
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '0046BF'], // PT Hariff Brand Blue
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_LEFT,
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+        ];
+        $sheet->getStyle('A1:X1')->applyFromArray($headerStyle);
+        $sheet->getRowDimension(1)->setRowHeight(28);
+
+        // Write Data
+        $rowIndex = 2;
+        foreach ($bugs as $bug) {
+            $data = [
+                $bug->id,
+                $bug->project?->name ?? 'Project #' . $bug->project_id,
+                $bug->title,
+                $bug->severity,
+                $bug->sn_code_snapshot,
+                $bug->reporter_type,
+                $bug->description,
+                $bug->product_version,
+                $bug->environment,
+                $bug->root_cause,
+                $bug->repair_action,
+                $bug->is_rework ? 'Yes' : 'No',
+                $bug->status,
+                $bug->reported_by ?? 'System',
+                $bug->fixed_by ?? '',
+                $bug->closed_at ? $bug->closed_at->format('Y-m-d H:i:s') : '',
+                $bug->created_at->format('Y-m-d H:i:s'),
+                $bug->sentiment_label,
+                $bug->sentiment_score,
+                $bug->is_spam ? 'Yes' : 'No',
+                $bug->spam_reason,
+                $bug->severity_recommended,
+                $bug->severity_recommendation_reason,
+                $bug->damage_category
+            ];
+
+            foreach ($data as $colIndex => $value) {
+                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
+                $cellCoordinate = $colLetter . $rowIndex;
+                
+                // Set explicit string values for ID and SN to preserve formats
+                if ($colIndex === 0 || $colIndex === 4) { // ID Bug, SN Code Snapshot
+                    $sheet->setCellValueExplicit($cellCoordinate, $value ?? '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                } else {
+                    $sheet->setCellValue($cellCoordinate, $value ?? '');
+                }
+            }
+
+            $rowIndex++;
+        }
+
+        // Apply global style (borders, font size)
+        $lastRow = $rowIndex - 1;
+        $sheet->getStyle('A1:X' . $lastRow)->getFont()->setName('Inter')->setSize(9.5);
+        
+        $borderStyle = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => 'D1C9B9'], // Matching Light Mode Border Default
+                ],
+            ],
+        ];
+        $sheet->getStyle('A1:X' . $lastRow)->applyFromArray($borderStyle);
+
+        // Auto-fit columns
+        for ($col = 1; $col <= 24; $col++) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+            $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+        }
+
+        // Output stream
+        $writer = new Xlsx($spreadsheet);
+        
+        return Response::stream(function() use ($writer) {
+            $writer->save('php://output');
+        }, 200, [
+            "Content-Type"        => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "Content-Disposition" => "attachment; filename=bugs_report_export_" . date('Ymd_His') . ".xlsx",
             "Pragma"              => "no-cache",
             "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
             "Expires"             => "0"
-        ];
-
-        $callback = function() use($bugs) {
-            $file = fopen('php://output', 'w');
-            
-            // Add BOM for Excel compatibility with UTF-8
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-
-            // CSV Header
-            fputcsv($file, [
-                'ID Bug', 'Project', 'Title', 'Severity', 'SN Code Snapshot',
-                'Reporter Type', 'Description', 'Version', 'Environment',
-                'Root Cause', 'Repair Action', 'Rework?', 'Status',
-                'Reported By', 'Fixed By', 'Closed At', 'Created At',
-                'Sentiment Label', 'Sentiment Score', 'Spam?', 'Spam Reason',
-                'Severity Recommended', 'Severity Rec Reason', 'Damage Category'
-            ]);
-
-            foreach ($bugs as $bug) {
-                fputcsv($file, [
-                    $bug->id,
-                    $bug->project?->name ?? 'Project #' . $bug->project_id,
-                    $bug->title,
-                    $bug->severity,
-                    $bug->sn_code_snapshot,
-                    $bug->reporter_type,
-                    $bug->description,
-                    $bug->product_version,
-                    $bug->environment,
-                    $bug->root_cause,
-                    $bug->repair_action,
-                    $bug->is_rework ? 'Yes' : 'No',
-                    $bug->status,
-                    $bug->reported_by ?? 'System',
-                    $bug->fixed_by ?? '',
-                    $bug->closed_at ? $bug->closed_at->format('Y-m-d H:i:s') : '',
-                    $bug->created_at->format('Y-m-d H:i:s'),
-                    $bug->sentiment_label,
-                    $bug->sentiment_score,
-                    $bug->is_spam ? 'Yes' : 'No',
-                    $bug->spam_reason,
-                    $bug->severity_recommended,
-                    $bug->severity_recommendation_reason,
-                    $bug->damage_category
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return Response::stream($callback, 200, $headers);
+        ]);
     }
 }

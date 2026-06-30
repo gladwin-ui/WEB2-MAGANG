@@ -70,17 +70,10 @@
             <p class="text-xs md:text-sm text-slate-500 font-mono tracking-widest uppercase mt-1">
                 PT HARIFF MANUFACTURING QUALITY CONTROL & AI ANALYTICS SYSTEM
             </p>
-            @php
-                $activeFile = $sqlFiles->firstWhere('id', $selectedJobId);
-                $activeFileName = $activeFile ? $activeFile->filename : ($selectedJobId === 'all' ? 'Semua File SQL (Gabungan)' : 'File #' . $selectedJobId);
-            @endphp
-            <div class="mt-2 text-xs font-semibold text-blue-650 bg-blue-50 border border-blue-100 rounded px-2.5 py-1 inline-flex items-center gap-1.5 font-mono uppercase">
-                <i class="bi bi-file-earmark-code"></i> Aktif: {{ $activeFileName }}
-            </div>
         </div>
         <div class="flex items-center gap-3">
             <a href="{{ route('dashboard.export', request()->query()) }}" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-blue-600 hover:text-blue-700 rounded-lg text-xs font-mono font-bold tracking-wider uppercase transition-all shadow-sm">
-                <i class="bi bi-file-earmark-spreadsheet text-base"></i> EXPORT LOG (CSV)
+                <i class="bi bi-file-earmark-excel text-base"></i> EXPORT LOG (EXCEL)
             </a>
         </div>
     </div>
@@ -534,7 +527,7 @@
         const textPrimaryColor = isDark ? '#F9FAFB' : '#1E293B';
         const textSecondaryColor = isDark ? '#9CA3AF' : '#64748B';
         const borderColor = isDark ? '#374151' : '#E2E8F0';
-        const strokeColor = isDark ? '#1F2937' : '#FFFFFF';
+        const strokeColor = isDark ? '#1F2937' : '#D8D1C1';
         const tooltipTheme = isDark ? 'dark' : 'light';
 
         // 1. Severity Donut Chart (Left Column)
@@ -813,7 +806,7 @@
             const newTextPrimary = newIsDark ? '#F9FAFB' : '#1E293B';
             const newTextSecondary = newIsDark ? '#9CA3AF' : '#64748B';
             const newBorderColor = newIsDark ? '#374151' : '#E2E8F0';
-            const newStrokeColor = newIsDark ? '#1F2937' : '#FFFFFF';
+            const newStrokeColor = newIsDark ? '#1F2937' : '#D8D1C1';
             
             severityChart.updateOptions({
                 chart: { foreColor: newTextSecondary },

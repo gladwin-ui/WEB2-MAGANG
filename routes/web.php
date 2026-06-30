@@ -27,7 +27,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/bugs/{bug}', [BugController::class, 'show'])->name('bugs.show');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/export', [DashboardController::class, 'exportCsv'])->name('dashboard.export');
+    Route::get('/dashboard/export', [DashboardController::class, 'exportExcel'])->name('dashboard.export');
     Route::resource('/master/projects', ProjectController::class)->names('master.projects');
     Route::resource('/master/devices', DeviceController::class)->names('master.devices');
     Route::resource('/master/serial-numbers', SerialNumberController::class)->names('master.serial_numbers');

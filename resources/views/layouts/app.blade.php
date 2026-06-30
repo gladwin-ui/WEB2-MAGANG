@@ -142,6 +142,24 @@
         body:not(.dark) .bg-slate-50 {
             background-color: var(--bg-main) !important;
         }
+        body:not(.dark) .bg-slate-100 {
+            background-color: rgba(100, 116, 139, 0.12) !important;
+        }
+        body:not(.dark) .bg-amber-50 {
+            background-color: rgba(217, 119, 6, 0.12) !important;
+        }
+        body:not(.dark) .bg-green-50 {
+            background-color: rgba(22, 163, 74, 0.12) !important;
+        }
+        body:not(.dark) .bg-red-100, body:not(.dark) .bg-red-50, body:not(.dark) .bg-rose-100 {
+            background-color: rgba(220, 38, 38, 0.12) !important;
+        }
+        body:not(.dark) .bg-indigo-50 {
+            background-color: rgba(79, 70, 229, 0.12) !important;
+        }
+        body:not(.dark) .bg-blue-50 {
+            background-color: rgba(0, 70, 191, 0.12) !important;
+        }
         body {
             font-family: 'Inter', sans-serif !important;
             background-color: var(--bg-main) !important;
