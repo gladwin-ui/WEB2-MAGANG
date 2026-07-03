@@ -369,8 +369,7 @@ class ImportController extends Controller
         // Find bugs needing analysis
         $bugs = Bug::all()->filter(function($bug) {
             $needStage1 = empty($bug->sentiment_label) && !empty($bug->description);
-            $needStage2 = empty($bug->damage_category) && !empty($bug->root_cause) && !empty($bug->repair_action);
-            return $needStage1 || $needStage2;
+            return $needStage1;
         });
 
         $bugIds = $bugs->pluck('id')->toArray();

@@ -9,6 +9,7 @@ use App\Http\Controllers\SerialNumberController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\UserSettingsController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\LaporanKhususController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -28,6 +29,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/export', [DashboardController::class, 'exportExcel'])->name('dashboard.export');
+    Route::get('/laporan-khusus', [LaporanKhususController::class, 'index'])->name('laporan-khusus.index');
     Route::resource('/master/projects', ProjectController::class)->names('master.projects');
     Route::resource('/master/devices', DeviceController::class)->names('master.devices');
     Route::resource('/master/serial-numbers', SerialNumberController::class)->names('master.serial_numbers');

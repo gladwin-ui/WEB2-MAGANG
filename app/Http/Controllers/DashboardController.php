@@ -33,45 +33,20 @@ class DashboardController extends Controller
         if ($hasImportedData) {
             $analytics = app(BugAnalyticsService::class);
 
-            // 1. Auto-analyze Stage 2 (damage category) for CLOSED bugs (critical for chart/table)
-            $unanalyzedStage2 = Bug::whereNull('damage_category')
-                ->where('status', 'CLOSED')
-                ->where(function($q) {
-                    $q->whereNotNull('root_cause')->where('root_cause', '!=', '')
-                      ->orWhereNotNull('repair_action')->where('repair_action', '!=', '');
+            // Auto-analyze bugs missing sentiment
+            $unanalyzedBugs = Bug::where(function($q) {
+                    $q->whereNull('sentiment_label');
                 })
+                ->whereNotNull('title')
                 ->limit(500)
                 ->get();
 
-            if ($unanalyzedStage2->isNotEmpty()) {
-                foreach ($unanalyzedStage2 as $bug) {
-                    $rootCause    = $bug->root_cause    ?? '';
-                    $repairAction = $bug->repair_action ?? '';
-                    if (!empty(trim($rootCause)) || !empty(trim($repairAction))) {
-                        $res2 = $analytics->analyzeDamageCause($rootCause, $repairAction);
-                        if (!empty($res2['damage_category'])) {
-                            $bug->damage_category = $res2['damage_category'];
-                            $bug->save();
-                        }
-                    }
-                }
-            }
-
-            // 2. Auto-analyze Stage 1 (sentiment/spam/severity)
-            $unanalyzedStage1 = Bug::whereNull('sentiment_label')
-                ->whereNotNull('description')
-                ->where('description', '!=', '')
-                ->limit(500)
-                ->get();
-
-            if ($unanalyzedStage1->isNotEmpty()) {
-                foreach ($unanalyzedStage1 as $bug) {
+            if ($unanalyzedBugs->isNotEmpty()) {
+                foreach ($unanalyzedBugs as $bug) {
                     $res1 = $analytics->analyzeBugReport($bug);
                     if (!empty($res1)) {
                         $bug->sentiment_label                  = $res1['sentiment_label'] ?? null;
                         $bug->sentiment_score                  = $res1['sentiment_score'] ?? null;
-                        $bug->is_spam                          = (bool) ($res1['is_spam'] ?? false);
-                        $bug->spam_reason                      = $res1['spam_reason'] ?? null;
                         $bug->severity_recommended             = $res1['severity_recommended'] ?? null;
                         $bug->severity_recommendation_reason   = $res1['severity_recommendation_reason'] ?? null;
                         $bug->save();
@@ -88,8 +63,6 @@ class DashboardController extends Controller
                 'closedBugs'           => 0,
                 'criticalBugs'         => 0,
                 'reworkRate'           => 0,
-                'spamBlocked'          => 0,
-                'damageDistribution'   => collect(),
                 'topProjects'          => collect(),
                 'volumeTrend'          => collect(),
                 'auditBugs'            => Bug::whereRaw('1=0')->paginate(20),
@@ -101,6 +74,8 @@ class DashboardController extends Controller
                     'major'    => 0,
                     'minor'    => 0,
                 ],
+                'severityOpen'         => ['Critical' => 0, 'Major' => 0, 'Minor' => 0],
+                'severityClosed'       => ['Critical' => 0, 'Major' => 0, 'Minor' => 0],
             ]);
         }
 
@@ -147,19 +122,9 @@ class DashboardController extends Controller
                         ? round($reworkCount / $closedBugs * 100, 1)
                         : 0;
 
-        // 6. spamBlocked
-        $spamBlocked = $applyJobFilter(Bug::where('is_spam', true))->count();
 
-        // Charts (Top 5 damage categories, excluding 'Lain-lain')
-        $damageDistribution = $applyJobFilter(
-            Bug::whereNotNull('damage_category')
-               ->where('damage_category', '!=', 'Lain-lain')
-        )
-            ->groupBy('damage_category')
-            ->selectRaw('damage_category, count(*) as total')
-            ->orderByDesc('total')
-            ->limit(5)
-            ->get();
+
+
 
         $topProjects = $applyJobFilter(Bug::with('project'))
             ->groupBy('project_id')
@@ -188,6 +153,29 @@ class DashboardController extends Controller
             'minor'    => $sevMap['Minor']    ?? 0,
         ];
 
+        // Severity breakdown by status (for dual pie chart)
+        $sevOpenMap = $applyJobFilter(Bug::where('status', 'OPEN'))
+            ->groupBy('severity')
+            ->selectRaw('severity, count(*) as count')
+            ->pluck('count', 'severity')
+            ->toArray();
+        $severityOpen = [
+            'Critical' => $sevOpenMap['Critical'] ?? 0,
+            'Major'    => $sevOpenMap['Major']    ?? 0,
+            'Minor'    => $sevOpenMap['Minor']    ?? 0,
+        ];
+
+        $sevClosedMap = $applyJobFilter(Bug::where('status', 'CLOSED'))
+            ->groupBy('severity')
+            ->selectRaw('severity, count(*) as count')
+            ->pluck('count', 'severity')
+            ->toArray();
+        $severityClosed = [
+            'Critical' => $sevClosedMap['Critical'] ?? 0,
+            'Major'    => $sevClosedMap['Major']    ?? 0,
+            'Minor'    => $sevClosedMap['Minor']    ?? 0,
+        ];
+
         // Tabel Audit dengan filter
         $query = $applyJobFilter(Bug::with(['project', 'device']));
         if ($request->status)     $query->where('status', $request->status);
@@ -200,19 +188,16 @@ class DashboardController extends Controller
         if (in_array($urgencySort, ['desc', 'asc'], true)) {
             $query->selectRaw("
                 bugs.*,
-                CASE
-                    WHEN bugs.is_spam = 1 OR LOWER(COALESCE(bugs.sentiment_label, '')) = 'spam' THEN 0
-                    ELSE ROUND(
-                        (
-                            CASE
-                                WHEN bugs.severity = 'Critical' THEN 0.8
-                                WHEN bugs.severity = 'Major' THEN 0.5
-                                ELSE 0.2
-                            END
-                            + (1 - COALESCE(bugs.sentiment_score, 0.5))
-                        ) / 2,
-                    2)
-                END AS urgency_score
+                ROUND(
+                    (
+                        CASE
+                            WHEN bugs.severity = 'Critical' THEN 0.8
+                            WHEN bugs.severity = 'Major' THEN 0.5
+                            ELSE 0.2
+                        END
+                        + (1 - COALESCE(bugs.sentiment_score, 0.5))
+                    ) / 2,
+                2) AS urgency_score
             ");
 
             if ($urgencySort === 'desc') {
@@ -232,9 +217,10 @@ class DashboardController extends Controller
 
         return view('dashboard.index', compact(
             'hasImportedData',
-            'totalBugs', 'openBugs', 'closedBugs', 'criticalBugs', 'reworkRate', 'spamBlocked',
-            'damageDistribution', 'topProjects', 'volumeTrend',
-            'auditBugs', 'projects', 'sqlFiles', 'selectedJobId', 'severityCounts'
+            'totalBugs', 'openBugs', 'closedBugs', 'criticalBugs', 'reworkRate',
+            'topProjects', 'volumeTrend',
+            'auditBugs', 'projects', 'sqlFiles', 'selectedJobId', 'severityCounts',
+            'severityOpen', 'severityClosed'
         ));
     }
 
@@ -283,8 +269,8 @@ class DashboardController extends Controller
             'Reporter Type', 'Description', 'Version', 'Environment',
             'Root Cause', 'Repair Action', 'Rework?', 'Status',
             'Reported By', 'Fixed By', 'Closed At', 'Created At',
-            'Sentiment Label', 'Sentiment Score', 'Spam?', 'Spam Reason',
-            'Severity Recommended', 'Severity Rec Reason', 'Damage Category'
+            'Sentiment Label', 'Sentiment Score',
+            'Severity Recommended', 'Severity Rec Reason'
         ];
 
         // Write Headers
@@ -316,7 +302,7 @@ class DashboardController extends Controller
                 'vertical' => Alignment::VERTICAL_CENTER,
             ],
         ];
-        $sheet->getStyle('A1:X1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:U1')->applyFromArray($headerStyle);
         $sheet->getRowDimension(1)->setRowHeight(28);
 
         // Write Data
@@ -342,11 +328,8 @@ class DashboardController extends Controller
                 $bug->created_at->format('Y-m-d H:i:s'),
                 $bug->sentiment_label,
                 $bug->sentiment_score,
-                $bug->is_spam ? 'Yes' : 'No',
-                $bug->spam_reason,
                 $bug->severity_recommended,
-                $bug->severity_recommendation_reason,
-                $bug->damage_category
+                $bug->severity_recommendation_reason
             ];
 
             foreach ($data as $colIndex => $value) {

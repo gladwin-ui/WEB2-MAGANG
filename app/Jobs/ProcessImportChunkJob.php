@@ -163,14 +163,12 @@ class ProcessImportChunkJob implements ShouldQueue
                 // ---- INSERT ---------------------------------------------
                 $bugData = $this->buildBugData($row);
                 $bugData['import_job_id'] = $this->importJobId;
-                $bugData['is_spam']   = false;
                 $bugData['is_rework'] = (bool) ($row['is_rework'] ?? false);
 
                 $bug = Bug::create($bugData);
 
                 // Run AI analysis on newly inserted rows.
                 $this->runStage1IfNeeded($bug, $analytics);
-                $this->runStage2IfNeeded($bug, $analytics);
 
                 $inserted++;
 
@@ -326,11 +324,8 @@ class ProcessImportChunkJob implements ShouldQueue
             // AI columns — init to null; populated by runStage1/Stage2 below.
             'sentiment_label'              => null,
             'sentiment_score'              => null,
-            'is_spam'                      => false,
-            'spam_reason'                  => null,
             'severity_recommended'         => null,
             'severity_recommendation_reason' => null,
-            'damage_category'              => null,
         ];
     }
 
@@ -349,32 +344,13 @@ class ProcessImportChunkJob implements ShouldQueue
             $bug->update([
                 'sentiment_label'              => $result['sentiment_label']              ?? null,
                 'sentiment_score'              => $result['sentiment_score']              ?? null,
-                'is_spam'                      => $result['is_spam']                      ?? false,
-                'spam_reason'                  => $result['spam_reason']                  ?? null,
                 'severity_recommended'         => $result['severity_recommended']         ?? null,
                 'severity_recommendation_reason' => $result['severity_recommendation_reason'] ?? null,
             ]);
         }
     }
 
-    /**
-     * Run AI Stage 2 (damage_category) if root_cause or repair_action is present.
-     */
-    private function runStage2IfNeeded(Bug $bug, BugAnalyticsService $analytics): void
-    {
-        $rootCause    = $bug->root_cause    ?? '';
-        $repairAction = $bug->repair_action ?? '';
 
-        if (empty(trim($rootCause)) && empty(trim($repairAction))) {
-            return;
-        }
-
-        $result = $analytics->analyzeDamageCause($rootCause, $repairAction);
-
-        if (!empty($result['damage_category'])) {
-            $bug->update(['damage_category' => $result['damage_category']]);
-        }
-    }
 
     /**
      * Parse a datetime string safely; returns null on failure.

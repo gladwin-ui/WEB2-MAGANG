@@ -15,7 +15,6 @@ class Bug extends Model
 
     protected $casts = [
         'is_rework' => 'boolean',
-        'is_spam' => 'boolean',
         'sentiment_score' => 'float',
         'closed_at' => 'datetime',
     ];

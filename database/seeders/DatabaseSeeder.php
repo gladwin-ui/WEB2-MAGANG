@@ -421,7 +421,6 @@ class DatabaseSeeder extends Seeder
                 'spam_reason' => null,
                 'severity_recommended' => null,
                 'severity_recommendation_reason' => null,
-                'damage_category' => null,
             ]);
         }
     }

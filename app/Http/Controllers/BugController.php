@@ -30,28 +30,16 @@ class BugController extends Controller
      */
     public function reprocess(Bug $bug, \App\Services\BugAnalyticsService $analytics)
     {
-        // Stage 1 AI Analysis (if description is present)
-        if (!empty($bug->description)) {
+        // Stage 1 AI Analysis (if title or description is present)
+        if (!empty($bug->title) || !empty($bug->description)) {
             $result1 = $analytics->analyzeBugReport($bug);
             if (!empty($result1)) {
                 $bug->update([
                     'sentiment_label'              => $result1['sentiment_label']              ?? null,
                     'sentiment_score'              => $result1['sentiment_score']              ?? null,
-                    'is_spam'                      => $result1['is_spam']                      ?? false,
-                    'spam_reason'                  => $result1['spam_reason']                  ?? null,
                     'severity_recommended'         => $result1['severity_recommended']         ?? null,
                     'severity_recommendation_reason' => $result1['severity_recommendation_reason'] ?? null,
                 ]);
-            }
-        }
-
-        // Stage 2 AI Analysis (if root cause or repair action is present)
-        $rootCause    = $bug->root_cause    ?? '';
-        $repairAction = $bug->repair_action ?? '';
-        if (!empty(trim($rootCause)) || !empty(trim($repairAction))) {
-            $result2 = $analytics->analyzeDamageCause($rootCause, $repairAction);
-            if (!empty($result2['damage_category'])) {
-                $bug->update(['damage_category' => $result2['damage_category']]);
             }
         }
 

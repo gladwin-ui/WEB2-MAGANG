@@ -125,12 +125,6 @@
                             <span class="text-slate-500 block font-mono uppercase mb-0.5">TANGGAL SELESAI</span>
                             <strong class="text-slate-800 font-mono text-sm">{{ $bug->closed_at ? $bug->closed_at->format('d M Y, H:i') : '-' }}</strong>
                         </div>
-                        <div>
-                            <span class="text-slate-500 block font-mono uppercase mb-0.5">AI DAMAGE CATEGORY</span>
-                            <strong class="inline-flex mt-0.5 text-[10px] font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded uppercase">
-                                {{ $bug->damage_category ?? 'Lain-lain' }}
-                            </strong>
-                        </div>
                     </div>
 
                     <div class="space-y-4 text-sm">
@@ -198,8 +192,7 @@
                                     <span class="inline-flex text-[9px] font-bold font-mono bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded uppercase">POSITIF</span>
                                 @elseif($bug->sentiment_label === 'negative')
                                     <span class="inline-flex text-[9px] font-bold font-mono bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded uppercase">NEGATIF</span>
-                                @elseif($bug->sentiment_label === 'spam')
-                                    <span class="inline-flex text-[9px] font-bold font-mono bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded uppercase">SPAM</span>
+
                                 @else
                                     <span class="inline-flex text-[9px] font-bold font-mono bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded uppercase">NETRAL</span>
                                 @endif
@@ -210,23 +203,6 @@
                         @endif
                     </div>
 
-                    <div>
-                        <span class="block text-xs font-mono text-slate-650 uppercase mb-2">Spam / Keabsahan Laporan:</span>
-                        @if($bug->sentiment_label)
-                            @if($bug->is_spam)
-                                <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs space-y-1">
-                                    <div class="font-bold flex items-center gap-1.5"><i class="bi bi-shield-slash"></i> CRITICAL SPAM ALARM!</div>
-                                    <p class="text-slate-600 font-mono text-[11px] leading-relaxed">{{ $bug->spam_reason }}</p>
-                                </div>
-                            @else
-                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-green-700 text-xs font-mono font-bold">
-                                    <i class="bi bi-shield-fill-check"></i> VALID (LAPORAN SERIUS)
-                                </div>
-                            @endif
-                        @else
-                            <span class="text-xs font-mono text-slate-400">N/A</span>
-                        @endif
-                    </div>
                 </div>
             </div>
         </div>

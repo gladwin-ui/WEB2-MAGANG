@@ -66,36 +66,22 @@ class ReanalyzeBugsJob implements ShouldQueue
                     continue;
                 }
 
-                $needStage1 = empty($bug->sentiment_label) && !empty($bug->description);
-                $needStage2 = empty($bug->damage_category) && !empty($bug->root_cause) && !empty($bug->repair_action);
+                $needAnalysis = empty($bug->sentiment_label);
 
-                if (!$needStage1 && !$needStage2) {
+                if (!$needAnalysis) {
                     $processed++;
                     continue;
                 }
 
                 $isUpdated = false;
 
-                if ($needStage1) {
+                if ($needAnalysis) {
                     $res1 = $analytics->analyzeBugReport($bug);
                     if (!empty($res1)) {
                         $bug->sentiment_label                  = $res1['sentiment_label'] ?? null;
                         $bug->sentiment_score                  = $res1['sentiment_score'] ?? null;
-                        $bug->is_spam                          = (bool) ($res1['is_spam'] ?? false);
-                        $bug->spam_reason                      = $res1['spam_reason'] ?? null;
                         $bug->severity_recommended             = $res1['severity_recommended'] ?? null;
                         $bug->severity_recommendation_reason   = $res1['severity_recommendation_reason'] ?? null;
-                        $isUpdated = true;
-                    } else {
-                        $failed++;
-                        continue;
-                    }
-                }
-
-                if ($needStage2) {
-                    $res2 = $analytics->analyzeDamageCause($bug->root_cause, $bug->repair_action);
-                    if (!empty($res2['damage_category'])) {
-                        $bug->damage_category = $res2['damage_category'];
                         $isUpdated = true;
                     } else {
                         $failed++;
