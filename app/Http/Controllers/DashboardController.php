@@ -63,6 +63,7 @@ class DashboardController extends Controller
                 'closedBugs'           => 0,
                 'criticalBugs'         => 0,
                 'reworkRate'           => 0,
+                'reworkCount'          => 0,
                 'topProjects'          => collect(),
                 'volumeTrend'          => collect(),
                 'auditBugs'            => Bug::whereRaw('1=0')->paginate(20),
@@ -118,9 +119,11 @@ class DashboardController extends Controller
 
         // 5. reworkRate
         $reworkCount = $applyJobFilter(Bug::where('is_rework', true))->count();
-        $reworkRate = $closedBugs > 0
-                        ? round($reworkCount / $closedBugs * 100, 1)
+        $reworkRate = $totalBugs > 0
+                        ? round($reworkCount / $totalBugs * 100, 1)
                         : 0;
+
+
 
 
 
@@ -173,8 +176,25 @@ class DashboardController extends Controller
         $severityClosed = [
             'Critical' => $sevClosedMap['Critical'] ?? 0,
             'Major'    => $sevClosedMap['Major']    ?? 0,
-            'Minor'    => $sevClosedMap['Minor']    ?? 0,
         ];
+
+        // Dynamic Assembly Stage breakdown from database (reporter_type column)
+        $rawStageMap = $applyJobFilter(Bug::query())
+            ->selectRaw("COALESCE(NULLIF(TRIM(reporter_type), ''), 'Tidak Diketahui') as stage, count(*) as count")
+            ->groupBy('stage')
+            ->orderByDesc('count')
+            ->pluck('count', 'stage')
+            ->toArray();
+
+        $assemblyStageMap = [];
+        foreach ($rawStageMap as $stage => $count) {
+            $label = match(strtolower($stage)) {
+                'produk' => 'Unit Jadi (Produk)',
+                'sub'    => 'Sub-Komponen (PCB)',
+                default  => ucwords($stage),
+            };
+            $assemblyStageMap[$label] = ($assemblyStageMap[$label] ?? 0) + $count;
+        }
 
         // Tabel Audit dengan filter
         $query = $applyJobFilter(Bug::with(['project', 'device']));
@@ -217,10 +237,10 @@ class DashboardController extends Controller
 
         return view('dashboard.index', compact(
             'hasImportedData',
-            'totalBugs', 'openBugs', 'closedBugs', 'criticalBugs', 'reworkRate',
+            'totalBugs', 'openBugs', 'closedBugs', 'criticalBugs', 'reworkRate', 'reworkCount',
             'topProjects', 'volumeTrend',
             'auditBugs', 'projects', 'sqlFiles', 'selectedJobId', 'severityCounts',
-            'severityOpen', 'severityClosed'
+            'severityOpen', 'severityClosed', 'assemblyStageMap'
         ));
     }
 

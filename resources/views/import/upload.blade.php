@@ -22,7 +22,23 @@
 @endsection
 
 @section('content')
-<div class="max-w-2xl mx-auto">
+<div class="max-w-3xl mx-auto space-y-6">
+
+    {{-- Page Header --}}
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-border-strong">
+        <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-bg-secondary border border-border-default flex items-center justify-center shrink-0 shadow-sm">
+                <i class="bi bi-cloud-upload-fill text-xl text-accent"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-text-primary tracking-tight">Import Data .sql</h1>
+                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Unggah file dump MySQL (.sql) atau batch export manufaktur</p>
+            </div>
+        </div>
+        <a href="{{ route('import.history') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-bg-secondary hover:bg-bg-tertiary border border-border-default text-text-primary font-semibold text-xs rounded-xl shadow-sm transition-all shrink-0">
+            <i class="bi bi-clock-history text-accent"></i> Riwayat Import
+        </a>
+    </div>
 
     {{-- Error banner --}}
     @if($errors->any())

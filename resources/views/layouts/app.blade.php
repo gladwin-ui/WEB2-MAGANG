@@ -342,29 +342,71 @@
         }
 
         /* ============================================================
-         * SIDEBAR COLLAPSE
+         * SIDEBAR COLLAPSE (2-MODE: EXPANDED vs ICON-ONLY)
          * ============================================================ */
         .sidebar-transition {
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), padding 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
         @media (min-width: 768px) {
-            .sidebar-collapsed aside {
-                width: 0px !important;
+            body.sidebar-collapsed aside {
+                width: 4.5rem !important; /* ~72px sempit icon-only */
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+            body.sidebar-collapsed aside .sidebar-brand-text,
+            body.sidebar-collapsed aside .sidebar-label,
+            body.sidebar-collapsed aside .user-info-text,
+            body.sidebar-collapsed aside .theme-toggle-text,
+            body.sidebar-collapsed aside .logout-text {
+                display: none !important;
+            }
+            body.sidebar-collapsed aside .sidebar-header-row {
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+                gap: 1rem !important;
+            }
+            body.sidebar-collapsed aside .nav-item {
+                justify-content: center !important;
                 padding-left: 0 !important;
                 padding-right: 0 !important;
-                border-right-width: 0 !important;
-                overflow: hidden !important;
             }
-            body.sidebar-collapsed #floating-controls { display: flex !important; }
-            body.sidebar-collapsed .content-wrapper { padding-left: 6.5rem !important; }
+            body.sidebar-collapsed aside .user-footer-row {
+                flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+            }
+            body.sidebar-collapsed aside .user-actions-row {
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 0.5rem !important;
+            }
+            body.sidebar-collapsed aside .logout-btn {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                justify-content: center !important;
+            }
+            body.sidebar-collapsed aside #theme-toggle {
+                width: 100% !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
         }
-        #floating-controls { display: none; }
+        /* Tooltip muncul saat collapsed + hover */
+        .sidebar-tooltip {
+            display: none;
+        }
+        @media (min-width: 768px) {
+            body.sidebar-collapsed .nav-item:hover .sidebar-tooltip {
+                display: block;
+            }
+        }
+        #floating-controls { display: none !important; }
 
         @media (max-width: 767.98px) {
             body.sidebar-mobile-open aside { transform: translateX(0) !important; }
             body.sidebar-mobile-open #sidebar-overlay { opacity: 1 !important; visibility: visible !important; }
         }
-        .content-wrapper { transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
         /* ============================================================
          * LOGOUT & THEME BUTTON
@@ -397,9 +439,9 @@
     <!-- Mobile Sticky Top Header -->
     <header class="md:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-card border-b border-panel-border z-30 sticky top-0 shrink-0">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 relative">
-                <img src="{{ asset('Logo.png') }}" alt="Logo PT Hariff" class="absolute inset-0 w-full h-full object-contain rounded brand-logo-light">
-                <img src="{{ asset('logo-darkmode.jpg') }}" alt="Logo PT Hariff" class="absolute inset-0 w-full h-full object-contain rounded brand-logo-dark hidden">
+            <div class="w-8 h-8 relative bg-white rounded-lg p-0.5 shadow-sm flex items-center justify-center">
+                <img src="{{ asset('logo-hariff.jpg') }}" alt="Logo PT Hariff" class="w-full h-full object-contain rounded brand-logo-light">
+                <img src="{{ asset('logo-hariff.jpg') }}" alt="Logo PT Hariff" class="w-full h-full object-contain rounded brand-logo-dark hidden">
             </div>
             <div>
                 <span class="font-extrabold text-[10px] text-text-primary block leading-tight uppercase tracking-wider">BugTrack MFG</span>
@@ -418,41 +460,49 @@
     <aside class="w-64 bg-[#1A3D63] border-r border-[#1A3D63] flex flex-col justify-between p-6 shrink-0 sidebar-transition max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:-translate-x-full max-md:shadow-2xl">
         <div>
             <!-- Brand Logo & Toggle -->
-            <div class="flex items-center justify-between gap-3 mb-8">
+            <div class="sidebar-header-row flex items-center justify-between gap-3 mb-8">
                 <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-11 h-11 shrink-0 relative">
-                        <img src="{{ asset('Logo.png') }}" alt="Logo PT Hariff" class="absolute inset-0 w-full h-full object-contain rounded brand-logo-light">
-                        <img src="{{ asset('logo-darkmode.jpg') }}" alt="Logo PT Hariff" class="absolute inset-0 w-full h-full object-contain rounded brand-logo-dark hidden">
+                    <div class="w-11 h-11 shrink-0 relative bg-white rounded-xl p-1 shadow-sm flex items-center justify-center">
+                        <img src="{{ asset('logo-hariff.jpg') }}" alt="Logo PT Hariff" class="w-full h-full object-contain rounded-lg brand-logo-light">
+                        <img src="{{ asset('logo-hariff.jpg') }}" alt="Logo PT Hariff" class="w-full h-full object-contain rounded-lg brand-logo-dark hidden">
                     </div>
-                    <div class="min-w-0">
+                    <div class="sidebar-brand-text min-w-0">
                         <span class="font-extrabold text-xs text-white block leading-tight uppercase tracking-wider">Sistem Pelacakan</span>
                         <span class="font-extrabold text-xs text-white block leading-tight uppercase tracking-wider">Manufaktur</span>
                         <span class="block text-[8px] text-slate-200 font-mono tracking-widest uppercase mt-1">BY PT HARIFF</span>
                     </div>
                 </div>
-                <button id="sidebar-toggle-in" class="p-1.5 rounded-lg bg-white/10 border border-white/20 text-white hover:text-white hover:bg-white/20 transition-all flex items-center justify-center cursor-pointer shadow-sm shrink-0" title="Sembunyikan Sidebar">
-                    <i class="bi bi-chevron-left text-sm"></i>
+                <button id="sidebar-toggle-in" class="p-1.5 rounded-lg bg-white/10 border border-white/20 text-white hover:text-white hover:bg-white/20 transition-all flex items-center justify-center cursor-pointer shadow-sm shrink-0 w-8 h-8" title="Sembunyikan Sidebar">
+                    <i id="sidebar-toggle-icon" class="bi bi-chevron-left text-sm"></i>
                 </button>
             </div>
 
             <!-- Nav Links -->
             <nav class="space-y-1.5">
                 @auth
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('dashboard') ? 'bg-[#0A1931] text-white border-l-2 border-[#4A7FA7] font-bold' : 'text-white hover:bg-[#0A1931] hover:text-white' }}">
-                        <i class="bi bi-bar-chart-line text-base"></i> Laporan Umum
+                    <a href="{{ route('dashboard') }}" class="nav-item group relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('dashboard') ? 'bg-[#0A1931] text-white border-l-2 border-[#4A7FA7] font-bold' : 'text-white hover:bg-[#0A1931] hover:text-white' }}">
+                        <i class="bi bi-bar-chart-line text-base shrink-0"></i>
+                        <span class="sidebar-label whitespace-nowrap">Laporan Umum</span>
+                        <span class="sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 rounded-md bg-[#0A1931] text-white text-xs font-semibold whitespace-nowrap z-50 shadow-lg border border-[#1E3A5C] pointer-events-none">Laporan Umum</span>
                     </a>
-                    <a href="{{ route('laporan-khusus.index') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('laporan-khusus.*') ? 'bg-[#0A1931] text-white border-l-2 border-[#4A7FA7] font-bold' : 'text-white hover:bg-[#0A1931] hover:text-white' }}">
-                        <i class="bi bi-file-earmark-text text-base"></i> Laporan Khusus
+                    <a href="{{ route('laporan-khusus.index') }}" class="nav-item group relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('laporan-khusus.*') ? 'bg-[#0A1931] text-white border-l-2 border-[#4A7FA7] font-bold' : 'text-white hover:bg-[#0A1931] hover:text-white' }}">
+                        <i class="bi bi-file-earmark-text text-base shrink-0"></i>
+                        <span class="sidebar-label whitespace-nowrap">Laporan Khusus</span>
+                        <span class="sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 rounded-md bg-[#0A1931] text-white text-xs font-semibold whitespace-nowrap z-50 shadow-lg border border-[#1E3A5C] pointer-events-none">Laporan Khusus</span>
                     </a>
 
                     {{-- Divider --}}
                     <div class="my-2 border-t border-[#0A1931]"></div>
 
-                    <a href="{{ route('import.upload') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.upload') || request()->routeIs('import.progress') ? 'bg-[#0A1931] text-white border-l-2 border-[#4A7FA7] font-bold' : 'text-white hover:bg-[#0A1931] hover:text-white' }}">
-                        <i class="bi bi-cloud-upload text-base"></i> Import Data .sql
+                    <a href="{{ route('import.upload') }}" class="nav-item group relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.upload') || request()->routeIs('import.progress') ? 'bg-[#0A1931] text-white border-l-2 border-[#4A7FA7] font-bold' : 'text-white hover:bg-[#0A1931] hover:text-white' }}">
+                        <i class="bi bi-cloud-upload text-base shrink-0"></i>
+                        <span class="sidebar-label whitespace-nowrap">Import Data .sql</span>
+                        <span class="sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 rounded-md bg-[#0A1931] text-white text-xs font-semibold whitespace-nowrap z-50 shadow-lg border border-[#1E3A5C] pointer-events-none">Import Data .sql</span>
                     </a>
-                    <a href="{{ route('import.history') }}" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.history') ? 'bg-[#0A1931] text-white border-l-2 border-[#4A7FA7] font-bold' : 'text-white hover:bg-[#0A1931] hover:text-white' }}">
-                        <i class="bi bi-clock-history text-base"></i> Riwayat Import
+                    <a href="{{ route('import.history') }}" class="nav-item group relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.history') ? 'bg-[#0A1931] text-white border-l-2 border-[#4A7FA7] font-bold' : 'text-white hover:bg-[#0A1931] hover:text-white' }}">
+                        <i class="bi bi-clock-history text-base shrink-0"></i>
+                        <span class="sidebar-label whitespace-nowrap">Riwayat Import</span>
+                        <span class="sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 rounded-md bg-[#0A1931] text-white text-xs font-semibold whitespace-nowrap z-50 shadow-lg border border-[#1E3A5C] pointer-events-none">Riwayat Import</span>
                     </a>
                 @endauth
             </nav>
@@ -465,28 +515,29 @@
                 $profilePhotoUrl = $authUser->profile_photo_url;
                 $profileInitials = strtoupper(substr($authUser->name ?? '', 0, 2));
             @endphp
-            <div class="border-t border-[#0A1931] pt-4 mt-8">
+            <div class="user-footer-row border-t border-[#0A1931] pt-4 mt-8 flex flex-col justify-between">
                 <div class="flex items-center gap-3">
                     @if($profilePhotoUrl)
-                        <img src="{{ $profilePhotoUrl }}" alt="Foto profil" class="h-9 w-9 rounded-full object-cover border border-white/20">
+                        <img src="{{ $profilePhotoUrl }}" alt="Foto profil" class="h-9 w-9 rounded-full object-cover border border-white/20 shrink-0" title="{{ $authUser->name }}">
                     @else
-                        <div class="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center font-bold text-sm text-white">
+                        <div class="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center font-bold text-sm text-white shrink-0" title="{{ $authUser->name }}">
                             {{ $profileInitials }}
                         </div>
                     @endif
-                    <div class="overflow-hidden">
+                    <div class="user-info-text overflow-hidden min-w-0">
                         <div class="text-sm font-semibold text-white truncate">{{ $authUser->name }}</div>
                         <div class="text-xs text-slate-300 font-mono tracking-wider uppercase">{{ $authUser->role }}</div>
                     </div>
                 </div>
-                <div class="flex gap-2 mt-4">
-                    <button id="theme-toggle" type="button" class="px-3 py-2 border border-white/20 hover:bg-white/10 text-white rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm" style="flex: 1;" title="Ubah Tema">
-                        <i class="bi bi-moon-stars"></i>
+                <div class="user-actions-row flex gap-2 mt-4">
+                    <button id="theme-toggle" type="button" class="px-3 py-2 border border-white/20 hover:bg-white/10 text-white rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shrink-0" style="flex: 1;" title="Ubah Tema">
+                        <i id="theme-toggle-icon" class="bi bi-moon-stars shrink-0"></i>
+                        <span class="theme-toggle-text">Tema</span>
                     </button>
                     <form action="{{ route('logout') }}" method="POST" class="flex-1" style="flex: 2;">
                         @csrf
-                        <button type="submit" class="logout-btn w-full flex items-center justify-center gap-2 px-3 py-2 border border-white/20 hover:bg-white/10 text-white rounded-lg text-xs font-semibold transition-all shadow-sm">
-                            <i class="bi bi-box-arrow-right"></i> Keluar
+                        <button type="submit" class="logout-btn w-full flex items-center justify-center gap-2 px-3 py-2 border border-white/20 hover:bg-white/10 text-white rounded-lg text-xs font-semibold transition-all shadow-sm shrink-0" title="Keluar">
+                            <i class="bi bi-box-arrow-right shrink-0"></i> <span class="logout-text">Keluar</span>
                         </button>
                     </form>
                 </div>
@@ -496,16 +547,6 @@
 
     <!-- Main Workspace -->
     <main class="flex-1 p-4 md:p-8 overflow-y-auto relative">
-        <!-- Floating Controls Container (Visible only when sidebar is collapsed on desktop) -->
-        <div id="floating-controls" class="hidden md:flex absolute top-8 left-8 flex items-center gap-2 z-50">
-            <button id="sidebar-toggle-out" class="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center cursor-pointer" title="Tampilkan Sidebar">
-                <i class="bi bi-list text-lg"></i>
-            </button>
-            <button id="theme-toggle-out" class="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center cursor-pointer" title="Ubah Tema">
-                <i class="bi bi-moon-stars text-lg"></i>
-            </button>
-        </div>
-
         <div class="content-wrapper">
             @if(session('success'))
                 <div class="mb-6 p-4 rounded-xl bg-green-50 border border-green-250 text-green-700 flex items-center gap-3 text-sm">
@@ -529,33 +570,31 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const toggleIn = document.getElementById('sidebar-toggle-in');
-            const toggleOut = document.getElementById('sidebar-toggle-out');
             const themeToggle = document.getElementById('theme-toggle');
-            const themeToggleOut = document.getElementById('theme-toggle-out');
             const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
             const sidebarOverlay = document.getElementById('sidebar-overlay');
             const body = document.body;
             
-            // Load sidebar state from localStorage
-            const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
-            if (isCollapsed) {
-                body.classList.add('sidebar-collapsed');
-            }
+            // Selalu mulai EXPANDED sesuai spesifikasi (tidak memuat dari localStorage)
+            body.classList.remove('sidebar-collapsed');
             
             function toggleSidebar() {
                 if (window.innerWidth < 768) {
                     body.classList.remove('sidebar-mobile-open');
                 } else {
-                    body.classList.toggle('sidebar-collapsed');
-                    localStorage.setItem('sidebar-collapsed', body.classList.contains('sidebar-collapsed'));
+                    const collapsed = body.classList.toggle('sidebar-collapsed');
+                    const toggleIcon = document.getElementById('sidebar-toggle-icon');
+                    if (toggleIcon) {
+                        toggleIcon.className = collapsed ? 'bi bi-chevron-right text-sm' : 'bi bi-chevron-left text-sm';
+                    }
+                    if (toggleIn) {
+                        toggleIn.title = collapsed ? 'Tampilkan Sidebar' : 'Sembunyikan Sidebar';
+                    }
                 }
             }
 
             if (toggleIn) {
                 toggleIn.addEventListener('click', toggleSidebar);
-            }
-            if (toggleOut) {
-                toggleOut.addEventListener('click', toggleSidebar);
             }
 
             // Mobile specific drawer listeners
@@ -574,14 +613,11 @@
             function updateThemeUI(isDark) {
                 const iconClass = isDark ? 'bi-sun' : 'bi-moon-stars';
                 const titleText = isDark ? 'Ubah ke Mode Terang' : 'Ubah ke Mode Gelap';
+                const themeText = isDark ? 'Terang' : 'Gelap';
                 
                 if (themeToggle) {
-                    themeToggle.innerHTML = `<i class="bi ${iconClass} text-sm"></i>`;
+                    themeToggle.innerHTML = `<i id="theme-toggle-icon" class="bi ${iconClass} shrink-0"></i><span class="theme-toggle-text">${themeText}</span>`;
                     themeToggle.title = titleText;
-                }
-                if (themeToggleOut) {
-                    themeToggleOut.innerHTML = `<i class="bi ${iconClass} text-lg"></i>`;
-                    themeToggleOut.title = titleText;
                 }
             }
 
@@ -603,9 +639,6 @@
 
             if (themeToggle) {
                 themeToggle.addEventListener('click', toggleTheme);
-            }
-            if (themeToggleOut) {
-                themeToggleOut.addEventListener('click', toggleTheme);
             }
         });
     </script>

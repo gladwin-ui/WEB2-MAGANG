@@ -69,13 +69,18 @@
 <div class="max-w-2xl mx-auto">
 
     {{-- Header --}}
-    <div class="mb-6 flex items-center gap-3">
-        <a href="{{ route('import.upload') }}" class="p-2 rounded-lg border border-slate-200 text-slate-500 hover:text-blue-600 hover:bg-slate-50 transition-colors">
-            <i class="bi bi-arrow-left text-sm"></i>
-        </a>
-        <div>
-            <h1 class="text-xl font-extrabold text-slate-800 tracking-tight">Progres Import</h1>
-            <p class="text-xs text-slate-400 font-mono">Job #{{ $importJob->id }} &middot; {{ $importJob->filename }}</p>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-border-strong">
+        <div class="flex items-center gap-3.5">
+            <a href="{{ route('import.upload') }}" class="w-11 h-11 rounded-xl bg-bg-secondary border border-border-default flex items-center justify-center shrink-0 shadow-sm text-text-secondary hover:text-accent hover:border-accent transition-all" title="Kembali">
+                <i class="bi bi-arrow-left text-lg"></i>
+            </a>
+            <div class="w-11 h-11 rounded-xl bg-bg-secondary border border-border-default flex items-center justify-center shrink-0 shadow-sm">
+                <i class="bi bi-cpu-fill text-xl text-accent"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-text-primary tracking-tight">Progres Import</h1>
+                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium font-mono">Job #{{ $importJob->id }} &middot; {{ $importJob->filename }}</p>
+            </div>
         </div>
     </div>
 

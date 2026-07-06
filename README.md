@@ -200,6 +200,7 @@ analytics-service/
 
 ### Fitur Inti Admin
 - ✅ Dashboard analitik admin tetap dipertahankan
+- ✅ **Sidebar Collapsible 2-Mode:** Navigasi samping interaktif dengan mode Expanded (~256px) dan mode Collapsed icon-only (~72px) ber-tooltip, selalu mulai expanded pada setiap beban halaman.
 - ✅ Kelola master data Project, Serial Number, & Device
 - ✅ Detail bug historis tetap bisa dibaca dari dashboard/halaman detail
 - ✅ Fondasi tracking import: tabel `import_jobs` + model `ImportJob`
@@ -211,7 +212,9 @@ analytics-service/
 
 ### Dashboard Analitik Admin
 - ✅ Export CSV (`DashboardController::exportCsv`)
-- ✅ Summary cards (Total Bug, Open, Closed, Critical, Rework Rate, Spam Blocked)
+- ✅ **Executive KPI Summary Cards (4 Kartu Utama):** Menampilkan **Total Defect**, **Dalam Perbaikan** (*Open*), **Telah Selesai** (*Closed*), dan **Rework Rate** (*KPI Manufaktur*).
+- ✅ **Perbaikan Formula & Display Rework Rate:** Persentase Rework Rate dihitung akurat terhadap total seluruh laporan defect ($\frac{\text{Rework Count}}{\text{Total Bugs}} \times 100\%$), dilengkapi dengan subteks jumlah kasus aslinya di bawah persentase (contoh: *27 dari 146 kasus butuh perakitan ulang*).
+- ❌ **Dihapus:** Visualisasi & pemantauan SLA Monitor (Waktu Penyelesaian) serta badge SLA pada tabel audit agar dasbor tetap ringkas dan terfokus.
 - ✅ Tabel Audit Bug dengan filter (status/severity/project/tanggal) + pagination
 - ❌ **Dihapus:** Distribusi Sentimen (Positive/Neutral/Negative/Spam) — donut chart tidak lagi ditampilkan.
 - ❌ **Dihapus:** Protokol Rekomendasi / detail AI Stage 1 expandable dari kolom "AI Automation Diagnosis".
@@ -220,7 +223,14 @@ analytics-service/
 - ✅ Project Paling Banyak Bug (Top 5)
 - ✅ Tren Volume Laporan (line chart, **7 hari terakhir**)
 - ✅ Analytics Penyebab Kerusakan (distribusi `damage_category`)
+- ✅ **Distribusi Severity (Open vs Closed):** Dual-pie chart yang membandingkan persentase tingkat keparahan (*Critical, Major, Minor*) secara terpisah untuk bug yang masih terbuka dan yang sudah selesai.
+- ✅ **Distribusi Tahap Perakitan (Assembly Stage Breakdown):** Grafik proporsi cacat berdasarkan kolom `reporter_type`, memisahkan kendala pada **Unit Jadi / Produk** vs **Sub-Komponen / PCB**.
 - ✅ Skor Urgency dihitung berdasarkan data per laporan: `round((severity_weight + (1 - sentiment_score)) / 2, 2)`. Nilai `sentiment_score` yang NULL dianggap netral (**0.5**) agar laporan yang belum dianalisis tidak mendapat skor urgency tinggi secara artifisial.
+
+### Laporan Khusus
+- ✅ **Halaman Analisis Terpisah (`/laporan-khusus`):** Filter dropdown per produk/proyek (hanya menampilkan produk yang memiliki laporan cacat aktif).
+- ✅ **Top 5 Masalah Tersering:** Aglomerasi otomatis judul (`title`) dan deskripsi (`description`) menggunakan algoritma NLP Trigram anti-chaining untuk mencegah pengelompokan raksasa yang tidak relevan.
+- ✅ **Top 5 Root Cause Tersering:** Aglomerasi otomatis akar masalah (`root_cause`) per produk menggunakan algoritma NLP Trigram anti-chaining.
 
 ### 🎨 Arah Visual/Styling
 - ✅ **Light Mode Profesional/Korporat** — token dasar sudah diimplementasikan di `resources/css/app.css`: putih bersih (`#FFFFFF`), biru korporat `#2563EB` sebagai aksen utama, serta 4 pasang warna badge standar untuk severity/status.
@@ -292,6 +302,17 @@ analytics-service/
 ---
 
 ## 📝 Changelog
+
+### v0.17 — Dokumentasi Laporan Khusus, Chart Tambahan, & Sidebar Collapsible 2-Mode
+- **[DOKUMENTASI]** Menambahkan dokumentasi resmi untuk fitur halaman **Laporan Khusus (`/laporan-khusus`)** yang memetakan Top 5 Masalah Tersering dan Top 5 Root Cause Tersering per produk berbasis algoritma NLP Trigram anti-chaining.
+- **[DOKUMENTASI]** Mencatat visualisasi chart **Distribusi Severity (Open vs Closed)** dan **Distribusi Tahap Perakitan (Assembly Stage Breakdown)** pada daftar visualisasi Laporan Umum (Dashboard).
+- **[UI/UX]** Mengimplementasikan navigasi **Sidebar Collapsible 2-Mode** (Expanded ~256px dengan teks dan Collapsed icon-only ~72px dengan *hover tooltip* yang selalu default expanded saat halaman dimuat tanpa menyimpan preferensi ke localStorage).
+
+### v0.16 — Refinement KPI Manufaktur: Perbaikan Formula Rework Rate & Pembersihan Dasbor
+- **[DASHBOARD]** Menata ulang deretan kartu statistik atas (*Executive KPI Summary Strip*) menjadi **4 Kartu Utama** yang bersih dan proporsional: Total Defect, Dalam Perbaikan, Telah Selesai, dan Rework Rate.
+- **[DASHBOARD]** Memperbaiki formula perhitungan **Rework Rate** di backend dari sebelumnya membagi dengan bug *closed* menjadi membagi dengan *total bug* ($\frac{\text{Rework Count}}{\text{Total Bugs}} \times 100\%$), mengeliminasi anomali angka melebihi 100%.
+- **[DASHBOARD]** Menambahkan keterangan jumlah kasus nyata pada kartu Rework Rate (contoh: *27 dari 146 kasus butuh perakitan ulang*) agar persentase langsung dapat dipahami tanpa kebingungan.
+- **[DASHBOARD]** Menghapus visualisasi statistik dan kalkulasi **SLA Monitor** (Waktu Penyelesaian) pada kartu KPI maupun badge tabel audit sesuai instruksi pengguna untuk menjaga dasbor tetap ringkas dan terfokus pada status asli produk.
 
 ### v0.15 — FastAPI Spam-First Orchestrated Flow & README Sync
 - **[ANALYTICS SERVICE]** `main.py` direstruktur menjadi flow spam-first: `detect_spam()` berjalan pertama, lalu return early jika spam confidence tinggi.

@@ -4,30 +4,36 @@
 
 @section('content')
 <div class="space-y-6">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4">
-        <div>
-            <a href="{{ route('dashboard') }}" class="text-xs text-slate-500 hover:text-blue-600 font-mono tracking-wider uppercase inline-flex items-center gap-1 mb-2">
-                <i class="bi bi-arrow-left"></i> KEMBALI KE DASHBOARD
+    {{-- Page Header --}}
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-border-strong">
+        <div class="flex items-center gap-3.5">
+            <a href="{{ route('dashboard') }}" class="w-11 h-11 rounded-xl bg-bg-secondary border border-border-default flex items-center justify-center shrink-0 shadow-sm text-text-secondary hover:text-accent hover:border-accent transition-all" title="Kembali ke Dashboard">
+                <i class="bi bi-arrow-left text-lg"></i>
             </a>
-            <div class="flex items-center gap-3 flex-wrap">
-                <h1 class="text-2xl font-black text-slate-800 tracking-tight">TIKET DEFECT #{{ $bug->id }}</h1>
-                @if($bug->status === 'OPEN')
-                    <span class="inline-flex text-[9px] font-bold font-mono bg-red-50 text-red-700 border border-red-200 px-2.5 py-0.5 rounded uppercase">
-                        <span class="h-1.5 w-1.5 rounded-full bg-red-500 mr-1.5"></span> OPEN
-                    </span>
-                @else
-                    <span class="inline-flex text-[9px] font-bold font-mono bg-green-50 text-green-700 border border-green-200 px-2.5 py-0.5 rounded uppercase">
-                        CLOSED // RESOLVED
-                    </span>
-                @endif
-
-                @if($bug->is_rework)
-                    <span class="inline-flex text-[9px] font-bold font-mono bg-purple-100 text-purple-700 border border-purple-200 px-2.5 py-0.5 rounded uppercase">REWORK</span>
-                @endif
+            <div class="w-11 h-11 rounded-xl bg-bg-secondary border border-border-default flex items-center justify-center shrink-0 shadow-sm">
+                <i class="bi bi-bug-fill text-xl text-accent"></i>
             </div>
-            <p class="text-xs text-slate-500 font-mono mt-1">
-                DILAPORKAN OLEH: {{ strtoupper($bug->reported_by ?? 'SYSTEM') }} // TANGGAL: {{ $bug->created_at->format('d M Y, H:i') }}
-            </p>
+            <div>
+                <div class="flex items-center gap-2.5 flex-wrap">
+                    <h1 class="text-xl md:text-2xl font-black text-text-primary tracking-tight">Tiket Defect #{{ $bug->id }}</h1>
+                    @if($bug->status === 'OPEN')
+                        <span class="inline-flex items-center text-[10px] font-bold font-mono bg-red-500/10 text-red-600 border border-red-500/20 px-2.5 py-0.5 rounded-md uppercase">
+                            <span class="h-1.5 w-1.5 rounded-full bg-red-500 mr-1.5"></span> OPEN
+                        </span>
+                    @else
+                        <span class="inline-flex items-center text-[10px] font-bold font-mono bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 px-2.5 py-0.5 rounded-md uppercase">
+                            CLOSED // RESOLVED
+                        </span>
+                    @endif
+
+                    @if($bug->is_rework)
+                        <span class="inline-flex items-center text-[10px] font-bold font-mono bg-purple-500/10 text-purple-600 border border-purple-500/20 px-2.5 py-0.5 rounded-md uppercase">REWORK</span>
+                    @endif
+                </div>
+                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium font-mono">
+                    DILAPORKAN OLEH: {{ strtoupper($bug->reported_by ?? 'SYSTEM') }} &middot; TANGGAL: {{ $bug->created_at->format('d M Y, H:i') }}
+                </p>
+            </div>
         </div>
     </div>
 

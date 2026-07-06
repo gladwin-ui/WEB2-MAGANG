@@ -16,9 +16,17 @@
             theme: {
                 extend: {
                     colors: {
-                        slate: {
-                            950: '#F8FAFC',
-                        }
+                        'bg-primary': 'var(--color-bg-primary)',
+                        'bg-secondary': 'var(--color-bg-secondary)',
+                        'bg-tertiary': 'var(--color-bg-tertiary)',
+                        'text-primary': 'var(--color-text-primary)',
+                        'text-secondary': 'var(--color-text-secondary)',
+                        'text-muted': 'var(--color-text-muted)',
+                        'border-default': 'var(--color-border)',
+                        'border-strong': 'var(--color-border-strong)',
+                        'accent': 'var(--color-accent)',
+                        'accent-hover': 'var(--color-accent-hover)',
+                        'accent-soft': 'var(--color-accent-soft)'
                     },
                     fontFamily: {
                         mono: ['Inter', 'sans-serif'],
@@ -29,83 +37,72 @@
             }
         }
     </script>
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        /* Force font override globally */
-        body {
-            font-family: 'Inter', sans-serif !important;
-            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-        }
-        h1, h2, h3, h4, h5, h6, .font-heading {
-            font-family: 'Montserrat', sans-serif !important;
-            font-weight: 800 !important;
-        }
-        .font-mono, code {
-            font-family: 'Inter', sans-serif !important;
-        }
-
-        /* Global Color Theme Overrides */
-        body:not(.dark) {
-            background-color: #C9C1B1 !important;
-            color: #1E293B !important;
-        }
-        body:not(.dark) .bg-white {
-            background-color: #D8D1C1 !important;
-        }
-        .border-slate-800, .border-slate-850 {
-            border-color: #E2E8F0 !important;
-        }
-        input {
-            background-color: #FFFFFF !important;
-            border-color: #E2E8F0 !important;
-            color: #1E293B !important;
-        }
-        body:not(.dark) input {
-            background-color: #D8D1C1 !important;
-        }
-        input:focus {
-            border-color: #0046BF !important;
-            box-shadow: 0 0 10px rgba(0, 70, 191, 0.2) !important;
+        /* ============================================================
+         * OFFICIAL PT HARIFF DESIGN SYSTEM TOKENS
+         * ============================================================ */
+        :root {
+            --color-bg-primary:    #F6FAFD;
+            --color-bg-secondary:  #FFFFFF;
+            --color-bg-tertiary:   #EAF2F9;
+            --color-text-primary:   #0A1931;
+            --color-text-secondary: #1A3D63;
+            --color-text-muted:     #4A7FA7;
+            --color-border:         #D5E3F0;
+            --color-border-strong:  #B3CFE5;
+            --color-accent:         #1A3D63;
+            --color-accent-hover:   #0A1931;
+            --color-accent-soft:    #4A7FA7;
         }
 
         body.dark {
-            background-color: #2C3B4D !important;
-            color: #F9FAFB !important;
+            --color-bg-primary:    #0A1931;
+            --color-bg-secondary:  #11233F;
+            --color-bg-tertiary:   #1A3D63;
+            --color-text-primary:   #F6FAFD;
+            --color-text-secondary: #B3CFE5;
+            --color-text-muted:     #7FA3C4;
+            --color-border:         #1E3A5C;
+            --color-border-strong:  #2C4E78;
+            --color-accent:         #4A7FA7;
+            --color-accent-hover:   #6B9CC3;
+            --color-accent-soft:    #B3CFE5;
         }
-        body.dark .bg-white {
-            background-color: #35475C !important;
+
+        /* Base Typography & Transitions */
+        body {
+            font-family: 'Inter', sans-serif !important;
+            background-color: var(--color-bg-primary) !important;
+            color: var(--color-text-primary) !important;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
-        body.dark .border-slate-200 {
-            border-color: #475B73 !important;
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif !important;
+            font-weight: 800 !important;
         }
-        body.dark .text-slate-800 {
-            color: #F9FAFB !important;
+        .font-mono {
+            font-family: 'Inter', sans-serif !important;
         }
-        body.dark .text-slate-600 {
-            color: #CBD5E1 !important;
+
+        /* Input styling overrides */
+        input[type="email"], input[type="password"], input[type="text"] {
+            background-color: var(--color-bg-secondary) !important;
+            border-color: var(--color-border) !important;
+            color: var(--color-text-primary) !important;
+            transition: all 0.2s ease;
         }
-        body.dark .text-slate-500 {
-            color: #94A3B8 !important;
+        input[type="email"]:focus, input[type="password"]:focus, input[type="text"]:focus {
+            border-color: #3B82F6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+            outline: none !important;
         }
-        body.dark input {
-            background-color: #1E2834 !important;
-            border-color: #475B73 !important;
-            color: #F9FAFB !important;
+        input::placeholder {
+            color: var(--color-text-muted) !important;
+            opacity: 0.6;
         }
-        body.dark input::placeholder {
-            color: #94A3B8 !important;
-        }
-        body.dark a.text-blue-600 {
-            color: #60a5fa !important;
-        }
-        body.dark a.text-blue-600:hover {
-            color: #93c5fd !important;
-        }
-        body.dark .bg-rose-50 {
-            background-color: rgba(220, 38, 38, 0.15) !important;
-            border-color: rgba(220, 38, 38, 0.3) !important;
-            color: #F87171 !important;
-        }
+
         body.dark .brand-logo-light {
             display: none !important;
         }
@@ -114,7 +111,8 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden">
+    <!-- Theme Auto-Detect Script -->
     <script>
         (function() {
             const theme = localStorage.getItem('theme');
@@ -124,28 +122,40 @@
             }
         })();
     </script>
+
+    <!-- Ambient Modern Background Glows -->
+    <div class="fixed top-[-10%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-blue-500/10 dark:bg-blue-500/15 blur-[120px] pointer-events-none -z-10 animate-pulse" style="animation-duration: 8s;"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-indigo-500/10 dark:bg-indigo-500/15 blur-[120px] pointer-events-none -z-10 animate-pulse" style="animation-duration: 10s;"></div>
+
     <!-- Floating Theme Toggle -->
-    <div class="absolute top-4 right-4 z-50">
-        <button id="theme-toggle" class="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center cursor-pointer" title="Ubah Tema">
-            <i class="bi bi-moon-stars"></i>
+    <div class="absolute top-6 right-6 z-50">
+        <button id="theme-toggle" class="w-11 h-11 rounded-xl bg-bg-secondary border border-border-default text-text-secondary hover:text-accent hover:border-accent shadow-sm flex items-center justify-center transition-all duration-200 cursor-pointer transform hover:scale-105 active:scale-95" title="Ubah Tema">
+            <i class="bi bi-moon-stars text-lg"></i>
         </button>
     </div>
 
-    <div class="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-8 shadow-sm relative overflow-hidden">
-        <!-- Accent line -->
-        <div class="absolute top-0 left-0 w-full h-1 bg-[#F59E0B]"></div>
+    <!-- Main Authentication Card -->
+    <div class="w-full max-w-md bg-bg-secondary/95 border border-border-default/80 rounded-3xl p-8 sm:p-10 shadow-2xl relative z-10 overflow-hidden backdrop-blur-xl transition-all duration-300">
+        <!-- Modern 3-Color Brand Accent Bar -->
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-500"></div>
 
-        <div class="text-center mb-8">
-            <img src="{{ asset('Logo.png') }}" alt="Logo PT Hariff" class="h-12 w-auto mx-auto mb-4 rounded-xl brand-logo-light">
-            <img src="{{ asset('logo-darkmode.jpg') }}" alt="Logo PT Hariff" class="h-12 w-auto mx-auto mb-4 rounded-xl brand-logo-dark hidden">
-            <h1 class="text-xl font-extrabold tracking-tight text-slate-800">Manufacturing Tracking System</h1>
-            <p class="text-xs text-slate-500 font-mono tracking-wider mt-1 uppercase">BY PT HARIFF</p>
+        <!-- Logo & Header Section -->
+        <div class="text-center mb-8 pt-2">
+            <div class="w-16 h-16 rounded-2xl bg-white border border-border-default flex items-center justify-center mx-auto mb-4 shadow-sm p-2">
+                <img src="{{ asset('logo-hariff.jpg') }}" alt="Logo PT Hariff" class="w-full h-full object-contain brand-logo-light">
+                <img src="{{ asset('logo-hariff.jpg') }}" alt="Logo PT Hariff" class="w-full h-full object-contain brand-logo-dark hidden">
+            </div>
+            <h1 class="text-2xl font-black tracking-tight text-text-primary">Manufacturing Tracking System</h1>
+            <p class="text-xs font-mono tracking-widest text-accent mt-1.5 uppercase font-bold">PT Hariff Dipa Daya</p>
         </div>
 
+        <!-- Error Notification Banner -->
         @if ($errors->any())
-            <div class="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
-                <div class="font-bold mb-1 flex items-center gap-1.5"><i class="bi bi-exclamation-triangle-fill"></i> LOG IN FAILED:</div>
-                <ul class="list-disc pl-4 space-y-0.5">
+            <div class="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs shadow-sm">
+                <div class="font-bold mb-1.5 flex items-center gap-2 text-sm">
+                    <i class="bi bi-exclamation-triangle-fill text-rose-500"></i> OTENTIKASI GAGAL:
+                </div>
+                <ul class="list-disc pl-5 space-y-0.5">
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -153,43 +163,55 @@
             </div>
         @endif
 
+        <!-- Login Form -->
         <form action="{{ route('login') }}" method="POST" class="space-y-5">
             @csrf
             <div>
-                <label for="email" class="block text-xs font-mono tracking-wider text-slate-600 uppercase mb-2">Alamat Email / ID Staf</label>
-                <input type="email" id="email" name="email" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600 transition-all placeholder-slate-400" placeholder="nama@hariff.co.id" value="{{ old('email') }}" required autofocus>
+                <label for="email" class="flex items-center gap-1.5 text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">
+                    <i class="bi bi-person-badge text-accent text-sm"></i> Alamat Email / ID Staf
+                </label>
+                <input type="email" id="email" name="email" class="w-full rounded-xl px-4 py-3 text-sm font-medium transition-all shadow-inner" placeholder="nama@hariff.co.id" value="{{ old('email') }}" required autofocus>
             </div>
 
             <div>
-                <label for="password" class="block text-xs font-mono tracking-wider text-slate-600 uppercase mb-2">Kata Sandi / Security Key</label>
-                <input type="password" id="password" name="password" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-800 text-sm focus:outline-none focus:border-blue-600 transition-all placeholder-slate-400" placeholder="••••••••" required>
+                <label for="password" class="flex items-center gap-1.5 text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">
+                    <i class="bi bi-key-fill text-accent text-sm"></i> Kata Sandi / Security Key
+                </label>
+                <input type="password" id="password" name="password" class="w-full rounded-xl px-4 py-3 text-sm font-medium transition-all shadow-inner" placeholder="••••••••" required>
             </div>
 
-            <div class="flex items-center gap-2">
-                <input type="checkbox" id="remember" name="remember" class="rounded bg-white border-slate-300 text-blue-600 focus:ring-0 focus:ring-offset-0">
-                <label for="remember" class="text-xs text-slate-500 font-mono tracking-wider cursor-pointer uppercase select-none">Ingat Sesi Saya</label>
+            <div class="flex items-center justify-between pt-1">
+                <div class="flex items-center gap-2.5">
+                    <input type="checkbox" id="remember" name="remember" class="w-4 h-4 rounded bg-bg-secondary border-border-default text-blue-600 focus:ring-0 focus:ring-offset-0 cursor-pointer">
+                    <label for="remember" class="text-xs text-text-secondary font-medium tracking-wide cursor-pointer select-none">Ingat Sesi Saya</label>
+                </div>
             </div>
 
-            <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-3 btn-premium-gradient rounded-lg text-sm font-bold shadow-sm transition-all transform active:scale-[0.98]">
-                <i class="bi bi-box-arrow-in-right"></i> OTENTIKASI & MASUK
+            <button type="submit" class="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer pt-3.5 pb-3.5 mt-2">
+                <i class="bi bi-shield-lock-fill text-base"></i> OTENTIKASI & MASUK
             </button>
         </form>
 
-        <div class="text-center mt-6 text-xs font-mono tracking-wide text-slate-500">
-            Belum punya kredensial? <a href="{{ route('register') }}" class="text-blue-600 hover:text-blue-700 font-bold hover:underline">Registrasi Baru</a>
+        <!-- Footer Link -->
+        <div class="mt-8 pt-6 border-t border-border-default/60 text-center text-xs text-text-secondary">
+            Belum punya kredensial? 
+            <a href="{{ route('register') }}" class="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-1 ml-1 transition-colors">
+                Registrasi Baru <i class="bi bi-arrow-right"></i>
+            </a>
         </div>
     </div>
 
+    <!-- Theme Toggle Script -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const themeToggle = document.getElementById('theme-toggle');
             const body = document.body;
 
             function updateThemeUI(isDark) {
-                const iconClass = isDark ? 'bi-sun' : 'bi-moon-stars';
+                const iconClass = isDark ? 'bi-sun-fill text-yellow-400' : 'bi-moon-stars-fill text-blue-600';
                 const titleText = isDark ? 'Ubah ke Mode Terang' : 'Ubah ke Mode Gelap';
                 if (themeToggle) {
-                    themeToggle.innerHTML = `<i class="bi ${iconClass}"></i>`;
+                    themeToggle.innerHTML = `<i class="bi ${iconClass} transition-transform duration-300"></i>`;
                     themeToggle.title = titleText;
                 }
             }

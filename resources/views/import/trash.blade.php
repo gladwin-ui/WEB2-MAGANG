@@ -6,24 +6,25 @@
 <div class="max-w-5xl mx-auto">
 
     {{-- Page Header --}}
-    <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <div class="flex items-center gap-2 mb-1">
-                <a href="{{ route('import.upload') }}" class="text-xs text-blue-600 hover:underline flex items-center gap-1 font-mono uppercase">
-                    <i class="bi bi-arrow-left"></i> Kembali ke Import
-                </a>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-border-strong">
+        <div class="flex items-center gap-3.5">
+            <a href="{{ route('import.upload') }}" class="w-11 h-11 rounded-xl bg-bg-secondary border border-border-default flex items-center justify-center shrink-0 shadow-sm text-text-secondary hover:text-accent hover:border-accent transition-all" title="Kembali">
+                <i class="bi bi-arrow-left text-lg"></i>
+            </a>
+            <div class="w-11 h-11 rounded-xl bg-bg-secondary border border-border-default flex items-center justify-center shrink-0 shadow-sm">
+                <i class="bi bi-trash3-fill text-xl text-accent"></i>
             </div>
-            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight mb-1">Keranjang Sampah (Trash)</h1>
-            <p class="text-sm text-slate-500">
-                Daftar file SQL / batch reset yang di-soft-delete dari dashboard aktif. Anda dapat memulihkannya atau menghapusnya selamanya.
-            </p>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-text-primary tracking-tight">Keranjang Sampah (Trash)</h1>
+                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Daftar file SQL yang dihapus sementara dari dasbor. Pulihkan atau hapus permanen.</p>
+            </div>
         </div>
         @if($jobs->count() > 0)
             <div class="shrink-0 flex flex-wrap items-center gap-2">
                 <form action="{{ route('import.restore_all') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin memulihkan semua data bug dari sampah?')">
                     @csrf
-                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors">
-                        <i class="bi bi-arrow-counterclockwise"></i> Pulihkan Semua Data
+                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 bg-accent hover:bg-accent-hover text-white text-xs font-semibold rounded-xl shadow-sm transition-all">
+                        <i class="bi bi-arrow-counterclockwise text-base"></i> Pulihkan Semua Data
                     </button>
                 </form>
             </div>

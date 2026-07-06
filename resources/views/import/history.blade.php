@@ -6,15 +6,18 @@
 <div class="max-w-4xl mx-auto">
 
     {{-- Header --}}
-    <div class="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight mb-1">Riwayat Import</h1>
-            <p class="text-sm text-slate-500">Seluruh riwayat proses import file .sql</p>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-border-strong">
+        <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-bg-secondary border border-border-default flex items-center justify-center shrink-0 shadow-sm">
+                <i class="bi bi-clock-history text-xl text-accent"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-text-primary tracking-tight">Riwayat Import</h1>
+                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Seluruh riwayat proses import file .sql dan log eksekusi</p>
+            </div>
         </div>
-        <a href="{{ route('import.upload') }}"
-           class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto"
-           style="background-color: #0046BF !important; color: #fff !important;">
-            <i class="bi bi-cloud-upload"></i> Import Baru
+        <a href="{{ route('import.upload') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-accent hover:bg-accent-hover text-white font-semibold text-xs rounded-xl shadow-sm transition-all shrink-0">
+            <i class="bi bi-cloud-upload-fill text-base"></i> Import Baru
         </a>
     </div>
 

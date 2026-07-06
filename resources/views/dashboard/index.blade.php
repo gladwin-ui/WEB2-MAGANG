@@ -43,14 +43,83 @@
 <div class="space-y-6">
 
     <!-- Page Header -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-border-default">
-        <div>
-            <h1 class="text-2xl font-extrabold text-text-primary tracking-tight">Laporan Umum</h1>
-            <p class="text-sm text-text-secondary mt-1">Quality Control & AI Diagnostics — PT Hariff</p>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-border-strong">
+        <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-bg-secondary border border-border-default flex items-center justify-center shrink-0 shadow-sm">
+                <i class="bi bi-grid-1x2-fill text-xl text-accent"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-text-primary tracking-tight">Laporan Umum</h1>
+                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Quality Control & AI Diagnostics — PT Hariff</p>
+            </div>
         </div>
-        <a href="{{ route('dashboard.export', request()->query()) }}" class="inline-flex items-center gap-2 px-4 py-2 border border-border-default rounded-lg text-xs font-semibold text-text-muted hover:bg-bg-tertiary transition-colors">
-            <i class="bi bi-file-earmark-excel text-base text-green-600"></i> Export Excel
+        <a href="{{ route('dashboard.export', request()->query()) }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm hover:shadow transition-all shrink-0">
+            <i class="bi bi-file-earmark-excel-fill text-base"></i> Export Excel
         </a>
+    </div>
+
+    <!-- Executive KPI Summary Strip -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Card 1: Total Bug -->
+        <div class="bg-bg-secondary border border-border-default rounded-xl p-4 shadow-card hover:border-blue-500/50 transition-all flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-text-secondary uppercase tracking-wider">Total Defect</span>
+                <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                    <i class="bi bi-bug-fill text-blue-500 text-base"></i>
+                </div>
+            </div>
+            <div>
+                <div class="text-2xl font-black text-text-primary font-mono tracking-tight">{{ number_format($totalBugs) }}</div>
+                <div class="text-[11px] text-text-muted mt-1">Seluruh laporan tercatat</div>
+            </div>
+        </div>
+
+        <!-- Card 2: Bug Open -->
+        <div class="bg-bg-secondary border border-border-default rounded-xl p-4 shadow-card hover:border-amber-500/50 transition-all flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-text-secondary uppercase tracking-wider">Dalam Perbaikan</span>
+                <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+                    <i class="bi bi-exclamation-circle-fill text-amber-500 text-base"></i>
+                </div>
+            </div>
+            <div>
+                <div class="text-2xl font-black text-amber-500 font-mono tracking-tight">{{ number_format($openBugs) }}</div>
+                <div class="text-[11px] text-text-muted mt-1">Status Open / Aktif</div>
+            </div>
+        </div>
+
+        <!-- Card 3: Bug Closed -->
+        <div class="bg-bg-secondary border border-border-default rounded-xl p-4 shadow-card hover:border-emerald-500/50 transition-all flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-text-secondary uppercase tracking-wider">Telah Selesai</span>
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+                    <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
+                </div>
+            </div>
+            <div>
+                <div class="text-2xl font-black text-emerald-500 font-mono tracking-tight">{{ number_format($closedBugs) }}</div>
+                <div class="text-[11px] text-text-muted mt-1">Status Closed / Resolved</div>
+            </div>
+        </div>
+
+        <!-- Card 4: Rework Rate (KPI Manufaktur) -->
+        <div class="bg-bg-secondary border border-rose-500/30 rounded-xl p-4 shadow-card hover:border-rose-500 transition-all flex flex-col justify-between relative overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-rose-500/5 rounded-full pointer-events-none"></div>
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-rose-500 uppercase tracking-wider flex items-center gap-1">
+                    <i class="bi bi-star-fill text-[10px]"></i> Rework Rate
+                </span>
+                <div class="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center shrink-0">
+                    <i class="bi bi-tools text-rose-500 text-base"></i>
+                </div>
+            </div>
+            <div>
+                <div class="text-2xl font-black text-rose-500 font-mono tracking-tight">{{ $reworkRate }}<span class="text-lg">%</span></div>
+                <div class="text-[11px] text-text-muted mt-1">
+                    <strong class="text-text-secondary">{{ number_format($reworkCount ?? 0) }} dari {{ number_format($totalBugs) }}</strong> kasus butuh perakitan ulang
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- 4-Component Dashboard Grid -->
@@ -101,7 +170,7 @@
                             <th class="px-3 py-2.5 text-right">Jumlah Bug</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-50">
+                    <tbody class="divide-y divide-border-default">
                         @forelse($mappedTopProjects as $idx => $tp)
                             <tr class="hover:bg-bg-tertiary transition-colors">
                                 <td class="px-3 py-3 text-xs text-text-muted font-mono">{{ $idx + 1 }}</td>
@@ -152,6 +221,67 @@
             </h3>
             <div class="min-h-[280px]">
                 <div id="volumeChart" class="w-full"></div>
+            </div>
+        </div>
+
+        {{-- ============================================================ --}}
+        {{-- [5] Proporsi Defect by Assembly Stage (Dynamic DB Breakdown) --}}
+        {{-- ============================================================ --}}
+        <div class="col-span-1 lg:col-span-2 bg-bg-secondary border border-border-default rounded-xl shadow-card p-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-border-strong">
+                <h3 class="text-base font-bold text-text-primary flex items-center gap-2">
+                    <i class="bi bi-diagram-3 text-accent"></i> Proporsi Defect (Assembly Stage)
+                </h3>
+                <div class="flex items-center gap-2 text-xs font-semibold text-text-secondary bg-bg-tertiary px-3 py-1.5 rounded-lg shrink-0">
+                    <i class="bi bi-database-check text-accent"></i> {{ count($assemblyStageMap ?? []) }} Kategori
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                {{-- Left: Chart --}}
+                <div class="lg:col-span-5 relative flex items-center justify-center min-h-[260px]">
+                    <div id="chartAssemblyStage" class="w-full"></div>
+                </div>
+
+                {{-- Right: Dynamic Breakdown List --}}
+                <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @php
+                        $totalStageCount = array_sum($assemblyStageMap ?? []) ?: 1;
+                        $stageColors = ['#1A3D63', '#4A7FA7', '#E8A33D', '#3E9B6F', '#D64550', '#8B5CF6'];
+                        $idxColor = 0;
+                    @endphp
+                    @forelse(($assemblyStageMap ?? []) as $stageName => $stageCount)
+                        @php
+                            $pct = round(($stageCount / $totalStageCount) * 100, 1);
+                            $color = $stageColors[$idxColor % count($stageColors)];
+                            $idxColor++;
+                        @endphp
+                        <div class="p-4 rounded-xl border border-border-default bg-bg-primary flex flex-col justify-between">
+                            <div class="flex items-start justify-between gap-2 mb-3">
+                                <div class="flex items-center gap-2 font-bold text-text-primary text-sm">
+                                    <span class="w-3 h-3 rounded-full shrink-0" style="background-color: {{ $color }};"></span>
+                                    <span class="truncate">{{ $stageName }}</span>
+                                </div>
+                                <span class="text-xs font-mono font-extrabold px-2 py-0.5 rounded bg-bg-tertiary text-text-primary">
+                                    {{ $pct }}%
+                                </span>
+                            </div>
+                            <div class="flex items-end justify-between mt-2">
+                                <div>
+                                    <span class="text-2xl font-extrabold text-text-primary font-mono">{{ number_format($stageCount) }}</span>
+                                    <span class="text-xs text-text-muted ml-1 font-medium">Laporan</span>
+                                </div>
+                                <div class="w-24 bg-border-default h-1.5 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full transition-all duration-500" style="width: {{ $pct }}%; background-color: {{ $color }};"></div>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="col-span-2 py-8 text-center text-text-muted text-sm">
+                            Belum ada data kategori perakitan
+                        </div>
+                    @endforelse
+                </div>
             </div>
         </div>
 
@@ -442,7 +572,7 @@
         const colorMinor    = '#4A7FA7'; // brand blue
         const colorTrend    = '#4A7FA7'; // brand blue
 
-        let chartJumlahBug, chartSeverityClosed, chartSeverityOpen, chartVolume;
+        let chartJumlahBug, chartSeverityClosed, chartSeverityOpen, chartVolume, chartAssemblyStage;
 
         function makeJumlahBugOptions(c) {
             return {
@@ -523,6 +653,43 @@
             };
         }
 
+        var assemblyStageData = @json($assemblyStageMap ?? []);
+        var stagePalette = ['#1A3D63', '#4A7FA7', '#E8A33D', '#3E9B6F', '#D64550', '#8B5CF6'];
+
+        function makeAssemblyStageOptions(data, c) {
+            var keys = Object.keys(data);
+            var vals = Object.values(data);
+            return {
+                series: vals.length > 0 ? vals : [1],
+                chart: { type: 'donut', height: 260, background: 'transparent', foreColor: c.textMuted },
+                labels: keys.length > 0 ? keys : ['Kosong'],
+                colors: stagePalette.slice(0, Math.max(1, keys.length)),
+                dataLabels: { enabled: false },
+                stroke: { show: false },
+                legend: {
+                    position: 'bottom', fontSize: '12px', fontFamily: 'Inter, sans-serif',
+                    labels: { colors: c.textMuted },
+                    markers: { radius: 4, width: 8, height: 8 },
+                    itemMargin: { horizontal: 10, vertical: 5 },
+                    formatter: function(name, opts) {
+                        return name + ' — ' + (opts.w.globals.series[opts.seriesIndex] || 0);
+                    }
+                },
+                plotOptions: {
+                    pie: { donut: { size: '70%', labels: {
+                        show: true,
+                        name: { show: true, fontSize: '12px', fontFamily: 'Inter', color: c.textMuted, offsetY: -8 },
+                        value: { show: true, fontSize: '26px', fontFamily: 'Inter', color: c.textPrimary, fontWeight: 'bold', offsetY: 8 },
+                        total: {
+                            show: true, label: 'Total Laporan', color: c.textMuted, fontSize: '11px', fontFamily: 'Inter',
+                            formatter: function(w) { return w.globals.seriesTotals.reduce((a, b) => a + b, 0); }
+                        }
+                    }}}
+                },
+                tooltip: { theme: c.tooltipTheme }
+            };
+        }
+
         // Initial render
         var c = getChartColors();
         var trendData = {!! json_encode($trendData) !!};
@@ -543,6 +710,9 @@
         chartVolume = new ApexCharts(document.querySelector("#volumeChart"), makeVolumeOptions(trendKeys, trendValues, c));
         chartVolume.render();
 
+        chartAssemblyStage = new ApexCharts(document.querySelector("#chartAssemblyStage"), makeAssemblyStageOptions(assemblyStageData, c));
+        chartAssemblyStage.render();
+
         // Re-render charts on theme toggle
         document.addEventListener('theme-changed', function() {
             var nc = getChartColors();
@@ -561,6 +731,10 @@
             chartVolume.destroy();
             chartVolume = new ApexCharts(document.querySelector("#volumeChart"), makeVolumeOptions(trendKeys, trendValues, nc));
             chartVolume.render();
+
+            chartAssemblyStage.destroy();
+            chartAssemblyStage = new ApexCharts(document.querySelector("#chartAssemblyStage"), makeAssemblyStageOptions(assemblyStageData, nc));
+            chartAssemblyStage.render();
         });
     });
 </script>

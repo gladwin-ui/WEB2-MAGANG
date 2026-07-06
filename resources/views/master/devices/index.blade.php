@@ -4,10 +4,17 @@
 
 @section('content')
 <div class="space-y-6">
-    <!-- Header -->
-    <div>
-        <h1 class="text-2xl font-black text-slate-800 tracking-tight uppercase">KELOLA MASTER DEVICE</h1>
-        <p class="text-xs text-slate-500 font-mono tracking-wider uppercase">TAMBAHKAN ATAU PERBARUI REFERENSI DATA DEVICE PT HARIFF</p>
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-border-strong">
+        <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-bg-secondary border border-border-default flex items-center justify-center shrink-0 shadow-sm">
+                <i class="bi bi-cpu-fill text-xl text-accent"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-text-primary tracking-tight">Kelola Master Device</h1>
+                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Tambahkan atau perbarui referensi data device PT Hariff</p>
+            </div>
+        </div>
     </div>
 
     <!-- Layout Columns -->
