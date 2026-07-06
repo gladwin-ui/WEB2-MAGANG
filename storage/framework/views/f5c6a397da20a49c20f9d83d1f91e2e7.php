@@ -1,11 +1,9 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'Laporan Khusus'); ?>
 
-@section('title', 'Laporan Khusus')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="max-w-7xl mx-auto space-y-6">
 
-    {{-- PAGE HEADER --}}
+    
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-2 border-b border-border-strong">
         <div class="flex items-center gap-3.5">
             <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
@@ -19,7 +17,7 @@
         </div>
     </div>
 
-    {{-- BAGIAN 1: REWORK RATE ANTAR PRODUK --}}
+    
     <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card overflow-hidden">
         <div class="flex flex-col sm:flex-row sm:items-start gap-4 p-6 pb-4 border-b border-border-default">
             <div class="flex items-start gap-3 flex-1">
@@ -31,21 +29,21 @@
                     <p class="text-xs text-text-muted mt-0.5">Top 5 produk dengan persentase pengerjaan ulang terbesar — minimal 3 laporan agar tidak menyesatkan</p>
                 </div>
             </div>
-            @if($reworkRates->count() > 0)
+            <?php if($reworkRates->count() > 0): ?>
             <div class="flex-shrink-0 text-right rounded-lg px-4 py-2 border" style="background:#EBF3FB;border-color:#B3CFE5">
-                <div class="text-xl font-extrabold" style="color:#1A3D63">{{ $avgRework }}%</div>
+                <div class="text-xl font-extrabold" style="color:#1A3D63"><?php echo e($avgRework); ?>%</div>
                 <div class="text-xs text-text-muted font-medium whitespace-nowrap">rata-rata rework</div>
-                <div class="text-xs text-text-muted">{{ $reworkRates->count() }} produk dianalisis</div>
+                <div class="text-xs text-text-muted"><?php echo e($reworkRates->count()); ?> produk dianalisis</div>
             </div>
-            @endif
+            <?php endif; ?>
         </div>
 
         <div class="p-6">
-            @if($reworkRates->count() > 0)
-                @php $maxRework = $reworkRates->max('rework_rate') ?: 1; @endphp
+            <?php if($reworkRates->count() > 0): ?>
+                <?php $maxRework = $reworkRates->max('rework_rate') ?: 1; ?>
                 <div class="space-y-4">
-                    @foreach($reworkRates as $i => $item)
-                        @php
+                    <?php $__currentLoopData = $reworkRates; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php
                             $rate     = (float) $item->rework_rate;
                             $pct      = round($rate / $maxRework * 100);
                             $isTop    = $i === 0;
@@ -53,87 +51,89 @@
                             $riskBg   = $rate >= 50 ? '#FEE2E2' : ($rate >= 30 ? '#FEF9C3' : '#EBF3FB');
                             $riskText = $rate >= 50 ? '#DC2626' : ($rate >= 30 ? '#CA8A04' : '#1A3D63');
                             $riskLabel= $rate >= 50 ? 'Tinggi'  : ($rate >= 30 ? 'Sedang'  : 'Normal');
-                        @endphp
+                        ?>
                         <div class="flex items-center gap-3">
                             <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                                 style="{{ $isTop ? 'background:#1A3D63;color:#fff' : 'background:#EBF3FB;color:#4A7FA7' }}">
-                                {{ $i + 1 }}
+                                 style="<?php echo e($isTop ? 'background:#1A3D63;color:#fff' : 'background:#EBF3FB;color:#4A7FA7'); ?>">
+                                <?php echo e($i + 1); ?>
+
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between mb-1.5">
                                     <div class="flex items-center gap-2 min-w-0">
-                                        @if($isTop)
-                                            <i class="bi bi-exclamation-triangle-fill text-xs flex-shrink-0" style="color:{{ $barColor }}"></i>
-                                        @endif
-                                        <span class="text-sm font-semibold text-text-primary truncate">{{ $item->name ?? 'Project #' . $item->id }}</span>
+                                        <?php if($isTop): ?>
+                                            <i class="bi bi-exclamation-triangle-fill text-xs flex-shrink-0" style="color:<?php echo e($barColor); ?>"></i>
+                                        <?php endif; ?>
+                                        <span class="text-sm font-semibold text-text-primary truncate"><?php echo e($item->name ?? 'Project #' . $item->id); ?></span>
                                     </div>
                                     <div class="flex items-center gap-2 flex-shrink-0 ml-2">
-                                        <span class="text-xs font-mono text-text-muted">{{ $item->rework_count }}/{{ $item->total_bugs }}</span>
-                                        <span class="text-sm font-extrabold" style="color:{{ $barColor }}">{{ $rate }}%</span>
+                                        <span class="text-xs font-mono text-text-muted"><?php echo e($item->rework_count); ?>/<?php echo e($item->total_bugs); ?></span>
+                                        <span class="text-sm font-extrabold" style="color:<?php echo e($barColor); ?>"><?php echo e($rate); ?>%</span>
                                     </div>
                                 </div>
                                 <div class="h-2.5 rounded-full overflow-hidden" style="background:#EBF3FB">
-                                    <div class="h-full rounded-full transition-all duration-700" style="width:{{ $pct }}%;background:{{ $barColor }}"></div>
+                                    <div class="h-full rounded-full transition-all duration-700" style="width:<?php echo e($pct); ?>%;background:<?php echo e($barColor); ?>"></div>
                                 </div>
                             </div>
                             <div class="flex-shrink-0 flex flex-col items-end gap-1">
-                                @if($isTop)
+                                <?php if($isTop): ?>
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#1A3D63;color:#fff">Tertinggi</span>
-                                @endif
-                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:{{ $riskBg }};color:{{ $riskText }}">{{ $riskLabel }}</span>
+                                <?php endif; ?>
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:<?php echo e($riskBg); ?>;color:<?php echo e($riskText); ?>"><?php echo e($riskLabel); ?></span>
                             </div>
                         </div>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </div>
-            @else
+            <?php else: ?>
                 <div class="flex flex-col items-center justify-center py-12 text-center">
                     <i class="bi bi-inbox text-3xl text-text-muted mb-2"></i>
                     <p class="text-sm text-text-muted">Belum ada produk dengan data rework yang cukup (minimal 3 laporan).</p>
                 </div>
-            @endif
+            <?php endif; ?>
         </div>
     </div>
 
-    {{-- DETAIL PER PRODUK HEADER --}}
+    
     <div class="flex items-center gap-2 pt-2">
         <div class="w-1 h-5 rounded-full" style="background:#1A3D63"></div>
         <h2 class="text-lg font-bold text-text-primary">Detail per Produk</h2>
     </div>
 
-    {{-- PILIH PRODUK --}}
+    
     <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card p-5">
-        <form method="GET" action="{{ route('laporan-khusus.index') }}" class="flex flex-col sm:flex-row sm:items-end gap-4">
+        <form method="GET" action="<?php echo e(route('laporan-khusus.index')); ?>" class="flex flex-col sm:flex-row sm:items-end gap-4">
             <div class="flex-1 max-w-sm">
                 <label for="product_id" class="block text-xs font-semibold text-text-secondary mb-2">
                     <i class="bi bi-box-seam mr-1" style="color:#4A7FA7"></i> Pilih Produk
                 </label>
                 <select id="product_id" name="product_id" onchange="this.form.submit()"
                         class="w-full rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400">
-                    @forelse($products as $product)
-                        <option value="{{ $product->id }}" {{ $selectedProductId == $product->id ? 'selected' : '' }}>
-                            {{ $product->name ?? 'Project #' . $product->id }}
+                    <?php $__empty_1 = true; $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <option value="<?php echo e($product->id); ?>" <?php echo e($selectedProductId == $product->id ? 'selected' : ''); ?>>
+                            <?php echo e($product->name ?? 'Project #' . $product->id); ?>
+
                         </option>
-                    @empty
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <option value="" disabled selected>Belum ada produk dengan laporan bug</option>
-                    @endforelse
+                    <?php endif; ?>
                 </select>
             </div>
-            @if($selectedProductId)
+            <?php if($selectedProductId): ?>
                 <div class="pb-2">
                     <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
                           style="background:#EBF3FB;color:#1A3D63">
                         <i class="bi bi-clipboard-data text-xs"></i>
-                        {{ number_format($totalBugs) }} laporan dianalisis
+                        <?php echo e(number_format($totalBugs)); ?> laporan dianalisis
                     </span>
                 </div>
-            @endif
+            <?php endif; ?>
         </form>
     </div>
 
-    {{-- GRID: MASALAH + ROOT CAUSE --}}
+    
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {{-- Masalah Tersering --}}
+        
         <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card overflow-hidden">
             <div class="flex items-start gap-3 p-5 pb-4 border-b border-border-default">
                 <div class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center shadow-sm" style="background:#EBF3FB">
@@ -143,56 +143,57 @@
                     <h3 class="text-sm font-bold text-text-primary">Masalah Tersering <span class="font-normal text-text-muted">(Top 5)</span></h3>
                     <p class="text-xs text-text-muted mt-0.5">
                         Dikelompokkan dari judul &amp; deskripsi laporan
-                        @if($totalBugs > 0)
-                            - dari <span class="font-semibold" style="color:#1A3D63">{{ $totalBugs }}</span> laporan produk ini
-                        @endif
+                        <?php if($totalBugs > 0): ?>
+                            - dari <span class="font-semibold" style="color:#1A3D63"><?php echo e($totalBugs); ?></span> laporan produk ini
+                        <?php endif; ?>
                     </p>
                 </div>
             </div>
             <div class="p-5">
-                @if(count($masalahTop5) > 0)
-                    @php
+                <?php if(count($masalahTop5) > 0): ?>
+                    <?php
                         $masalahMax   = collect($masalahTop5)->max('count') ?: 1;
                         $masalahTotal = collect($masalahTop5)->sum('count');
-                    @endphp
+                    ?>
                     <div class="space-y-3.5">
-                        @foreach($masalahTop5 as $i => $item)
-                            @php
+                        <?php $__currentLoopData = $masalahTop5; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php
                                 $pct   = round($item['count'] / $masalahMax * 100);
                                 $pctOf = $masalahTotal > 0 ? round($item['count'] / $masalahTotal * 100) : 0;
                                 $isTop = $i === 0;
                                 $barBg = $isTop ? '#1A3D63' : '#4A7FA7';
-                            @endphp
+                            ?>
                             <div class="flex items-center gap-3">
                                 <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                                     style="{{ $isTop ? 'background:#1A3D63;color:#fff' : 'background:#EBF3FB;color:#4A7FA7' }}">
-                                    {{ $i + 1 }}
+                                     style="<?php echo e($isTop ? 'background:#1A3D63;color:#fff' : 'background:#EBF3FB;color:#4A7FA7'); ?>">
+                                    <?php echo e($i + 1); ?>
+
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center justify-between mb-1.5 gap-2">
-                                        <span class="text-sm {{ $isTop ? 'font-bold' : 'font-medium' }} text-text-primary truncate" title="{{ $item['label'] }}">{{ $item['label'] }}</span>
-                                        <span class="flex-shrink-0 text-xs font-semibold text-text-muted">{{ $item['count'] }} <span class="text-[10px]">({{ $pctOf }}%)</span></span>
+                                        <span class="text-sm <?php echo e($isTop ? 'font-bold' : 'font-medium'); ?> text-text-primary truncate" title="<?php echo e($item['label']); ?>"><?php echo e($item['label']); ?></span>
+                                        <span class="flex-shrink-0 text-xs font-semibold text-text-muted"><?php echo e($item['count']); ?> <span class="text-[10px]">(<?php echo e($pctOf); ?>%)</span></span>
                                     </div>
                                     <div class="h-2 rounded-full overflow-hidden" style="background:#EBF3FB">
-                                        <div class="h-full rounded-full transition-all duration-700" style="width:{{ $pct }}%;background:{{ $barBg }}"></div>
+                                        <div class="h-full rounded-full transition-all duration-700" style="width:<?php echo e($pct); ?>%;background:<?php echo e($barBg); ?>"></div>
                                     </div>
                                 </div>
-                                @if($isTop)
+                                <?php if($isTop): ?>
                                     <span class="flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#1A3D63;color:#fff">Tertinggi</span>
-                                @endif
+                                <?php endif; ?>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
-                @else
+                <?php else: ?>
                     <div class="flex flex-col items-center justify-center py-14 text-center">
                         <i class="bi bi-inbox text-3xl text-text-muted mb-2"></i>
                         <p class="text-sm text-text-muted">Belum ada data masalah untuk produk ini.</p>
                     </div>
-                @endif
+                <?php endif; ?>
             </div>
         </div>
 
-        {{-- Root Cause Tersering --}}
+        
         <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card overflow-hidden">
             <div class="flex items-start gap-3 p-5 pb-4 border-b border-border-default">
                 <div class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center shadow-sm" style="background:#EBF3FB">
@@ -204,57 +205,58 @@
                 </div>
             </div>
             <div class="p-5">
-                {{-- Placeholder notice --}}
+                
                 <div class="flex items-start gap-2.5 mb-4 rounded-lg px-3 py-2.5 text-xs"
                      style="background:#FFFBEB;border:1px solid #FDE68A;color:#92400E">
                     <i class="bi bi-info-circle-fill flex-shrink-0 mt-0.5" style="color:#CA8A04"></i>
                     <span>Data root cause saat ini masih berupa placeholder. Visualisasi akan bermakna setelah data produksi asli terisi.</span>
                 </div>
-                @if(count($rootCauseTop5) > 0)
-                    @php
+                <?php if(count($rootCauseTop5) > 0): ?>
+                    <?php
                         $rcMax   = collect($rootCauseTop5)->max('count') ?: 1;
                         $rcTotal = collect($rootCauseTop5)->sum('count');
-                    @endphp
+                    ?>
                     <div class="space-y-3.5">
-                        @foreach($rootCauseTop5 as $i => $item)
-                            @php
+                        <?php $__currentLoopData = $rootCauseTop5; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php
                                 $pct   = round($item['count'] / $rcMax * 100);
                                 $pctOf = $rcTotal > 0 ? round($item['count'] / $rcTotal * 100) : 0;
                                 $isTop = $i === 0;
                                 $barBg = $isTop ? '#1A3D63' : '#4A7FA7';
-                            @endphp
+                            ?>
                             <div class="flex items-center gap-3">
                                 <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                                     style="{{ $isTop ? 'background:#1A3D63;color:#fff' : 'background:#EBF3FB;color:#4A7FA7' }}">
-                                    {{ $i + 1 }}
+                                     style="<?php echo e($isTop ? 'background:#1A3D63;color:#fff' : 'background:#EBF3FB;color:#4A7FA7'); ?>">
+                                    <?php echo e($i + 1); ?>
+
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center justify-between mb-1.5 gap-2">
-                                        <span class="text-sm {{ $isTop ? 'font-bold' : 'font-medium' }} text-text-primary truncate" title="{{ $item['label'] }}">{{ $item['label'] }}</span>
-                                        <span class="flex-shrink-0 text-xs font-semibold text-text-muted">{{ $item['count'] }} <span class="text-[10px]">({{ $pctOf }}%)</span></span>
+                                        <span class="text-sm <?php echo e($isTop ? 'font-bold' : 'font-medium'); ?> text-text-primary truncate" title="<?php echo e($item['label']); ?>"><?php echo e($item['label']); ?></span>
+                                        <span class="flex-shrink-0 text-xs font-semibold text-text-muted"><?php echo e($item['count']); ?> <span class="text-[10px]">(<?php echo e($pctOf); ?>%)</span></span>
                                     </div>
                                     <div class="h-2 rounded-full overflow-hidden" style="background:#EBF3FB">
-                                        <div class="h-full rounded-full transition-all duration-700" style="width:{{ $pct }}%;background:{{ $barBg }}"></div>
+                                        <div class="h-full rounded-full transition-all duration-700" style="width:<?php echo e($pct); ?>%;background:<?php echo e($barBg); ?>"></div>
                                     </div>
                                 </div>
-                                @if($isTop)
+                                <?php if($isTop): ?>
                                     <span class="flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#1A3D63;color:#fff">Tertinggi</span>
-                                @endif
+                                <?php endif; ?>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
-                @else
+                <?php else: ?>
                     <div class="flex flex-col items-center justify-center py-12 text-center">
                         <i class="bi bi-inbox text-3xl text-text-muted mb-2"></i>
                         <p class="text-sm text-text-muted">Belum ada data root cause untuk produk ini.</p>
                     </div>
-                @endif
+                <?php endif; ?>
             </div>
         </div>
 
     </div>
 
-    {{-- DISTRIBUSI SEVERITY --}}
+    
     <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card overflow-hidden">
         <div class="flex items-start gap-3 p-5 pb-4 border-b border-border-default">
             <div class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center shadow-sm" style="background:#EBF3FB">
@@ -266,54 +268,54 @@
             </div>
         </div>
 
-        @php $totalSeverity = $severityMix->sum(); @endphp
-        @if($totalSeverity > 0)
+        <?php $totalSeverity = $severityMix->sum(); ?>
+        <?php if($totalSeverity > 0): ?>
             <div class="p-5">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
                     <div class="relative" style="height: 240px;">
                         <div id="chartSeverityMix" class="w-full h-full"></div>
                     </div>
                     <div class="space-y-3 max-w-xs">
-                        @php
+                        <?php
                             $sevItems = [
                                 ['label' => 'Critical', 'color' => '#DC2626', 'bg' => '#FEE2E2', 'val' => $severityMix['Critical']],
                                 ['label' => 'Major',    'color' => '#CA8A04', 'bg' => '#FEF9C3', 'val' => $severityMix['Major']],
                                 ['label' => 'Minor',    'color' => '#16A34A', 'bg' => '#DCFCE7', 'val' => $severityMix['Minor']],
                             ];
-                        @endphp
-                        @foreach($sevItems as $sev)
-                            @php $pctSev = $totalSeverity > 0 ? round($sev['val'] / $totalSeverity * 100) : 0; @endphp
+                        ?>
+                        <?php $__currentLoopData = $sevItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $sev): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php $pctSev = $totalSeverity > 0 ? round($sev['val'] / $totalSeverity * 100) : 0; ?>
                             <div class="flex items-center justify-between py-2.5 border-b border-border-strong last:border-0">
                                 <div class="flex items-center gap-2.5">
-                                    <span class="w-3 h-3 rounded-full flex-shrink-0" style="background:{{ $sev['color'] }}"></span>
-                                    <span class="text-sm font-medium text-text-secondary">{{ $sev['label'] }}</span>
+                                    <span class="w-3 h-3 rounded-full flex-shrink-0" style="background:<?php echo e($sev['color']); ?>"></span>
+                                    <span class="text-sm font-medium text-text-secondary"><?php echo e($sev['label']); ?></span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs px-2 py-0.5 rounded-full font-semibold"
-                                          style="background:{{ $sev['bg'] }};color:{{ $sev['color'] }}">{{ $pctSev }}%</span>
-                                    <span class="font-bold text-text-primary font-mono w-8 text-right">{{ $sev['val'] }}</span>
+                                          style="background:<?php echo e($sev['bg']); ?>;color:<?php echo e($sev['color']); ?>"><?php echo e($pctSev); ?>%</span>
+                                    <span class="font-bold text-text-primary font-mono w-8 text-right"><?php echo e($sev['val']); ?></span>
                                 </div>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         <div class="flex items-center justify-between pt-1">
                             <span class="text-sm font-semibold text-text-secondary">Total</span>
-                            <span class="font-extrabold text-text-primary font-mono text-base">{{ $totalSeverity }}</span>
+                            <span class="font-extrabold text-text-primary font-mono text-base"><?php echo e($totalSeverity); ?></span>
                         </div>
                     </div>
                 </div>
             </div>
-        @else
+        <?php else: ?>
             <div class="flex flex-col items-center justify-center py-12 text-center p-5">
                 <i class="bi bi-inbox text-3xl text-text-muted mb-2"></i>
                 <p class="text-sm text-text-muted">Produk ini belum punya data severity.</p>
             </div>
-        @endif
+        <?php endif; ?>
     </div>
 
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
+<?php $__env->startSection('scripts'); ?>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         function isDarkMode() { return document.body.classList.contains('dark'); }
@@ -326,7 +328,7 @@
             };
         }
 
-        const severityMixData = @json($severityMix->toArray());
+        const severityMixData = <?php echo json_encode($severityMix->toArray(), 15, 512) ?>;
         const totalSev = Object.values(severityMixData).reduce((a, b) => a + b, 0);
 
         function makeSeverityMixOptions(c) {
@@ -370,4 +372,6 @@
         document.addEventListener('theme-changed', renderCharts);
     });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\MAGANG\WEB2-MAGANG\resources\views/laporan-khusus/index.blade.php ENDPATH**/ ?>

@@ -68,9 +68,13 @@ class LaporanKhususController extends Controller
             }
         }
 
+        // Mini-stat: rata-rata rework semua produk (di-filter)
+        $avgRework = $reworkRates->avg('rework_rate') ?? 0;
+        $avgRework = round($avgRework, 1);
+
         return view('laporan-khusus.index', compact(
             'products', 'selectedProductId', 'masalahTop5', 'rootCauseTop5', 'totalBugs',
-            'reworkRates', 'severityMix'
+            'reworkRates', 'severityMix', 'avgRework'
         ));
     }
 
