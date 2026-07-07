@@ -21,21 +21,23 @@ class Bug extends Model
 
     public function project()
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Project::class, 'project_id', 'id');
     }
+
 
     public function serialNumber()
     {
-        return $this->belongsTo(SerialNumber::class);
+        return $this->belongsTo(SerialNumber::class, 'serial_number_id', 'id');
     }
 
     public function device()
     {
-        return $this->belongsTo(Device::class);
+        return $this->belongsTo(Device::class, 'device_id', 'id');
     }
 
     public function importJob()
     {
-        return $this->belongsTo(ImportJob::class);
+        return $this->belongsTo(ImportJob::class, 'import_job_id', 'id');
     }
 }
+

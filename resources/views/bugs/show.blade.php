@@ -47,7 +47,8 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-xs">
                     <div>
                         <span class="text-slate-500 block font-mono uppercase mb-0.5">Project</span>
-                        <strong class="text-slate-800">{{ $bug->project?->name ?? 'Project #' . $bug->project_id }}</strong>
+                        <strong class="text-slate-800">{{ $bug->project?->name ?? ($bug->project_id ? 'Project #' . $bug->project_id : 'Tanpa Proyek') }}</strong>
+
                     </div>
                     <div>
                         <span class="text-slate-500 block font-mono uppercase mb-0.5">Serial Number</span>

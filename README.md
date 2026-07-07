@@ -143,11 +143,12 @@ app/
 │   └── ReanalyzeBugsJob.php             <- Re-analisis batch bug
 ├── Models/
 │   ├── User.php (dengan kolom role)
-│   ├── Project.php
+│   ├── Project.php (relasi hasMany 'bugs' dengan FK 'project_id')
 │   ├── Device.php
 │   ├── SerialNumber.php
 │   ├── ImportJob.php                    <- Tracking progress import & trash
-│   └── Bug.php (relasi 'project', 'serialNumber', 'device', 'importJob')
+│   └── Bug.php (relasi belongsTo 'project' dengan FK 'project_id', 'serialNumber', 'device', 'importJob')
+
 ├── Services/
 │   ├── BugAnalyticsService.php          <- HTTP Client SINKRON ke Python service
 │   └── SqlImportParser.php              <- Parser .sql mfg_record.bug
@@ -166,8 +167,10 @@ analytics-service/
 │   ├── spam_detection_improved.py       <- Sistem deteksi spam 4-Tier lokal + custom model slot
 │   ├── severity_recommendation.py       <- Usulkan severity dari description
 │   ├── duplicate_detection.py           <- Placeholder duplicate report detection
-│   └── damage_categorization.py         <- Kategorikan penyebab dari root_cause+repair_action
+│   ├── damage_categorization.py         <- Kategorikan penyebab dari root_cause+repair_action
+│   └── report_clustering.py             <- Similarity clustering (TF-IDF + Agglomerative)
 └── requirements.txt
+
 ```
 
 ---
@@ -228,9 +231,11 @@ analytics-service/
 - ✅ Skor Urgency dihitung berdasarkan data per laporan: `round((severity_weight + (1 - sentiment_score)) / 2, 2)`. Nilai `sentiment_score` yang NULL dianggap netral (**0.5**) agar laporan yang belum dianalisis tidak mendapat skor urgency tinggi secara artifisial.
 
 ### Laporan Khusus
-- ✅ **Halaman Analisis Terpisah (`/laporan-khusus`):** Filter dropdown per produk/proyek (hanya menampilkan produk yang memiliki laporan cacat aktif).
-- ✅ **Top 5 Masalah Tersering:** Aglomerasi otomatis judul (`title`) dan deskripsi (`description`) menggunakan algoritma NLP Trigram anti-chaining untuk mencegah pengelompokan raksasa yang tidak relevan.
-- ✅ **Top 5 Root Cause Tersering:** Aglomerasi otomatis akar masalah (`root_cause`) per produk menggunakan algoritma NLP Trigram anti-chaining.
+- ✅ **Halaman Analisis Terpisah (`/laporan-khusus`):** Filter dropdown per produk/proyek (hanya menampilkan produk yang memiliki laporan cacat aktif dari data bug yang tidak terhapus, termasuk produk hasil import otomatis).
+- ✅ **Opsi "Semua Produk" & Sampling Safety Limit:** Dropdown Detail per Produk menyediakan opsi "Semua Produk" (default terpilih) untuk analisis gabungan seluruh produk pada Masalah Tersering, Root Cause Tersering, dan Distribusi Severity. Untuk menjaga performa, jika total laporan melebihi ambang batas (`$SAMPLING_LIMIT` = 2000), sistem otomatis melakukan sampling acak 2000 laporan beserta catatan transparan pada antarmuka.
+- ✅ **Auto-Registration Project:** Saat import data bug, jika `project_id` belum ada di tabel `projects`, sistem otomatis membuat project baru dengan nama default "Project #{id}" menggunakan bulk insert untuk efisiensi tinggi.
+- ✅ **Top 5 Masalah Tersering:** Aglomerasi otomatis judul (`title`) dan deskripsi (`description`) menggunakan **similarity clustering (TF-IDF + Agglomerative Clustering, cosine distance, threshold 0.6)** diproses di FastAPI (`/cluster-reports`) untuk mengelompokkan laporan yang mirip walau kata-katanya tidak identik. Penamaan kelompok menggunakan 2 kata dominan dari TF-IDF tertinggi.
+- ✅ **Top 5 Root Cause Tersering:** Aglomerasi otomatis akar masalah (`root_cause`) per produk menggunakan **similarity clustering (TF-IDF + Agglomerative Clustering)** di FastAPI (`/cluster-reports`). Menggantikan pendekatan trigram lama yang terlalu ketat.
 
 ### 🎨 Arah Visual/Styling
 - ✅ **Light Mode Profesional/Korporat** — token dasar sudah diimplementasikan di `resources/css/app.css`: putih bersih (`#FFFFFF`), biru korporat `#2563EB` sebagai aksen utama, serta 4 pasang warna badge standar untuk severity/status.
@@ -303,7 +308,13 @@ analytics-service/
 
 ## 📝 Changelog
 
+### v0.18 — Opsi "Semua Produk" & Sampling Safety Limit di Laporan Khusus
+- **[LAPORAN KHUSUS]** Menambahkan opsi **"Semua Produk"** (value `all`) pada urutan teratas dropdown Detail per Produk yang ditetapkan sebagai **default terpilih** saat halaman dibuka, menghasilkan analisis gabungan seluruh laporan.
+- **[PERFORMANCE]** Mengimplementasikan **Sampling Safety Limit**: jika total laporan melebihi ambang batas (`$SAMPLING_LIMIT` = 2000 di `LaporanKhususController`), sistem akan mengambil sampel acak sebanyak 2000 laporan untuk proses clustering (Masalah & Root Cause) dan perhitungan proporsi Severity, disertai catatan transparan pada UI.
+- **[DOKUMENTASI]** Memperbarui README.md mengenai spesifikasi analisis Semua Produk dan batas pengaman sampling.
+
 ### v0.17 — Dokumentasi Laporan Khusus, Chart Tambahan, & Sidebar Collapsible 2-Mode
+
 - **[DOKUMENTASI]** Menambahkan dokumentasi resmi untuk fitur halaman **Laporan Khusus (`/laporan-khusus`)** yang memetakan Top 5 Masalah Tersering dan Top 5 Root Cause Tersering per produk berbasis algoritma NLP Trigram anti-chaining.
 - **[DOKUMENTASI]** Mencatat visualisasi chart **Distribusi Severity (Open vs Closed)** dan **Distribusi Tahap Perakitan (Assembly Stage Breakdown)** pada daftar visualisasi Laporan Umum (Dashboard).
 - **[UI/UX]** Mengimplementasikan navigasi **Sidebar Collapsible 2-Mode** (Expanded ~256px dengan teks dan Collapsed icon-only ~72px dengan *hover tooltip* yang selalu default expanded saat halaman dimuat tanpa menyimpan preferensi ke localStorage).
@@ -426,9 +437,33 @@ analytics-service/
 - **[STATUS DIKOREKSI]** Seluruh item Dashboard Analitik diturunkan dari ✅ menjadi 🔄 — perlu verifikasi ulang kode karena kemungkinan ditulis ulang saat perubahan arsitektur Assignment+Chat.
 - **[HOUSEKEEPING]** `Gemini.md` dan `index.html` di root ditandai untuk dihapus.
 
+### v0.7 — Upgrade Pengelompokan Laporan Khusus ke Similarity Clustering
+- **[FITUR BARU]** Service clustering baru dibuat di FastAPI (`analytics-service/services/report_clustering.py`) menggunakan **TF-IDF + Agglomerative Clustering (cosine distance, threshold 0.6)**.
+- **[ENDPOINT BARU]** `POST /cluster-reports` ditambahkan pada `analytics-service/main.py` untuk mengelompokkan laporan bug yang mirip dengan output top 5 kelompok (label dari 2 kata dominan dan count).
+- **[REFACTOR]** `LaporanKhususController@index` diganti dari menggunakan algoritma trigram lokal menjadi memanggil endpoint `/cluster-reports` secara sinkron. Method lama `groupByTrigram()` dan `extractSignature()` telah dihapus.
+- **[UI/UX]** Tampilan dan estetika pada halaman Laporan Khusus tidak berubah sama sekali, namun kualitas pengelompokan meningkat signifikan karena mampu mengelompokkan laporan dengan kata berbeda yang bermakna sama/mirip.
+
+### v0.8 — Auto-Registration Project dari Data Bug yang Diimport
+- **[FITUR BARU]** Fitur auto-registration pada proses import SQL (`ProcessImportChunkJob.php`). Jika `project_id` yang masuk belum terdaftar di tabel `projects`, sistem otomatis membuatnya secara bulk insert dengan nama default "Project #{id}".
+- **[REFACTOR]** Query dropdown produk pada Laporan Khusus (`LaporanKhususController@index`) kini memfilter semua project yang memiliki data bug aktif (`whereHas('bugs', function ($q) { $q->whereNull('deleted_at'); })`), memastikan produk hasil import otomatis muncul tanpa perlu input manual.
+
+### v0.9 — Perbaikan Relasi Bug ↔ Project & Standarisasi Query Filter
+- **[PERBAIKAN RELASI]** Definisi relasi Eloquent pada `Bug::project()` dan `Project::bugs()` diperbaiki dengan menambahkan foreign key eksplisit `project_id` dan owner/local key `id` untuk mencegah kegagalan resolusi relasi oleh Eloquent.
+- **[STANDARISASI QUERY]** Mengganti penggunaan `whereHas('bugs')` yang rentan gagal dengan query alternatif yang lebih robust menggunakan `whereIn('id', ...)` pada filter dropdown di Laporan Umum (`DashboardController`) dan Laporan Khusus (`LaporanKhususController`).
+- **[PERBAIKAN FALLBACK UI]** Memperbaiki tampilan nama proyek pada tabel dan chart agar menggunakan fallback `"Project #" . $id` sesuai aturan proyek, mencegah tampilan salah "Tanpa Proyek" pada data yang memiliki `project_id`.
+
+### v0.10 — Penyempurnaan Export Excel Formal Berlogo (Laporan Umum & Khusus)
+- **[EXPORT FORMAL]** Penyempurnaan fitur Export Excel pada **Laporan Umum** dan **Laporan Khusus** menggunakan library `phpoffice/phpspreadsheet` (versi `^5.8`).
+- **[EMBED LOGO & BRANDING]** Setiap sheet export kini dilengkapi header formal perusahaan: embed gambar Logo Hariff Defense (`LOGO LOGO LAGI.png`), nama perusahaan ("HARIFF DEFENSE"), sub-judul ("ManufakTrack — Sistem Pelacakan Manufaktur"), judul laporan, dan informasi tanggal cetak (`now()->translatedFormat('d F Y, H:i')`).
+- **[STYLING RAPI]** Header tabel data diberi warna latar belakang Navy Hariff Defense (`#1A3D63`) dengan teks tebal putih, format kolom ID/SN dipaksa sebagai teks agar tidak berubah menjadi notasi ilmiah, dilengkapi border tipis, *zebra striping* pada baris data, kolom auto-size, dan fitur *freeze pane* pada baris header tabel agar tetap terlihat saat scroll.
+- **[LAPORAN KHUSUS]** Menambahkan class `LaporanKhususExport` yang menghasilkan 2 sheet dalam satu file Excel: Sheet 1 ("Analisis Khusus") berisi tabel KPI, Top Rework Rate, Top Masalah Tersering, dan Top Root Cause Tersering; Sheet 2 ("Daftar Bug Terkait") berisi data mentah laporan bug yang sesuai dengan filter produk yang dipilih. Route `/laporan-khusus/export` dan tombol unduh di UI telah ditambahkan.
+
 ---
 
+
 ## 🚀 Cara Menjalankan (Development)
+
+
 
 ```bash
 # Laravel

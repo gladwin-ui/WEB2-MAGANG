@@ -12,7 +12,7 @@
             </div>
             <div>
                 <h1 class="text-xl md:text-2xl font-black text-text-primary tracking-tight">Kelola Master Device</h1>
-                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Tambahkan atau perbarui referensi data device PT Hariff</p>
+                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Tambahkan atau perbarui referensi data device Hariff Defense</p>
             </div>
         </div>
     </div>

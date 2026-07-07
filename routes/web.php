@@ -30,6 +30,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/export', [DashboardController::class, 'exportExcel'])->name('dashboard.export');
     Route::get('/laporan-khusus', [LaporanKhususController::class, 'index'])->name('laporan-khusus.index');
+    Route::get('/laporan-khusus/export', [LaporanKhususController::class, 'exportExcel'])->name('laporan-khusus.export');
     Route::resource('/master/projects', ProjectController::class)->names('master.projects');
     Route::resource('/master/devices', DeviceController::class)->names('master.devices');
     Route::resource('/master/serial-numbers', SerialNumberController::class)->names('master.serial_numbers');

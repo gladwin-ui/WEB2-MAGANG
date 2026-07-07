@@ -15,6 +15,11 @@
                 <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Analisis Masalah &amp; Root Cause Tersering per Produk</p>
             </div>
         </div>
+        <div>
+            <a href="<?php echo e(route('laporan-khusus.export', request()->query())); ?>" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm hover:shadow transition-all shrink-0">
+                <i class="bi bi-file-earmark-excel-fill text-base"></i> Export Excel
+            </a>
+        </div>
     </div>
 
     
@@ -64,7 +69,8 @@
                                         <?php if($isTop): ?>
                                             <i class="bi bi-exclamation-triangle-fill text-xs flex-shrink-0" style="color:<?php echo e($barColor); ?>"></i>
                                         <?php endif; ?>
-                                        <span class="text-sm font-semibold text-text-primary truncate"><?php echo e($item->name ?? 'Project #' . $item->id); ?></span>
+                                        <span class="text-sm font-semibold text-text-primary truncate"><?php echo e($item->name ?? ($item->id ? 'Project #' . $item->id : 'Tanpa Proyek')); ?></span>
+
                                     </div>
                                     <div class="flex items-center gap-2 flex-shrink-0 ml-2">
                                         <span class="text-xs font-mono text-text-muted"><?php echo e($item->rework_count); ?>/<?php echo e($item->total_bugs); ?></span>
@@ -107,31 +113,51 @@
                     <i class="bi bi-box-seam mr-1" style="color:#4A7FA7"></i> Pilih Produk
                 </label>
                 <select id="product_id" name="product_id" onchange="this.form.submit()"
-                        class="w-full rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        class="w-full sm:w-80 rounded-lg border border-border-default bg-bg-card text-text-primary px-4 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    
+                    <option value="all" <?php echo e($selectedProductId === 'all' ? 'selected' : ''); ?>>
+                        Semua Produk
+                    </option>
                     <?php $__empty_1 = true; $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                        <option value="<?php echo e($product->id); ?>" <?php echo e($selectedProductId == $product->id ? 'selected' : ''); ?>>
-                            <?php echo e($product->name ?? 'Project #' . $product->id); ?>
+                        <option value="<?php echo e($product->id); ?>" <?php echo e((string)$selectedProductId === (string)$product->id ? 'selected' : ''); ?>>
+                            <?php echo e($product->name ?? ($product->id ? 'Project #' . $product->id : 'Tanpa Proyek')); ?>
 
                         </option>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                        <option value="" disabled selected>Belum ada produk dengan laporan bug</option>
+                        <option value="" disabled>Belum ada produk dengan laporan bug</option>
                     <?php endif; ?>
                 </select>
             </div>
-            <?php if($selectedProductId): ?>
-                <div class="pb-2">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-                          style="background:#EBF3FB;color:#1A3D63">
-                        <i class="bi bi-clipboard-data text-xs"></i>
-                        <?php echo e(number_format($totalBugs)); ?> laporan dianalisis
-                    </span>
-                </div>
-            <?php endif; ?>
+            <div class="pb-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+                      style="background:#EBF3FB;color:#1A3D63">
+                    <i class="bi bi-clipboard-data text-xs"></i>
+                    <?php if($selectedProductId === 'all'): ?>
+                        <?php echo e(number_format($totalLaporan)); ?> laporan dari semua produk
+                    <?php else: ?>
+                        <?php echo e(number_format($totalLaporan)); ?> laporan dianalisis
+                    <?php endif; ?>
+                    <?php if($isSampled): ?> (sampel <?php echo e(number_format($sampleSize)); ?>) <?php endif; ?>
+                </span>
+            </div>
         </form>
     </div>
 
+    <?php if($isSampled): ?>
+        <div class="mt-4 mb-2 flex items-start gap-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4">
+            <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            <p class="text-sm text-amber-700 dark:text-amber-300">
+                Analisis berdasarkan sampel acak <strong><?php echo e(number_format($sampleSize)); ?></strong>
+                dari total <strong><?php echo e(number_format($totalLaporan)); ?></strong> laporan,
+                untuk menjaga performa. Hasil mencerminkan tren umum, bukan hitungan penuh.
+            </p>
+        </div>
+    <?php endif; ?>
+
     
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
 
         
         <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card overflow-hidden">
@@ -143,12 +169,13 @@
                     <h3 class="text-sm font-bold text-text-primary">Masalah Tersering <span class="font-normal text-text-muted">(Top 5)</span></h3>
                     <p class="text-xs text-text-muted mt-0.5">
                         Dikelompokkan dari judul &amp; deskripsi laporan
-                        <?php if($totalBugs > 0): ?>
-                            - dari <span class="font-semibold" style="color:#1A3D63"><?php echo e($totalBugs); ?></span> laporan produk ini
+                        <?php if($totalLaporan > 0): ?>
+                            - dari <span class="font-semibold" style="color:#1A3D63"><?php echo e(number_format($totalLaporan)); ?></span> <?php if($selectedProductId === 'all'): ?> laporan semua produk <?php else: ?> laporan produk ini <?php endif; ?>
                         <?php endif; ?>
                     </p>
                 </div>
             </div>
+
             <div class="p-5">
                 <?php if(count($masalahTop5) > 0): ?>
                     <?php
@@ -201,7 +228,13 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <h3 class="text-sm font-bold text-text-primary">Root Cause Tersering <span class="font-normal text-text-muted">(Top 5)</span></h3>
-                    <p class="text-xs text-text-muted mt-0.5">Dikelompokkan dari akar masalah laporan</p>
+                    <p class="text-xs text-text-muted mt-0.5">
+                        Dikelompokkan dari akar masalah laporan
+                        <?php if($totalLaporan > 0): ?>
+                            - dari <span class="font-semibold" style="color:#1A3D63"><?php echo e(number_format($totalLaporan)); ?></span> <?php if($selectedProductId === 'all'): ?> laporan semua produk <?php else: ?> laporan produk ini <?php endif; ?>
+                        <?php endif; ?>
+                    </p>
+
                 </div>
             </div>
             <div class="p-5">

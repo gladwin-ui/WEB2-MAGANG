@@ -232,8 +232,15 @@ class DashboardController extends Controller
 
         $auditBugs = $query->paginate(10)->withQueryString();
 
-        // Fetch projects for filter dropdown
-        $projects = Project::orderBy('name')->get();
+        // Fetch projects for filter dropdown (hanya yang memiliki laporan bug aktif)
+        $projects = Project::whereIn('id', function ($q) {
+            $q->select('project_id')->from('bugs')
+              ->whereNull('deleted_at')
+              ->whereNotNull('project_id')
+              ->distinct();
+        })->orderBy('id')->get();
+
+
 
         return view('dashboard.index', compact(
             'hasImportedData',
@@ -278,123 +285,15 @@ class DashboardController extends Controller
         }
 
         $bugs = $auditQuery->orderBy('created_at', 'desc')->get();
-
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Bug Reports');
-
-        // Headers
-        $headers = [
-            'ID Bug', 'Project', 'Title', 'Severity', 'SN Code Snapshot',
-            'Reporter Type', 'Description', 'Version', 'Environment',
-            'Root Cause', 'Repair Action', 'Rework?', 'Status',
-            'Reported By', 'Fixed By', 'Closed At', 'Created At',
-            'Sentiment Label', 'Sentiment Score',
-            'Severity Recommended', 'Severity Rec Reason'
-        ];
-
-        // Write Headers
-        foreach ($headers as $colIndex => $header) {
-            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
-            $cellCoordinate = $colLetter . '1';
-            $sheet->setCellValue($cellCoordinate, $header);
-            
-            // Format ID Bug and SN Code Snapshot explicitly as text
-            if ($header === 'ID Bug' || $header === 'SN Code Snapshot') {
-                $sheet->getStyle($colLetter)->getNumberFormat()->setFormatCode(\PhpOffice\PhpSpreadsheet\Style\NumberFormat::FORMAT_TEXT);
-            }
-        }
-
-        // Style header row
-        $headerStyle = [
-            'font' => [
-                'bold' => true,
-                'color' => ['rgb' => 'FFFFFF'],
-                'name' => 'Inter',
-                'size' => 10,
-            ],
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['rgb' => '0046BF'], // PT Hariff Brand Blue
-            ],
-            'alignment' => [
-                'horizontal' => Alignment::HORIZONTAL_LEFT,
-                'vertical' => Alignment::VERTICAL_CENTER,
-            ],
-        ];
-        $sheet->getStyle('A1:U1')->applyFromArray($headerStyle);
-        $sheet->getRowDimension(1)->setRowHeight(28);
-
-        // Write Data
-        $rowIndex = 2;
-        foreach ($bugs as $bug) {
-            $data = [
-                $bug->id,
-                $bug->project?->name ?? 'Project #' . $bug->project_id,
-                $bug->title,
-                $bug->severity,
-                $bug->sn_code_snapshot,
-                $bug->reporter_type,
-                $bug->description,
-                $bug->product_version,
-                $bug->environment,
-                $bug->root_cause,
-                $bug->repair_action,
-                $bug->is_rework ? 'Yes' : 'No',
-                $bug->status,
-                $bug->reported_by ?? 'System',
-                $bug->fixed_by ?? '',
-                $bug->closed_at ? $bug->closed_at->format('Y-m-d H:i:s') : '',
-                $bug->created_at->format('Y-m-d H:i:s'),
-                $bug->sentiment_label,
-                $bug->sentiment_score,
-                $bug->severity_recommended,
-                $bug->severity_recommendation_reason
-            ];
-
-            foreach ($data as $colIndex => $value) {
-                $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1);
-                $cellCoordinate = $colLetter . $rowIndex;
-                
-                // Set explicit string values for ID and SN to preserve formats
-                if ($colIndex === 0 || $colIndex === 4) { // ID Bug, SN Code Snapshot
-                    $sheet->setCellValueExplicit($cellCoordinate, $value ?? '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-                } else {
-                    $sheet->setCellValue($cellCoordinate, $value ?? '');
-                }
-            }
-
-            $rowIndex++;
-        }
-
-        // Apply global style (borders, font size)
-        $lastRow = $rowIndex - 1;
-        $sheet->getStyle('A1:X' . $lastRow)->getFont()->setName('Inter')->setSize(9.5);
-        
-        $borderStyle = [
-            'borders' => [
-                'allBorders' => [
-                    'borderStyle' => Border::BORDER_THIN,
-                    'color' => ['rgb' => 'D1C9B9'], // Matching Light Mode Border Default
-                ],
-            ],
-        ];
-        $sheet->getStyle('A1:X' . $lastRow)->applyFromArray($borderStyle);
-
-        // Auto-fit columns
-        for ($col = 1; $col <= 24; $col++) {
-            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
-            $sheet->getColumnDimension($colLetter)->setAutoSize(true);
-        }
-
-        // Output stream
+        $export = new \App\Exports\LaporanUmumExport($bugs);
+        $spreadsheet = $export->generate();
         $writer = new Xlsx($spreadsheet);
-        
+
         return Response::stream(function() use ($writer) {
             $writer->save('php://output');
         }, 200, [
             "Content-Type"        => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "Content-Disposition" => "attachment; filename=bugs_report_export_" . date('Ymd_His') . ".xlsx",
+            "Content-Disposition" => "attachment; filename=Laporan_Umum_ManufakTrack_" . date('Ymd_His') . ".xlsx",
             "Pragma"              => "no-cache",
             "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
             "Expires"             => "0"

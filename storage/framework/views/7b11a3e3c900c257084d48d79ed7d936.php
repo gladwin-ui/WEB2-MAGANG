@@ -141,36 +141,36 @@
 
         <!-- Logo & Header Section -->
         <div class="text-center mb-8 pt-2">
-            <div class="w-20 h-20 flex items-center justify-center mx-auto mb-3">
-                <img src="{{ asset('LOGO LOGO LAGI.png') }}" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-light">
-                <img src="{{ asset('LOGO LOGO LAGI.png') }}" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-dark hidden">
+            <div class="w-16 h-16 rounded-2xl bg-white border border-border-default flex items-center justify-center mx-auto mb-4 shadow-sm p-2">
+                <img src="<?php echo e(asset('LOGO LOGO LAGI.png')); ?>" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-light">
+                <img src="<?php echo e(asset('LOGO LOGO LAGI.png')); ?>" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-dark hidden">
             </div>
             <h1 class="text-2xl font-black tracking-tight text-text-primary">ManufakTrack</h1>
             <p class="text-xs font-mono tracking-widest text-accent mt-1.5 font-bold">By Hariff Defense</p>
         </div>
 
         <!-- Error Notification Banner -->
-        @if ($errors->any())
+        <?php if($errors->any()): ?>
             <div class="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs shadow-sm">
                 <div class="font-bold mb-1.5 flex items-center gap-2 text-sm">
                     <i class="bi bi-exclamation-triangle-fill text-rose-500"></i> OTENTIKASI GAGAL:
                 </div>
                 <ul class="list-disc pl-5 space-y-0.5">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
+                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($error); ?></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
             </div>
-        @endif
+        <?php endif; ?>
 
         <!-- Login Form -->
-        <form action="{{ route('login') }}" method="POST" class="space-y-5">
-            @csrf
+        <form action="<?php echo e(route('login')); ?>" method="POST" class="space-y-5">
+            <?php echo csrf_field(); ?>
             <div>
                 <label for="email" class="flex items-center gap-1.5 text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">
                     <i class="bi bi-person-badge text-accent text-sm"></i> Alamat Email / ID Staf
                 </label>
-                <input type="email" id="email" name="email" class="w-full rounded-xl px-4 py-3 text-sm font-medium transition-all shadow-inner" placeholder="nama@hariff.co.id" value="{{ old('email') }}" required autofocus>
+                <input type="email" id="email" name="email" class="w-full rounded-xl px-4 py-3 text-sm font-medium transition-all shadow-inner" placeholder="nama@hariff.co.id" value="<?php echo e(old('email')); ?>" required autofocus>
             </div>
 
             <div>
@@ -195,7 +195,7 @@
         <!-- Footer Link -->
         <div class="mt-8 pt-6 border-t border-border-default/60 text-center text-xs text-text-secondary">
             Belum punya kredensial? 
-            <a href="{{ route('register') }}" class="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-1 ml-1 transition-colors">
+            <a href="<?php echo e(route('register')); ?>" class="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-1 ml-1 transition-colors">
                 Registrasi Baru <i class="bi bi-arrow-right"></i>
             </a>
         </div>
@@ -231,3 +231,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH D:\MAGANG\WEB2-MAGANG\resources\views/auth/login.blade.php ENDPATH**/ ?>

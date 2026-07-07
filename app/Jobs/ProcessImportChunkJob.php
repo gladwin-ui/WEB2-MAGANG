@@ -118,10 +118,31 @@ class ProcessImportChunkJob implements ShouldQueue
         // Accumulated FK-not-found warnings: ['project_id' => 3, ...]
         $fkWarnings = [];
 
+        // Auto-create missing projects from this chunk (bulk)
+        $chunkProjectIds = collect($this->rows)
+            ->map(fn($r) => $r['project_id'] ?? $r['idproject'] ?? null)
+            ->filter(fn($id) => !empty($id) && is_numeric($id))
+            ->unique();
+
+        if ($chunkProjectIds->isNotEmpty()) {
+            $existingProjectIds = Project::whereIn('id', $chunkProjectIds)->pluck('id')->toArray();
+            $newProjects = $chunkProjectIds->diff($existingProjectIds)->map(fn($id) => [
+                'id'         => (int) $id,
+                'name'       => 'Project #' . $id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])->values()->toArray();
+
+            if (!empty($newProjects)) {
+                Project::insertOrIgnore($newProjects);
+            }
+        }
+
         // Pre-load valid master-data IDs for FK resolution.
         $validProjectIds      = Project::pluck('id')->flip()->all();
         $validSerialNumberIds = SerialNumber::pluck('id')->flip()->all();
         $validDeviceIds       = Device::pluck('id')->flip()->all();
+
 
         foreach ($this->rows as $rawRow) {
             try {
@@ -153,11 +174,14 @@ class ProcessImportChunkJob implements ShouldQueue
                         // as INSERT — no "memory" of the old record remains.
                         $existing->forceDelete();
                     } else {
-                        // ---- SKIP ---------------------------------------
-                        // Active existing row: leave it untouched (no update).
+                        // ---- UPDATE & SKIP ------------------------------
+                        // Update basic source columns (seperti project_id) pada data yang sudah ada,
+                        // agar saat di-import ulang, FK yang sebelumnya null akan ter-update dengan project baru.
+                        $existing->update($this->buildBugData($row));
                         $skipped++;
                         continue;
                     }
+
                 }
 
                 // ---- INSERT ---------------------------------------------

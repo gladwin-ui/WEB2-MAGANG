@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Akun - Manufacturing Tracking System by PT Hariff</title>
+    <title>Daftar Akun — ManufakTrack</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -41,7 +41,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         /* ============================================================
-         * OFFICIAL PT HARIFF DESIGN SYSTEM TOKENS
+         * OFFICIAL HARIFF DEFENSE DESIGN SYSTEM TOKENS
          * ============================================================ */
         :root {
             --color-bg-primary:    #F6FAFD;
@@ -141,12 +141,12 @@
 
         <!-- Logo & Header Section -->
         <div class="text-center mb-8 pt-2">
-            <div class="w-16 h-16 rounded-2xl bg-white border border-border-default flex items-center justify-center mx-auto mb-4 shadow-sm p-2">
-                <img src="{{ asset('logo-hariff.jpg') }}" alt="Logo PT Hariff" class="w-full h-full object-contain brand-logo-light">
-                <img src="{{ asset('logo-hariff.jpg') }}" alt="Logo PT Hariff" class="w-full h-full object-contain brand-logo-dark hidden">
+            <div class="w-20 h-20 flex items-center justify-center mx-auto mb-3">
+                <img src="{{ asset('LOGO LOGO LAGI.png') }}" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-light">
+                <img src="{{ asset('LOGO LOGO LAGI.png') }}" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-dark hidden">
             </div>
             <h1 class="text-2xl font-black tracking-tight text-text-primary">Registrasi Akun</h1>
-            <p class="text-xs font-mono tracking-widest text-accent mt-1.5 uppercase font-bold">PT Hariff Staff Enrollment</p>
+            <p class="text-xs font-mono tracking-widest text-accent mt-1.5 font-bold">By Hariff Defense</p>
         </div>
 
         <!-- Error Notification Banner -->

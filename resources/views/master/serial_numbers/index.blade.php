@@ -12,7 +12,7 @@
             </div>
             <div>
                 <h1 class="text-xl md:text-2xl font-black text-text-primary tracking-tight">Kelola Master Serial Number</h1>
-                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Daftar kode unit dan part batch cadangan produksi PT Hariff</p>
+                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Daftar kode unit dan part batch cadangan produksi Hariff Defense</p>
             </div>
         </div>
     </div>

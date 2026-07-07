@@ -17,6 +17,11 @@
                 <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Analisis Masalah &amp; Root Cause Tersering per Produk</p>
             </div>
         </div>
+        <div>
+            <a href="{{ route('laporan-khusus.export', request()->query()) }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm hover:shadow transition-all shrink-0">
+                <i class="bi bi-file-earmark-excel-fill text-base"></i> Export Excel
+            </a>
+        </div>
     </div>
 
     {{-- BAGIAN 1: REWORK RATE ANTAR PRODUK --}}
@@ -65,7 +70,8 @@
                                         @if($isTop)
                                             <i class="bi bi-exclamation-triangle-fill text-xs flex-shrink-0" style="color:{{ $barColor }}"></i>
                                         @endif
-                                        <span class="text-sm font-semibold text-text-primary truncate">{{ $item->name ?? 'Project #' . $item->id }}</span>
+                                        <span class="text-sm font-semibold text-text-primary truncate">{{ $item->name ?? ($item->id ? 'Project #' . $item->id : 'Tanpa Proyek') }}</span>
+
                                     </div>
                                     <div class="flex items-center gap-2 flex-shrink-0 ml-2">
                                         <span class="text-xs font-mono text-text-muted">{{ $item->rework_count }}/{{ $item->total_bugs }}</span>
@@ -108,30 +114,50 @@
                     <i class="bi bi-box-seam mr-1" style="color:#4A7FA7"></i> Pilih Produk
                 </label>
                 <select id="product_id" name="product_id" onchange="this.form.submit()"
-                        class="w-full rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        class="w-full sm:w-80 rounded-lg border border-border-default bg-bg-card text-text-primary px-4 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    {{-- Opsi "Semua Produk" di paling atas, default terpilih --}}
+                    <option value="all" {{ $selectedProductId === 'all' ? 'selected' : '' }}>
+                        Semua Produk
+                    </option>
                     @forelse($products as $product)
-                        <option value="{{ $product->id }}" {{ $selectedProductId == $product->id ? 'selected' : '' }}>
-                            {{ $product->name ?? 'Project #' . $product->id }}
+                        <option value="{{ $product->id }}" {{ (string)$selectedProductId === (string)$product->id ? 'selected' : '' }}>
+                            {{ $product->name ?? ($product->id ? 'Project #' . $product->id : 'Tanpa Proyek') }}
                         </option>
                     @empty
-                        <option value="" disabled selected>Belum ada produk dengan laporan bug</option>
+                        <option value="" disabled>Belum ada produk dengan laporan bug</option>
                     @endforelse
                 </select>
             </div>
-            @if($selectedProductId)
-                <div class="pb-2">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-                          style="background:#EBF3FB;color:#1A3D63">
-                        <i class="bi bi-clipboard-data text-xs"></i>
-                        {{ number_format($totalBugs) }} laporan dianalisis
-                    </span>
-                </div>
-            @endif
+            <div class="pb-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+                      style="background:#EBF3FB;color:#1A3D63">
+                    <i class="bi bi-clipboard-data text-xs"></i>
+                    @if($selectedProductId === 'all')
+                        {{ number_format($totalLaporan) }} laporan dari semua produk
+                    @else
+                        {{ number_format($totalLaporan) }} laporan dianalisis
+                    @endif
+                    @if($isSampled) (sampel {{ number_format($sampleSize) }}) @endif
+                </span>
+            </div>
         </form>
     </div>
 
+    @if($isSampled)
+        <div class="mt-4 mb-2 flex items-start gap-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4">
+            <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            <p class="text-sm text-amber-700 dark:text-amber-300">
+                Analisis berdasarkan sampel acak <strong>{{ number_format($sampleSize) }}</strong>
+                dari total <strong>{{ number_format($totalLaporan) }}</strong> laporan,
+                untuk menjaga performa. Hasil mencerminkan tren umum, bukan hitungan penuh.
+            </p>
+        </div>
+    @endif
+
     {{-- GRID: MASALAH + ROOT CAUSE --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
 
         {{-- Masalah Tersering --}}
         <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card overflow-hidden">
@@ -143,12 +169,13 @@
                     <h3 class="text-sm font-bold text-text-primary">Masalah Tersering <span class="font-normal text-text-muted">(Top 5)</span></h3>
                     <p class="text-xs text-text-muted mt-0.5">
                         Dikelompokkan dari judul &amp; deskripsi laporan
-                        @if($totalBugs > 0)
-                            - dari <span class="font-semibold" style="color:#1A3D63">{{ $totalBugs }}</span> laporan produk ini
+                        @if($totalLaporan > 0)
+                            - dari <span class="font-semibold" style="color:#1A3D63">{{ number_format($totalLaporan) }}</span> @if($selectedProductId === 'all') laporan semua produk @else laporan produk ini @endif
                         @endif
                     </p>
                 </div>
             </div>
+
             <div class="p-5">
                 @if(count($masalahTop5) > 0)
                     @php
@@ -200,7 +227,13 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <h3 class="text-sm font-bold text-text-primary">Root Cause Tersering <span class="font-normal text-text-muted">(Top 5)</span></h3>
-                    <p class="text-xs text-text-muted mt-0.5">Dikelompokkan dari akar masalah laporan</p>
+                    <p class="text-xs text-text-muted mt-0.5">
+                        Dikelompokkan dari akar masalah laporan
+                        @if($totalLaporan > 0)
+                            - dari <span class="font-semibold" style="color:#1A3D63">{{ number_format($totalLaporan) }}</span> @if($selectedProductId === 'all') laporan semua produk @else laporan produk ini @endif
+                        @endif
+                    </p>
+
                 </div>
             </div>
             <div class="p-5">

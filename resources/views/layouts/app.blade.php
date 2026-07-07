@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dasbor') - Sistem Pelacakan Manufaktur PT Hariff</title>
+    <title>@yield('title', 'Dasbor') — ManufakTrack</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -63,7 +63,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         /* ============================================================
-         * DESIGN SYSTEM — Brand palette PT Hariff blue
+         * DESIGN SYSTEM — Brand palette Hariff Defense blue
          * ============================================================ */
         :root {
             /* Backgrounds */
@@ -439,13 +439,13 @@
     <!-- Mobile Sticky Top Header -->
     <header class="md:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-card border-b border-panel-border z-30 sticky top-0 shrink-0">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 relative bg-white rounded-lg p-0.5 shadow-sm flex items-center justify-center">
-                <img src="{{ asset('logo-hariff.jpg') }}" alt="Logo PT Hariff" class="w-full h-full object-contain rounded brand-logo-light">
-                <img src="{{ asset('logo-hariff.jpg') }}" alt="Logo PT Hariff" class="w-full h-full object-contain rounded brand-logo-dark hidden">
+            <div class="w-8 h-8 relative flex items-center justify-center">
+                <img src="{{ asset('LOGO LOGO LAGI.png') }}" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-light">
+                <img src="{{ asset('LOGO LOGO LAGI.png') }}" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-dark hidden">
             </div>
             <div>
-                <span class="font-extrabold text-[10px] text-text-primary block leading-tight uppercase tracking-wider">BugTrack MFG</span>
-                <span class="block text-[6px] text-slate-400 font-mono tracking-widest uppercase leading-none">PT HARIFF</span>
+                <span class="font-extrabold text-xs text-text-primary block leading-tight tracking-wide">ManufakTrack</span>
+                <span class="block text-[7px] text-text-secondary font-medium tracking-wider leading-none mt-0.5">By Hariff Defense</span>
             </div>
         </div>
         <button id="mobile-menu-toggle" class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-600 dark:bg-gray-800 dark:border-gray-700 transition-all flex items-center justify-center cursor-pointer shadow-sm">
@@ -462,14 +462,13 @@
             <!-- Brand Logo & Toggle -->
             <div class="sidebar-header-row flex items-center justify-between gap-3 mb-8">
                 <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-11 h-11 shrink-0 relative bg-white rounded-xl p-1 shadow-sm flex items-center justify-center">
-                        <img src="{{ asset('logo-hariff.jpg') }}" alt="Logo PT Hariff" class="w-full h-full object-contain rounded-lg brand-logo-light">
-                        <img src="{{ asset('logo-hariff.jpg') }}" alt="Logo PT Hariff" class="w-full h-full object-contain rounded-lg brand-logo-dark hidden">
+                    <div class="w-11 h-11 shrink-0 relative flex items-center justify-center">
+                        <img src="{{ asset('LOGO LOGO LAGI.png') }}" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-light">
+                        <img src="{{ asset('LOGO LOGO LAGI.png') }}" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-dark hidden">
                     </div>
                     <div class="sidebar-brand-text min-w-0">
-                        <span class="font-extrabold text-xs text-white block leading-tight uppercase tracking-wider">Sistem Pelacakan</span>
-                        <span class="font-extrabold text-xs text-white block leading-tight uppercase tracking-wider">Manufaktur</span>
-                        <span class="block text-[8px] text-slate-200 font-mono tracking-widest uppercase mt-1">BY PT HARIFF</span>
+                        <span class="font-extrabold text-sm text-white block leading-tight tracking-wide">ManufakTrack</span>
+                        <span class="block text-[9px] text-slate-200 font-medium tracking-wider mt-0.5">By Hariff Defense</span>
                     </div>
                 </div>
                 <button id="sidebar-toggle-in" class="p-1.5 rounded-lg bg-white/10 border border-white/20 text-white hover:text-white hover:bg-white/20 transition-all flex items-center justify-center cursor-pointer shadow-sm shrink-0 w-8 h-8" title="Sembunyikan Sidebar">

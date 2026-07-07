@@ -1,5 +1,5 @@
 import time
-from typing import Optional
+from typing import Optional, List
 
 import uvicorn
 from fastapi import FastAPI
@@ -8,11 +8,12 @@ from pydantic import BaseModel
 
 from services.sentiment import analyze_sentiment
 from services.severity_recommendation import recommend_severity
+from services.report_clustering import cluster_reports
 
 
 app = FastAPI(
     title="BugTrack MFG - AI Analytics Service",
-    description="Manufacturing Bug Report Analysis: Severity, Sentiment",
+    description="Manufacturing Bug Report Analysis: Severity, Sentiment, Clustering",
     version="2.0.0",
 )
 
@@ -29,6 +30,19 @@ class BugReportResponse(BaseModel):
     severity_recommendation_reason: Optional[str] = None
 
     processing_time_ms: Optional[float] = None
+
+
+class ClusterRequest(BaseModel):
+    texts: List[str]
+
+
+class ClusterItem(BaseModel):
+    label: str
+    count: int
+
+
+class ClusterResponse(BaseModel):
+    clusters: List[ClusterItem]
 
 
 @app.post("/analyze-bug-report", response_model=BugReportResponse)
@@ -54,6 +68,13 @@ def analyze_bug_report(request: BugReportRequest):
     )
 
 
+@app.post("/cluster-reports", response_model=ClusterResponse)
+def cluster_reports_endpoint(request: ClusterRequest):
+    """Kelompokkan laporan mirip → top 5 kelompok."""
+    result = cluster_reports(request.texts)
+    return ClusterResponse(clusters=[ClusterItem(**c) for c in result])
+
+
 @app.get("/health")
 def health_check():
     """Health check endpoint."""
@@ -63,10 +84,12 @@ def health_check():
         "version": "2.0.0",
         "models": {
             "sentiment": "keyword-based",
-            "severity": "rule-based"
+            "severity": "rule-based",
+            "clustering": "tfidf-agglomerative"
         },
     }
 
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8001, reload=True)
+
