@@ -363,7 +363,7 @@
                     <tr class="border-b border-border-strong text-xs text-text-secondary font-semibold">
                         <th class="px-4 py-2.5 text-left">Proyek & SN</th>
                         <th class="px-4 py-2.5 text-left">Bug & Origin</th>
-                        <th class="px-4 py-2.5 text-left">AI Diagnosis</th>
+                        <th class="px-4 py-2.5 text-left">Urgency Score</th>
                         <th class="px-4 py-2.5 text-right">Status</th>
                     </tr>
                 </thead>
@@ -377,18 +377,31 @@
                         @endphp
                         <tr class="hover:bg-bg-tertiary transition-colors">
                             <!-- Project & SN -->
-                            <td class="px-4 py-4">
+                            <td class="px-4 py-4 align-top">
                                 <div class="flex flex-col gap-1.5">
-                                    <span class="text-sm font-semibold text-text-primary">{{ $b->project?->name ?? ($b->project_id ? 'Project #' . $b->project_id : 'Tanpa Proyek') }}</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs font-mono font-extrabold text-blue-600 dark:text-blue-400">#BUG-{{ $b->id }}</span>
+                                        <span class="text-xs font-semibold text-text-primary truncate max-w-[150px]">{{ $b->project?->name ?? ($b->project_id ? 'Project #' . $b->project_id : 'Tanpa Proyek') }}</span>
+                                    </div>
 
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-[10px] font-mono font-semibold bg-highlight text-highlight-text max-w-max">{{ $b->sn_code_snapshot ?? 'N/A' }}</span>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-[10px] font-mono font-semibold bg-highlight text-highlight-text max-w-max">{{ $b->sn_code_snapshot ?? 'N/A' }}</span>
+                                        @if($b->product_version)
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-bg-tertiary text-text-muted border border-border-default">Ver: {{ $b->product_version }}</span>
+                                        @endif
+                                    </div>
+
+                                    <div class="text-[11px] text-text-muted flex items-center gap-1 mt-0.5">
+                                        <i class="bi bi-clock"></i> {{ $b->created_at->format('d M Y, H:i') }}
+                                    </div>
                                 </div>
                             </td>
 
                             <!-- Bug Title & Severity -->
-                            <td class="px-4 py-4">
-                                <div class="flex flex-col gap-1.5">
-                                    <span class="text-sm font-medium text-text-primary">{{ $b->title }}</span>
+                            <td class="px-4 py-4 align-top">
+                                <div class="flex flex-col gap-1.5 max-w-lg">
+                                    <span class="text-sm font-bold text-text-primary">{{ $b->title }}</span>
+                                    
                                     <div class="flex flex-wrap items-center gap-1.5">
                                         @if($b->reporter_type === 'produk')
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-highlight text-highlight-text">Produk</span>
@@ -397,21 +410,35 @@
                                         @endif
 
                                         @if($b->severity === 'Critical')
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-red-50 text-red-700">Critical</span>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-red-50 text-red-700 border border-red-200">Critical</span>
                                         @elseif($b->severity === 'Major')
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-yellow-50 text-yellow-700">Major</span>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-yellow-50 text-yellow-700 border border-yellow-200">Major</span>
                                         @else
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-green-50 text-green-700">Minor</span>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-green-50 text-green-700 border border-green-200">Minor</span>
                                         @endif
+
+                                        @if($b->environment)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-bg-tertiary text-text-secondary"><i class="bi bi-geo-alt mr-1"></i>{{ $b->environment }}</span>
+                                        @endif
+                                    </div>
+
+                                    @if($b->description)
+                                        <p class="text-xs text-text-secondary line-clamp-2 mt-0.5 leading-relaxed font-normal bg-bg-secondary/60 p-2 rounded-lg border border-border-default/50">
+                                            {{ $b->description }}
+                                        </p>
+                                    @endif
+
+                                    <div class="text-[11px] text-text-muted flex items-center gap-1.5 mt-0.5">
+                                        <span class="inline-flex items-center gap-1"><i class="bi bi-person-circle"></i> Pelapor: <strong class="text-text-secondary font-semibold">{{ $b->reported_by ?: 'Sistem' }}</strong></span>
                                     </div>
                                 </div>
                             </td>
 
-                            <!-- AI Diagnosis -->
-                            <td class="px-4 py-4">
-                                <div class="space-y-2 max-w-md">
+                            <!-- Urgency Score -->
+                            <td class="px-4 py-4 align-top">
+                                <div class="space-y-2 max-w-xs">
                                     <div class="flex items-center gap-2">
-                                        <span class="text-xs text-text-muted">Urgency:</span>
+                                        <span class="text-xs text-text-muted font-medium">Urgency:</span>
                                         @php
                                             $urgColor = '#2563EB';
                                             if ($urgencyScore >= 0.75) $urgColor = '#DC2626';
@@ -426,25 +453,36 @@
                             </td>
 
                             <!-- Status -->
-                            <td class="px-4 py-4 text-right">
+                            <td class="px-4 py-4 text-right align-top">
                                 <div class="flex flex-col items-end gap-2">
-                                    <div class="flex items-center gap-2">
-                                            @if($b->is_rework)
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-red-50 text-red-700">Rework</span>
-                                            @endif
+                                    <div class="flex items-center gap-1.5 flex-wrap justify-end">
+                                        @if($b->is_rework)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-red-50 text-red-700 border border-red-200"><i class="bi bi-arrow-repeat mr-1"></i>Rework</span>
+                                        @endif
 
-                                            @if($b->status === 'CLOSED')
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-green-50 text-green-700">
-                                                    Closed — {{ $b->fixed_by ?? 'System' }}
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-pill text-xs font-semibold bg-yellow-50 text-yellow-700">
-                                                    <span class="h-1.5 w-1.5 rounded-full bg-yellow-500 inline-block"></span> Open
-                                                </span>
-                                            @endif
+                                        @if($b->status === 'CLOSED')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-pill text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                                                <i class="bi bi-check-circle-fill mr-1"></i> Closed
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-pill text-xs font-semibold bg-yellow-50 text-yellow-700 border border-yellow-200">
+                                                <span class="h-1.5 w-1.5 rounded-full bg-yellow-500 inline-block animate-pulse"></span> Open
+                                            </span>
+                                        @endif
                                     </div>
 
-                                    <button onclick="reprocessAI({{ $b->id }}, this)" class="text-[10px] text-accent hover:text-highlight-text font-semibold py-1 px-2 rounded-lg border border-border-default hover:bg-bg-tertiary transition-colors flex items-center gap-1">
+                                    @if($b->status === 'CLOSED' && ($b->fixed_by || $b->repair_action))
+                                        <div class="text-[11px] text-text-secondary text-right max-w-[200px] bg-bg-tertiary/70 px-2.5 py-1.5 rounded-lg border border-border-default/60">
+                                            @if($b->fixed_by)
+                                                <div class="font-semibold text-text-primary flex items-center justify-end gap-1"><i class="bi bi-person-check-fill text-green-600"></i> {{ $b->fixed_by }}</div>
+                                            @endif
+                                            @if($b->repair_action)
+                                                <div class="text-[10px] text-text-muted truncate mt-0.5" title="{{ $b->repair_action }}"><i class="bi bi-wrench mr-0.5"></i> {{ $b->repair_action }}</div>
+                                            @endif
+                                        </div>
+                                    @endif
+
+                                    <button onclick="reprocessAI({{ $b->id }}, this)" class="text-[10px] text-accent hover:text-highlight-text font-semibold py-1 px-2.5 rounded-lg border border-border-default hover:bg-bg-tertiary transition-colors flex items-center gap-1 shadow-sm">
                                         <i class="bi bi-arrow-clockwise"></i> Reprocess AI
                                     </button>
                                 </div>

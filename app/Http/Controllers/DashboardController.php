@@ -288,6 +288,7 @@ class DashboardController extends Controller
         $export = new \App\Exports\LaporanUmumExport($bugs);
         $spreadsheet = $export->generate();
         $writer = new Xlsx($spreadsheet);
+        $writer->setIncludeCharts(true);
 
         return Response::stream(function() use ($writer) {
             $writer->save('php://output');

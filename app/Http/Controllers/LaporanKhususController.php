@@ -162,6 +162,7 @@ class LaporanKhususController extends Controller
         $export = new LaporanKhususExport($bugs, $reworkRates, $severityMix, $avgRework, $masalahTop5, $rootCauseTop5, $selectedProductId, $productName);
         $spreadsheet = $export->generate();
         $writer = new Xlsx($spreadsheet);
+        $writer->setIncludeCharts(true);
 
         return response()->stream(function() use ($writer) {
             $writer->save('php://output');

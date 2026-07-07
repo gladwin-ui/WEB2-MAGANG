@@ -151,46 +151,10 @@
         <div class="space-y-6">
             <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm border-t-4 border-t-blue-600">
                 <h2 class="text-md font-bold text-blue-600 mb-6 flex items-center gap-2 uppercase tracking-wide">
-                    <i class="bi bi-robot"></i> DIAGNOSIS AI ENGINE
+                    <i class="bi bi-robot"></i> URGENCY SCORE
                 </h2>
 
                 <div class="space-y-5">
-                    <div class="border-b border-slate-200 pb-4">
-                        <span class="block text-xs font-mono text-slate-600 uppercase mb-2.5">Audit Derajat Keparahan:</span>
-                        <div class="flex items-center justify-between gap-3">
-                            <div>
-                                <span class="block text-[10px] font-mono text-slate-500 uppercase mb-1">Reporter:</span>
-                                @if($bug->severity === 'Critical')
-                                    <span class="inline-flex text-[9px] font-bold font-mono bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded uppercase">CRITICAL</span>
-                                @elseif($bug->severity === 'Major')
-                                    <span class="inline-flex text-[9px] font-bold font-mono bg-yellow-50 text-yellow-700 border border-yellow-250 px-2 py-0.5 rounded uppercase">MAJOR</span>
-                                @else
-                                    <span class="inline-flex text-[9px] font-bold font-mono bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded uppercase">MINOR</span>
-                                @endif
-                            </div>
-                            <div class="text-right">
-                                <span class="block text-[10px] font-mono text-slate-500 uppercase mb-1">Rekomendasi AI:</span>
-                                @if($bug->severity_recommended)
-                                    @if($bug->severity_recommended === 'Critical')
-                                        <span class="inline-flex text-[9px] font-bold font-mono bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded uppercase">CRITICAL</span>
-                                    @elseif($bug->severity_recommended === 'Major')
-                                        <span class="inline-flex text-[9px] font-bold font-mono bg-yellow-50 text-yellow-700 border border-yellow-250 px-2 py-0.5 rounded uppercase">MAJOR</span>
-                                    @else
-                                        <span class="inline-flex text-[9px] font-bold font-mono bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded uppercase">MINOR</span>
-                                    @endif
-                                @else
-                                    <span class="text-xs text-slate-500 font-mono">N/A</span>
-                                @endif
-                            </div>
-                        </div>
-
-                        @if($bug->severity_recommendation_reason)
-                            <div class="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 leading-relaxed border-l-2 border-blue-600 font-mono">
-                                <strong>ALASAN AI:</strong> {{ $bug->severity_recommendation_reason }}
-                            </div>
-                        @endif
-                    </div>
-
                     <div class="border-b border-slate-200 pb-4">
                         <span class="block text-xs font-mono text-slate-650 uppercase mb-2">Sentimen Teks Deskripsi:</span>
                         @if($bug->sentiment_label)
