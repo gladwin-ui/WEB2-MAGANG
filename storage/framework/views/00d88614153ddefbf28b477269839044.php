@@ -422,10 +422,132 @@
         ::-webkit-scrollbar-track { background: var(--color-bg-tertiary); }
         ::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+        /* ============================================================
+         * PAGE LOADING SYSTEM
+         * ============================================================ */
+
+        /* ---- Top progress bar (slim, YouTube-style) ---- */
+        #mfg-progress-bar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #1A3D63, #4A7FA7, #6BADD6);
+            z-index: 99999;
+            transition: width 0.3s ease, opacity 0.4s ease;
+            opacity: 0;
+            border-radius: 0 2px 2px 0;
+            box-shadow: 0 0 10px rgba(74, 127, 167, 0.6);
+        }
+        #mfg-progress-bar.active {
+            opacity: 1;
+        }
+        #mfg-progress-bar::after {
+            content: '';
+            display: block;
+            position: absolute;
+            right: 0; top: 0;
+            width: 80px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5));
+            animation: mfg-shimmer 0.8s ease-in-out infinite;
+        }
+        @keyframes mfg-shimmer {
+            0%   { opacity: 0; }
+            50%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* ---- Full-page overlay (semi-transparent, for page change) ---- */
+        #mfg-page-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 25, 49, 0);
+            z-index: 99998;
+            pointer-events: none;
+            transition: background 0.25s ease;
+        }
+        #mfg-page-overlay.active {
+            pointer-events: all;
+            background: rgba(10, 25, 49, 0.12);
+        }
+        body.dark #mfg-page-overlay.active {
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        /* ---- Filter spinner overlay (for forms with data tables) ---- */
+        #mfg-filter-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99997;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        #mfg-filter-overlay.active {
+            pointer-events: all;
+            opacity: 1;
+        }
+        #mfg-filter-overlay .filter-spinner-card {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border-default);
+            border-radius: 16px;
+            padding: 24px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 20px 60px rgba(10, 25, 49, 0.15), 0 4px 16px rgba(10, 25, 49, 0.08);
+        }
+        .mfg-spin-ring {
+            width: 28px;
+            height: 28px;
+            border: 3px solid var(--color-bg-tertiary);
+            border-top-color: #1A3D63;
+            border-radius: 50%;
+            animation: mfg-spin 0.7s linear infinite;
+            flex-shrink: 0;
+        }
+        body.dark .mfg-spin-ring {
+            border-color: var(--color-bg-tertiary);
+            border-top-color: #4A7FA7;
+        }
+        @keyframes mfg-spin {
+            to { transform: rotate(360deg); }
+        }
+        .mfg-filter-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            white-space: nowrap;
+        }
+        .mfg-filter-sub {
+            font-size: 11px;
+            color: var(--color-text-muted);
+            margin-top: 2px;
+        }
     </style>
     <?php echo $__env->yieldContent('styles'); ?>
 </head>
 <body class="bg-bg-primary text-text-primary font-sans min-h-screen flex flex-col md:flex-row">
+
+    <!-- ============================================================
+         GLOBAL LOADING SYSTEM — Progress bar + overlays
+         ============================================================ -->
+    <div id="mfg-progress-bar"></div>
+    <div id="mfg-page-overlay"></div>
+    <div id="mfg-filter-overlay">
+        <div class="filter-spinner-card">
+            <div class="mfg-spin-ring"></div>
+            <div>
+                <div class="mfg-filter-text" id="mfg-filter-label">Memuat data…</div>
+                <div class="mfg-filter-sub">Mohon tunggu sebentar</div>
+            </div>
+        </div>
+    </div>
     <script>
         (function() {
             const theme = localStorage.getItem('theme');
@@ -643,6 +765,117 @@
         });
     </script>
     <?php echo $__env->yieldPushContent('scripts'); ?>
+
+    <!-- ============================================================
+         GLOBAL PAGE LOADING SCRIPT
+         ============================================================ -->
+    <script>
+    (function() {
+        'use strict';
+
+        const bar     = document.getElementById('mfg-progress-bar');
+        const overlay = document.getElementById('mfg-page-overlay');
+        const fltOver = document.getElementById('mfg-filter-overlay');
+        const fltLabel = document.getElementById('mfg-filter-label');
+
+        let barTimer = null;
+        let barPct   = 0;
+
+        // ---- Progress bar helpers ----
+        function barStart() {
+            if (!bar) return;
+            clearTimeout(barTimer);
+            barPct = 10;
+            bar.style.width    = barPct + '%';
+            bar.style.opacity  = '1';
+            bar.classList.add('active');
+            // Slowly creep to 85%
+            (function creep() {
+                if (barPct >= 85) return;
+                barPct += Math.random() * 8;
+                if (barPct > 85) barPct = 85;
+                bar.style.width = barPct + '%';
+                barTimer = setTimeout(creep, 250 + Math.random() * 200);
+            })();
+        }
+
+        function barFinish() {
+            if (!bar) return;
+            clearTimeout(barTimer);
+            bar.style.width   = '100%';
+            bar.style.opacity = '0';
+            bar.classList.remove('active');
+            setTimeout(() => { bar.style.width = '0'; }, 450);
+        }
+
+        // ---- Show filter spinner ----
+        function showFilterSpinner(label) {
+            if (!fltOver) return;
+            if (fltLabel) fltLabel.textContent = label || 'Memuat data…';
+            fltOver.classList.add('active');
+            overlay.classList.add('active');
+            barStart();
+        }
+
+        // ---- Page nav loading (for sidebar links & normal <a> nav) ----
+        function showPageNav() {
+            barStart();
+            overlay.classList.add('active');
+        }
+
+        // Finish when the page actually loads
+        window.addEventListener('pageshow', function(e) {
+            barFinish();
+            overlay.classList.remove('active');
+            if (fltOver) fltOver.classList.remove('active');
+        });
+
+        // ---- Hook sidebar navigation links ----
+        document.querySelectorAll('aside nav a[href]').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                const href = link.getAttribute('href');
+                // Skip anchors and external links
+                if (!href || href.startsWith('#') || href.startsWith('javascript') || href.startsWith('mailto')) return;
+                showPageNav();
+            });
+        });
+
+        // ---- Hook filter FORMs (GET forms with selects/inputs) ----
+        // Dashboard Laporan Umum filter form
+        var dashForm = document.getElementById('dashboard-filter-form');
+        if (dashForm) {
+            dashForm.addEventListener('submit', function() {
+                showFilterSpinner('Menerapkan filter…');
+            });
+        }
+
+        // Laporan Khusus product dropdown (auto-submit)
+        var prodSelect = document.querySelector('select#product_id');
+        if (prodSelect) {
+            // Override native onchange so we control timing
+            prodSelect.removeAttribute('onchange');
+            prodSelect.addEventListener('change', function() {
+                showFilterSpinner('Menganalisis data produk…');
+                setTimeout(function() { prodSelect.form.submit(); }, 80);
+            });
+        }
+
+        // ---- Hook Export Excel buttons ----
+        document.querySelectorAll('a[href*="export"]').forEach(function(el) {
+            el.addEventListener('click', function() {
+                barStart();
+                // Don't show full overlay for downloads — just bar
+                setTimeout(barFinish, 3000);
+            });
+        });
+
+        // ---- Immediately finish bar if page already loaded ----
+        if (document.readyState === 'complete') {
+            barFinish();
+        }
+
+    })();
+    </script>
 </body>
 </html>
 <?php /**PATH D:\MAGANG\WEB2-MAGANG\resources\views/layouts/app.blade.php ENDPATH**/ ?>

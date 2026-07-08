@@ -4,9 +4,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\BugController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\SerialNumberController;
-use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\UserSettingsController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\LaporanKhususController;
@@ -24,16 +21,12 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
     Route::get('/users/{user}/profile-photo', [UserSettingsController::class, 'photo'])->name('users.profile-photo');
 
-    Route::get('/bugs', [BugController::class, 'index'])->name('bugs.index');
     Route::get('/bugs/{bug}', [BugController::class, 'show'])->name('bugs.show');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/export', [DashboardController::class, 'exportExcel'])->name('dashboard.export');
     Route::get('/laporan-khusus', [LaporanKhususController::class, 'index'])->name('laporan-khusus.index');
     Route::get('/laporan-khusus/export', [LaporanKhususController::class, 'exportExcel'])->name('laporan-khusus.export');
-    Route::resource('/master/projects', ProjectController::class)->names('master.projects');
-    Route::resource('/master/devices', DeviceController::class)->names('master.devices');
-    Route::resource('/master/serial-numbers', SerialNumberController::class)->names('master.serial_numbers');
 
     // SQL Import routes
     Route::get('/import',                [ImportController::class, 'showUploadForm'])->name('import.upload');
@@ -54,3 +47,4 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/bugs/{bug}/reprocess', [BugController::class, 'reprocess'])->name('bugs.reprocess');
     Route::delete('/import/history/{id}', [ImportController::class, 'deleteFromHistory'])->name('import.history.delete');
 });
+

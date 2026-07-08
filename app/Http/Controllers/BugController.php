@@ -6,14 +6,6 @@ use App\Models\Bug;
 
 class BugController extends Controller
 {
-    /**
-     * Admin-only bug index. The legacy workflow list is retired, so this
-     * route now routes users directly to the analytics dashboard.
-     */
-    public function index()
-    {
-        return redirect()->route('dashboard');
-    }
 
     /**
      * Show a single bug detail for admin review.
@@ -35,10 +27,8 @@ class BugController extends Controller
             $result1 = $analytics->analyzeBugReport($bug);
             if (!empty($result1)) {
                 $bug->update([
-                    'sentiment_label'              => $result1['sentiment_label']              ?? null,
-                    'sentiment_score'              => $result1['sentiment_score']              ?? null,
-                    'severity_recommended'         => $result1['severity_recommended']         ?? null,
-                    'severity_recommendation_reason' => $result1['severity_recommendation_reason'] ?? null,
+                    'sentiment_label' => $result1['sentiment_label'] ?? null,
+                    'sentiment_score' => $result1['sentiment_score'] ?? null,
                 ]);
             }
         }

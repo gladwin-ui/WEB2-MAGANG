@@ -301,59 +301,64 @@
             </div>
 
             <!-- Filter Panel -->
-            <form action="{{ route('dashboard') }}" method="GET" class="w-full xl:w-auto">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:flex xl:flex-wrap gap-2 text-sm w-full">
-                    <select name="import_job_id" class="w-full xl:w-auto rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-blue-500 text-text-primary font-semibold focus:ring-1 focus:ring-blue-500">
+            <form id="dashboard-filter-form" action="{{ route('dashboard') }}" method="GET" class="w-full space-y-2">
+                {{-- Baris 1: semua kontrol filter --}}
+                <div class="flex flex-wrap gap-2 text-sm w-full">
+                    <select name="import_job_id" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-blue-500 text-text-primary font-semibold focus:ring-1 focus:ring-blue-500">
                         <option value="all" {{ $selectedJobId === 'all' ? 'selected' : '' }}>Semua File SQL</option>
                         @foreach($sqlFiles as $file)
                             <option value="{{ $file->id }}" {{ $selectedJobId == $file->id ? 'selected' : '' }}>{{ $file->filename }}</option>
                         @endforeach
                     </select>
 
-                    <select name="project_id" class="w-full xl:w-auto rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
+                    <select name="project_id" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
                         <option value="">Semua Proyek</option>
                         @foreach($projects as $p)
                             <option value="{{ $p->id }}" {{ request('project_id') == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
                         @endforeach
                     </select>
 
-                    <select name="status" class="w-full xl:w-auto rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
+                    <select name="status" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
                         <option value="">Semua Status</option>
                         <option value="OPEN" {{ request('status') === 'OPEN' ? 'selected' : '' }}>Open</option>
                         <option value="CLOSED" {{ request('status') === 'CLOSED' ? 'selected' : '' }}>Closed</option>
                     </select>
 
-                    <select name="severity" class="w-full xl:w-auto rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
+                    <select name="severity" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
                         <option value="">Semua Severity</option>
                         <option value="Critical" {{ request('severity') === 'Critical' ? 'selected' : '' }}>Critical</option>
                         <option value="Major" {{ request('severity') === 'Major' ? 'selected' : '' }}>Major</option>
                         <option value="Minor" {{ request('severity') === 'Minor' ? 'selected' : '' }}>Minor</option>
                     </select>
 
-                    <select name="urgency_sort" class="w-full xl:w-auto rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
+                    <select name="urgency_sort" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
                         <option value="">Terbaru</option>
                         <option value="desc" {{ request('urgency_sort') === 'desc' ? 'selected' : '' }}>Urgency ↓</option>
                         <option value="asc" {{ request('urgency_sort') === 'asc' ? 'selected' : '' }}>Urgency ↑</option>
                     </select>
 
-                    <div class="w-full xl:w-auto flex items-center gap-2 rounded-lg px-3 py-2 bg-bg-secondary border border-border-default">
+                    <div class="flex items-center gap-2 rounded-lg px-3 py-2 bg-bg-secondary border border-border-default">
                         <span class="text-xs text-text-muted">Dari:</span>
-                        <input type="date" name="date_from" value="{{ request('date_from') }}" class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-full xl:w-28">
+                        <input type="date" name="date_from" value="{{ request('date_from') }}" class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-28">
                     </div>
 
-                    <div class="w-full xl:w-auto flex items-center gap-2 rounded-lg px-3 py-2 bg-bg-secondary border border-border-default">
+                    <div class="flex items-center gap-2 rounded-lg px-3 py-2 bg-bg-secondary border border-border-default">
                         <span class="text-xs text-text-muted">Sampai:</span>
-                        <input type="date" name="date_to" value="{{ request('date_to') }}" class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-full xl:w-28">
+                        <input type="date" name="date_to" value="{{ request('date_to') }}" class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-28">
                     </div>
+                </div>
 
-                    <button type="submit" class="w-full xl:w-auto px-4 py-2 rounded-lg text-xs font-bold text-white transition-colors" style="background-color: #0046BF;">
-                        <i class="bi bi-funnel"></i> Filter
+                {{-- Baris 2: tombol aksi saja --}}
+                <div class="flex items-center gap-2">
+                    <button type="submit" class="px-5 py-2 rounded-lg text-xs font-bold text-white transition-colors" style="background-color: #0046BF;">
+                        <i class="bi bi-funnel"></i> SET
                     </button>
-                    <a href="{{ route('dashboard') }}" class="w-full xl:w-auto px-4 py-2 rounded-lg text-xs font-semibold text-text-muted border border-border-default hover:bg-bg-tertiary transition-colors text-center">
+                    <a href="{{ route('dashboard') }}" class="px-4 py-2 rounded-lg text-xs font-semibold text-text-muted border border-border-default hover:bg-bg-tertiary transition-colors">
                         Reset
                     </a>
                 </div>
             </form>
+
         </div>
 
         <!-- Data Table -->

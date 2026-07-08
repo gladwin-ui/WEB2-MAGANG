@@ -141,7 +141,7 @@
 
         <!-- Logo & Header Section -->
         <div class="text-center mb-8 pt-2">
-            <div class="w-16 h-16 rounded-2xl bg-white border border-border-default flex items-center justify-center mx-auto mb-4 shadow-sm p-2">
+            <div class="w-20 h-20 flex items-center justify-center mx-auto mb-3">
                 <img src="<?php echo e(asset('LOGO LOGO LAGI.png')); ?>" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-light">
                 <img src="<?php echo e(asset('LOGO LOGO LAGI.png')); ?>" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-dark hidden">
             </div>

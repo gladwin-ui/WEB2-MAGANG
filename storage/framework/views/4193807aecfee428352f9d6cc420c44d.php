@@ -301,59 +301,64 @@
             </div>
 
             <!-- Filter Panel -->
-            <form action="<?php echo e(route('dashboard')); ?>" method="GET" class="w-full xl:w-auto">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:flex xl:flex-wrap gap-2 text-sm w-full">
-                    <select name="import_job_id" class="w-full xl:w-auto rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-blue-500 text-text-primary font-semibold focus:ring-1 focus:ring-blue-500">
+            <form id="dashboard-filter-form" action="<?php echo e(route('dashboard')); ?>" method="GET" class="w-full space-y-2">
+                
+                <div class="flex flex-wrap gap-2 text-sm w-full">
+                    <select name="import_job_id" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-blue-500 text-text-primary font-semibold focus:ring-1 focus:ring-blue-500">
                         <option value="all" <?php echo e($selectedJobId === 'all' ? 'selected' : ''); ?>>Semua File SQL</option>
                         <?php $__currentLoopData = $sqlFiles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $file): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <option value="<?php echo e($file->id); ?>" <?php echo e($selectedJobId == $file->id ? 'selected' : ''); ?>><?php echo e($file->filename); ?></option>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
 
-                    <select name="project_id" class="w-full xl:w-auto rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
+                    <select name="project_id" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
                         <option value="">Semua Proyek</option>
                         <?php $__currentLoopData = $projects; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <option value="<?php echo e($p->id); ?>" <?php echo e(request('project_id') == $p->id ? 'selected' : ''); ?>><?php echo e($p->name); ?></option>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
 
-                    <select name="status" class="w-full xl:w-auto rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
+                    <select name="status" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
                         <option value="">Semua Status</option>
                         <option value="OPEN" <?php echo e(request('status') === 'OPEN' ? 'selected' : ''); ?>>Open</option>
                         <option value="CLOSED" <?php echo e(request('status') === 'CLOSED' ? 'selected' : ''); ?>>Closed</option>
                     </select>
 
-                    <select name="severity" class="w-full xl:w-auto rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
+                    <select name="severity" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
                         <option value="">Semua Severity</option>
                         <option value="Critical" <?php echo e(request('severity') === 'Critical' ? 'selected' : ''); ?>>Critical</option>
                         <option value="Major" <?php echo e(request('severity') === 'Major' ? 'selected' : ''); ?>>Major</option>
                         <option value="Minor" <?php echo e(request('severity') === 'Minor' ? 'selected' : ''); ?>>Minor</option>
                     </select>
 
-                    <select name="urgency_sort" class="w-full xl:w-auto rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
+                    <select name="urgency_sort" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
                         <option value="">Terbaru</option>
                         <option value="desc" <?php echo e(request('urgency_sort') === 'desc' ? 'selected' : ''); ?>>Urgency ↓</option>
                         <option value="asc" <?php echo e(request('urgency_sort') === 'asc' ? 'selected' : ''); ?>>Urgency ↑</option>
                     </select>
 
-                    <div class="w-full xl:w-auto flex items-center gap-2 rounded-lg px-3 py-2 bg-bg-secondary border border-border-default">
+                    <div class="flex items-center gap-2 rounded-lg px-3 py-2 bg-bg-secondary border border-border-default">
                         <span class="text-xs text-text-muted">Dari:</span>
-                        <input type="date" name="date_from" value="<?php echo e(request('date_from')); ?>" class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-full xl:w-28">
+                        <input type="date" name="date_from" value="<?php echo e(request('date_from')); ?>" class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-28">
                     </div>
 
-                    <div class="w-full xl:w-auto flex items-center gap-2 rounded-lg px-3 py-2 bg-bg-secondary border border-border-default">
+                    <div class="flex items-center gap-2 rounded-lg px-3 py-2 bg-bg-secondary border border-border-default">
                         <span class="text-xs text-text-muted">Sampai:</span>
-                        <input type="date" name="date_to" value="<?php echo e(request('date_to')); ?>" class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-full xl:w-28">
+                        <input type="date" name="date_to" value="<?php echo e(request('date_to')); ?>" class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-28">
                     </div>
+                </div>
 
-                    <button type="submit" class="w-full xl:w-auto px-4 py-2 rounded-lg text-xs font-bold text-white transition-colors" style="background-color: #0046BF;">
-                        <i class="bi bi-funnel"></i> Filter
+                
+                <div class="flex items-center gap-2">
+                    <button type="submit" class="px-5 py-2 rounded-lg text-xs font-bold text-white transition-colors" style="background-color: #0046BF;">
+                        <i class="bi bi-funnel"></i> SET
                     </button>
-                    <a href="<?php echo e(route('dashboard')); ?>" class="w-full xl:w-auto px-4 py-2 rounded-lg text-xs font-semibold text-text-muted border border-border-default hover:bg-bg-tertiary transition-colors text-center">
+                    <a href="<?php echo e(route('dashboard')); ?>" class="px-4 py-2 rounded-lg text-xs font-semibold text-text-muted border border-border-default hover:bg-bg-tertiary transition-colors">
                         Reset
                     </a>
                 </div>
             </form>
+
         </div>
 
         <!-- Data Table -->

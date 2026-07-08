@@ -78,10 +78,8 @@ class ReanalyzeBugsJob implements ShouldQueue
                 if ($needAnalysis) {
                     $res1 = $analytics->analyzeBugReport($bug);
                     if (!empty($res1)) {
-                        $bug->sentiment_label                  = $res1['sentiment_label'] ?? null;
-                        $bug->sentiment_score                  = $res1['sentiment_score'] ?? null;
-                        $bug->severity_recommended             = $res1['severity_recommended'] ?? null;
-                        $bug->severity_recommendation_reason   = $res1['severity_recommendation_reason'] ?? null;
+                        $bug->sentiment_label = $res1['sentiment_label'] ?? null;
+                        $bug->sentiment_score = $res1['sentiment_score'] ?? null;
                         $isUpdated = true;
                     } else {
                         $failed++;

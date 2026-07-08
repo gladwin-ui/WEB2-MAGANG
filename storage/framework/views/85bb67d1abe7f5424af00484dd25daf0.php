@@ -1,8 +1,6 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'Kelola Master Project'); ?>
 
-@section('title', 'Kelola Master Project')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="space-y-6">
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-border-strong">
@@ -24,8 +22,8 @@
         <div>
             <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
                 <h2 class="text-xs font-mono tracking-widest text-slate-600 uppercase mb-4">Tambah Project Baru</h2>
-                <form action="{{ route('master.projects.store') }}" method="POST" class="space-y-4">
-                    @csrf
+                <form action="<?php echo e(route('master.projects.store')); ?>" method="POST" class="space-y-4">
+                    <?php echo csrf_field(); ?>
                     <div>
                         <label for="name" class="block text-xs font-mono tracking-wider text-slate-650 uppercase mb-2">Nama Project *</label>
                         <input type="text" id="name" name="name" class="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-slate-800 text-sm focus:outline-none focus:border-blue-600 transition-all placeholder-slate-400" placeholder="Contoh: Project TACA OPSHYB" required>
@@ -42,11 +40,11 @@
             <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
                 <h2 class="text-xs font-mono tracking-widest text-slate-600 uppercase mb-4">Daftar Project Terdaftar</h2>
                 
-                @if($projects->isEmpty())
+                <?php if($projects->isEmpty()): ?>
                     <div class="text-center py-12 text-slate-400 font-mono text-xs uppercase tracking-wider">
                         BELUM ADA DATA PROJECT TERSEDIA
                     </div>
-                @else
+                <?php else: ?>
                     <div class="overflow-x-auto w-full">
                         <table class="w-full text-left border-collapse">
                             <thead>
@@ -57,41 +55,44 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 text-sm">
-                                @foreach($projects as $project)
+                                <?php $__currentLoopData = $projects; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $project): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                     <tr class="hover:bg-slate-50 transition-all">
-                                        <td class="py-3 px-4 font-mono text-xs text-blue-600 font-bold">#{{ $project->id }}</td>
+                                        <td class="py-3 px-4 font-mono text-xs text-blue-600 font-bold">#<?php echo e($project->id); ?></td>
                                         <td class="py-3 px-4">
-                                            <form action="{{ route('master.projects.update', $project) }}" method="POST" class="flex gap-2 items-center">
-                                                @csrf
-                                                @method('PUT')
-                                                <input type="text" name="name" value="{{ $project->name }}" class="bg-white border border-slate-200 focus:border-blue-600 rounded px-2.5 py-1 text-slate-800 text-xs focus:outline-none transition-all w-full max-w-sm font-semibold" required>
+                                            <form action="<?php echo e(route('master.projects.update', $project)); ?>" method="POST" class="flex gap-2 items-center">
+                                                <?php echo csrf_field(); ?>
+                                                <?php echo method_field('PUT'); ?>
+                                                <input type="text" name="name" value="<?php echo e($project->name); ?>" class="bg-white border border-slate-200 focus:border-blue-600 rounded px-2.5 py-1 text-slate-800 text-xs focus:outline-none transition-all w-full max-w-sm font-semibold" required>
                                                 <button type="submit" class="p-1 border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-350 text-green-700 rounded text-xs transition-all" title="Simpan Perubahan">
                                                     <i class="bi bi-save-fill"></i>
                                                 </button>
                                             </form>
                                         </td>
                                         <td class="py-3 px-4 text-right">
-                                            <form action="{{ route('master.projects.destroy', $project) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus project ini?');">
-                                                @csrf
-                                                @method('DELETE')
+                                            <form action="<?php echo e(route('master.projects.destroy', $project)); ?>" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus project ini?');">
+                                                <?php echo csrf_field(); ?>
+                                                <?php echo method_field('DELETE'); ?>
                                                 <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 rounded text-[11px] font-mono font-bold transition-all shadow-sm">
                                                     <i class="bi bi-trash3-fill"></i> HAPUS
                                                 </button>
                                             </form>
                                         </td>
                                     </tr>
-                                @endforeach
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </tbody>
                         </table>
                     </div>
 
                     <div class="mt-4 border-t border-slate-200 pt-4">
-                        {{ $projects->links() }}
+                        <?php echo e($projects->links()); ?>
+
                     </div>
-                @endif
+                <?php endif; ?>
             </div>
         </div>
 
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\MAGANG\WEB2-MAGANG\resources\views/master/projects/index.blade.php ENDPATH**/ ?>
