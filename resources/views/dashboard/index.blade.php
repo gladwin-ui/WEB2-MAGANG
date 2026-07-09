@@ -62,7 +62,7 @@
     <!-- Executive KPI Summary Strip -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Card 1: Total Bug -->
-        <div class="bg-bg-secondary border border-border-default rounded-xl p-4 shadow-card hover:border-blue-500/50 transition-all flex flex-col justify-between">
+        <div class="bg-bg-secondary border border-border-default border-l-4 border-l-blue-500 rounded-xl p-4 shadow-card hover:shadow-md transition-all flex flex-col justify-between">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-xs font-bold text-text-secondary uppercase tracking-wider">Total Defect</span>
                 <div class="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
@@ -76,7 +76,7 @@
         </div>
 
         <!-- Card 2: Bug Open -->
-        <div class="bg-bg-secondary border border-border-default rounded-xl p-4 shadow-card hover:border-amber-500/50 transition-all flex flex-col justify-between">
+        <div class="bg-bg-secondary border border-border-default border-l-4 border-l-amber-500 rounded-xl p-4 shadow-card hover:shadow-md transition-all flex flex-col justify-between">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-xs font-bold text-text-secondary uppercase tracking-wider">Dalam Perbaikan</span>
                 <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
@@ -86,11 +86,16 @@
             <div>
                 <div class="text-2xl font-black text-amber-500 font-mono tracking-tight">{{ number_format($openBugs) }}</div>
                 <div class="text-[11px] text-text-muted mt-1">Status Open / Aktif</div>
+                @php $openPct = $totalBugs > 0 ? round($openBugs / $totalBugs * 100) : 0; @endphp
+                <div class="mt-3 h-1 rounded-full bg-bg-tertiary overflow-hidden">
+                    <div class="h-full rounded-full bg-amber-500 transition-all" style="width: {{ $openPct }}%"></div>
+                </div>
+                <div class="text-[10px] text-text-muted mt-1">{{ $openPct }}% dari total</div>
             </div>
         </div>
 
         <!-- Card 3: Bug Closed -->
-        <div class="bg-bg-secondary border border-border-default rounded-xl p-4 shadow-card hover:border-emerald-500/50 transition-all flex flex-col justify-between">
+        <div class="bg-bg-secondary border border-border-default border-l-4 border-l-emerald-500 rounded-xl p-4 shadow-card hover:shadow-md transition-all flex flex-col justify-between">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-xs font-bold text-text-secondary uppercase tracking-wider">Telah Selesai</span>
                 <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
@@ -100,11 +105,16 @@
             <div>
                 <div class="text-2xl font-black text-emerald-500 font-mono tracking-tight">{{ number_format($closedBugs) }}</div>
                 <div class="text-[11px] text-text-muted mt-1">Status Closed / Resolved</div>
+                @php $closedPct = $totalBugs > 0 ? round($closedBugs / $totalBugs * 100) : 0; @endphp
+                <div class="mt-3 h-1 rounded-full bg-bg-tertiary overflow-hidden">
+                    <div class="h-full rounded-full bg-emerald-500 transition-all" style="width: {{ $closedPct }}%"></div>
+                </div>
+                <div class="text-[10px] text-text-muted mt-1">{{ $closedPct }}% dari total</div>
             </div>
         </div>
 
         <!-- Card 4: Rework Rate (KPI Manufaktur) -->
-        <div class="bg-bg-secondary border border-rose-500/30 rounded-xl p-4 shadow-card hover:border-rose-500 transition-all flex flex-col justify-between relative overflow-hidden">
+        <div class="bg-bg-secondary border border-rose-500/30 border-l-4 border-l-rose-500 rounded-xl p-4 shadow-card hover:shadow-md transition-all flex flex-col justify-between relative overflow-hidden">
             <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-rose-500/5 rounded-full pointer-events-none"></div>
             <div class="flex items-center justify-between mb-2">
                 <span class="text-xs font-bold text-rose-500 uppercase tracking-wider flex items-center gap-1">
@@ -301,61 +311,83 @@
             </div>
 
             <!-- Filter Panel -->
-            <form id="dashboard-filter-form" action="{{ route('dashboard') }}" method="GET" class="w-full space-y-2">
-                {{-- Baris 1: semua kontrol filter --}}
-                <div class="flex flex-wrap gap-2 text-sm w-full">
-                    <select name="import_job_id" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-blue-500 text-text-primary font-semibold focus:ring-1 focus:ring-blue-500">
+            <form id="dashboard-filter-form" action="{{ route('dashboard') }}" method="GET" class="w-full">
+                {{-- Baris 1: Select filters --}}
+                <div class="flex flex-wrap gap-2 mb-2">
+                    {{-- File SQL --}}
+                    <select name="import_job_id"
+                        class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border-2 border-accent text-text-primary font-semibold focus:ring-2 focus:ring-accent/50 focus:outline-none transition-all">
                         <option value="all" {{ $selectedJobId === 'all' ? 'selected' : '' }}>Semua File SQL</option>
                         @foreach($sqlFiles as $file)
-                            <option value="{{ $file->id }}" {{ $selectedJobId == $file->id ? 'selected' : '' }}>{{ $file->filename }}</option>
+                            <option value="{{ $file->id }}" {{ $selectedJobId == $file->id ? 'selected' : '' }}>
+                                {{ $file->filename }}
+                            </option>
                         @endforeach
                     </select>
 
-                    <select name="project_id" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
+                    {{-- Semua Proyek --}}
+                    <select name="project_id" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary focus:ring-1 focus:ring-accent focus:outline-none transition-all">
                         <option value="">Semua Proyek</option>
                         @foreach($projects as $p)
                             <option value="{{ $p->id }}" {{ request('project_id') == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
                         @endforeach
                     </select>
 
-                    <select name="status" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
+                    {{-- Semua Status --}}
+                    <select name="status" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary focus:ring-1 focus:ring-accent focus:outline-none transition-all">
                         <option value="">Semua Status</option>
-                        <option value="OPEN" {{ request('status') === 'OPEN' ? 'selected' : '' }}>Open</option>
+                        <option value="OPEN"   {{ request('status') === 'OPEN'   ? 'selected' : '' }}>Open</option>
                         <option value="CLOSED" {{ request('status') === 'CLOSED' ? 'selected' : '' }}>Closed</option>
                     </select>
 
-                    <select name="severity" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
+                    {{-- Semua Severity --}}
+                    <select name="severity" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary focus:ring-1 focus:ring-accent focus:outline-none transition-all">
                         <option value="">Semua Severity</option>
                         <option value="Critical" {{ request('severity') === 'Critical' ? 'selected' : '' }}>Critical</option>
-                        <option value="Major" {{ request('severity') === 'Major' ? 'selected' : '' }}>Major</option>
-                        <option value="Minor" {{ request('severity') === 'Minor' ? 'selected' : '' }}>Minor</option>
+                        <option value="Major"    {{ request('severity') === 'Major'    ? 'selected' : '' }}>Major</option>
+                        <option value="Minor"    {{ request('severity') === 'Minor'    ? 'selected' : '' }}>Minor</option>
                     </select>
 
-                    <select name="urgency_sort" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary">
+                    {{-- Urutan --}}
+                    <select name="urgency_sort" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary focus:ring-1 focus:ring-accent focus:outline-none transition-all">
                         <option value="">Terbaru</option>
                         <option value="desc" {{ request('urgency_sort') === 'desc' ? 'selected' : '' }}>Urgency ↓</option>
-                        <option value="asc" {{ request('urgency_sort') === 'asc' ? 'selected' : '' }}>Urgency ↑</option>
+                        <option value="asc"  {{ request('urgency_sort') === 'asc'  ? 'selected' : '' }}>Urgency ↑</option>
                     </select>
-
-                    <div class="flex items-center gap-2 rounded-lg px-3 py-2 bg-bg-secondary border border-border-default">
-                        <span class="text-xs text-text-muted">Dari:</span>
-                        <input type="date" name="date_from" value="{{ request('date_from') }}" class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-28">
-                    </div>
-
-                    <div class="flex items-center gap-2 rounded-lg px-3 py-2 bg-bg-secondary border border-border-default">
-                        <span class="text-xs text-text-muted">Sampai:</span>
-                        <input type="date" name="date_to" value="{{ request('date_to') }}" class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-28">
-                    </div>
                 </div>
 
-                {{-- Baris 2: tombol aksi saja --}}
-                <div class="flex items-center gap-2">
-                    <button type="submit" class="px-5 py-2 rounded-lg text-xs font-bold text-white transition-colors" style="background-color: #0046BF;">
-                        <i class="bi bi-funnel"></i> SET
+                {{-- Baris 2: Date filter + tombol aksi --}}
+                <div class="flex flex-wrap items-center gap-2">
+                    {{-- Date range --}}
+                    <div class="flex items-center gap-2 rounded-lg px-3 py-2 bg-bg-secondary border border-border-default text-sm">
+                        <i class="bi bi-calendar3 text-text-muted text-xs"></i>
+                        <span class="text-text-muted text-xs">Dari</span>
+                        <input type="date" name="date_from" value="{{ request('date_from') }}"
+                            class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-28">
+                        <span class="text-text-muted text-xs">—</span>
+                        <span class="text-text-muted text-xs">Sampai</span>
+                        <input type="date" name="date_to" value="{{ request('date_to') }}"
+                            class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-28">
+                    </div>
+
+                    {{-- Tombol Filter --}}
+                    <button type="submit"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white bg-accent hover:bg-accent-hover transition-colors shadow-sm">
+                        <i class="bi bi-funnel-fill text-[11px]"></i> Filter
                     </button>
-                    <a href="{{ route('dashboard') }}" class="px-4 py-2 rounded-lg text-xs font-semibold text-text-muted border border-border-default hover:bg-bg-tertiary transition-colors">
-                        Reset
+
+                    {{-- Tombol Reset --}}
+                    <a href="{{ route('dashboard') }}"
+                        class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-text-muted border border-border-default hover:bg-bg-tertiary transition-colors">
+                        <i class="bi bi-x-circle text-[11px]"></i> Reset
                     </a>
+
+                    {{-- Indikator filter aktif --}}
+                    @if(request()->hasAny(['project_id', 'status', 'severity', 'urgency_sort', 'date_from', 'date_to']) && $selectedJobId !== 'all')
+                    <span class="text-[11px] text-accent font-medium ml-1">
+                        <i class="bi bi-funnel-fill"></i> Filter aktif
+                    </span>
+                    @endif
                 </div>
             </form>
 
@@ -673,28 +705,91 @@
 
         function makeVolumeOptions(trendKeys, trendValues, c) {
             return {
-                series: [{ name: 'Volume', data: trendValues }],
-                chart: { type: 'area', height: 280, background: 'transparent', foreColor: c.textMuted, toolbar: { show: false } },
-                colors: [colorTrend],
-                stroke: { curve: 'smooth', width: 2.5 },
+                series: [{ name: 'Volume Laporan', data: trendValues }],
+                chart: {
+                    type: 'area',
+                    height: 280,
+                    background: 'transparent',
+                    foreColor: c.textMuted,
+                    toolbar: { show: false },
+                    zoom: { enabled: false },
+                    animations: { enabled: true, speed: 600 }
+                },
+                colors: ['#1A3D63'],
+                stroke: {
+                    curve: 'smooth',
+                    width: 3,
+                },
                 fill: {
                     type: 'gradient',
-                    gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.05, stops: [0, 90, 100] }
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.45,
+                        opacityTo: 0.02,
+                        stops: [0, 85, 100]
+                    }
+                },
+                markers: {
+                    size: 5,
+                    colors: ['#1A3D63'],
+                    strokeColors: '#ffffff',
+                    strokeWidth: 2,
+                    hover: { size: 7 }
+                },
+                dataLabels: {
+                    enabled: true,
+                    style: {
+                        fontSize: '10px',
+                        fontFamily: 'Inter, sans-serif',
+                        fontWeight: '600',
+                        colors: ['#1A3D63']
+                    },
+                    background: { enabled: false },
+                    offsetY: -8
                 },
                 grid: {
-                    borderColor: c.gridLine, strokeDashArray: 3,
+                    borderColor: c.gridLine,
+                    strokeDashArray: 4,
                     xaxis: { lines: { show: false } },
-                    yaxis: { lines: { show: true } }
+                    yaxis: { lines: { show: true } },
+                    padding: { top: 10, right: 10, bottom: 0, left: 10 }
                 },
                 xaxis: {
-                    categories: trendKeys, axisBorder: { show: false }, axisTicks: { show: false },
-                    labels: { style: { fontSize: '11px', fontFamily: 'Inter', colors: c.textMuted } }
+                    categories: trendKeys,
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                    labels: {
+                        style: { fontSize: '11px', fontFamily: 'Inter', colors: c.textMuted },
+                        formatter: function(val) {
+                            if (!val) return '';
+                            try {
+                                const d = new Date(val);
+                                return d.getDate() + ' ' + d.toLocaleString('id-ID', { month: 'short' });
+                            } catch(e) { return val; }
+                        }
+                    }
                 },
                 yaxis: {
-                    min: 0, tickAmount: 4,
-                    labels: { style: { fontSize: '11px', fontFamily: 'Inter', colors: c.textMuted }, formatter: v => Math.floor(v) }
+                    min: 0,
+                    tickAmount: 4,
+                    labels: {
+                        style: { fontSize: '11px', fontFamily: 'Inter', colors: c.textMuted },
+                        formatter: v => Math.floor(v)
+                    }
                 },
-                tooltip: { theme: c.tooltipTheme }
+                tooltip: {
+                    theme: c.tooltipTheme,
+                    x: {
+                        formatter: function(val, opts) {
+                            return trendKeys[opts.dataPointIndex] || val;
+                        }
+                    },
+                    y: {
+                        formatter: v => v + ' laporan',
+                        title: { formatter: () => 'Volume:' }
+                    },
+                    marker: { show: true }
+                }
             };
         }
 

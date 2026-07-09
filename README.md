@@ -234,8 +234,8 @@ analytics-service/
 - ✅ **Halaman Analisis Terpisah (`/laporan-khusus`):** Filter dropdown per produk/proyek (hanya menampilkan produk yang memiliki laporan cacat aktif dari data bug yang tidak terhapus, termasuk produk hasil import otomatis).
 - ✅ **Opsi "Semua Produk" & Sampling Safety Limit:** Dropdown Detail per Produk menyediakan opsi "Semua Produk" (default terpilih) untuk analisis gabungan seluruh produk pada Masalah Tersering, Root Cause Tersering, dan Distribusi Severity. Untuk menjaga performa, jika total laporan melebihi ambang batas (`$SAMPLING_LIMIT` = 2000), sistem otomatis melakukan sampling acak 2000 laporan beserta catatan transparan pada antarmuka.
 - ✅ **Auto-Registration Project:** Saat import data bug, jika `project_id` belum ada di tabel `projects`, sistem otomatis membuat project baru dengan nama default "Project #{id}" menggunakan bulk insert untuk efisiensi tinggi.
-- ✅ **Top 5 Masalah Tersering:** Aglomerasi otomatis judul (`title`) dan deskripsi (`description`) menggunakan **similarity clustering (TF-IDF + Agglomerative Clustering, cosine distance, threshold 0.6)** diproses di FastAPI (`/cluster-reports`) untuk mengelompokkan laporan yang mirip walau kata-katanya tidak identik. Penamaan kelompok menggunakan 2 kata dominan dari TF-IDF tertinggi.
-- ✅ **Top 5 Root Cause Tersering:** Aglomerasi otomatis akar masalah (`root_cause`) per produk menggunakan **similarity clustering (TF-IDF + Agglomerative Clustering)** di FastAPI (`/cluster-reports`). Menggantikan pendekatan trigram lama yang terlalu ketat.
+- ✅ **Top 5 Masalah Tersering:** Aglomerasi otomatis judul (`title`) dan deskripsi (`description`) menggunakan **algoritma pencocokan overlap minimal 2 kata bermakna (berulang)** antar laporan (*Connected Components*) diproses di FastAPI (`/cluster-reports`) dengan normalisasi sinonim teknis (`termal` $\rightarrow$ `thermal`, `mekanis` $\rightarrow$ `mekanik`, `menua` $\rightarrow$ `aging`, `battery` $\rightarrow$ `baterai`). Penamaan kelompok diurutkan dari kombinasi pasangan **[Kata Benda / Subjek] + [Kata Keadaan / Kerusakan]** bebas kata berulang maupun kata kerja transitif netral.
+- ✅ **Top 5 Root Cause Tersering:** Aglomerasi otomatis akar masalah (`root_cause`) per produk menggunakan **algoritma pencocokan overlap minimal 2 kata berulang** antar laporan di FastAPI (`/cluster-reports`) dengan normalisasi sinonim dan penamaan utuh bermakna (*Stress Thermal*, *Solder Retak*, *Sensor Error*, *Aging Komponen*).
 
 ### 🎨 Arah Visual/Styling
 - ✅ **Light Mode Profesional/Korporat** — token dasar sudah diimplementasikan di `resources/css/app.css`: putih bersih (`#FFFFFF`), biru korporat `#2563EB` sebagai aksen utama, serta 4 pasang warna badge standar untuk severity/status.
@@ -307,6 +307,12 @@ analytics-service/
 ---
 
 ## 📝 Changelog
+
+### v0.19 — Algoritma NLP Clustering Laporan Khusus Overlap Kata Berulang & Penamaan [Kata Benda + Kondisi Kerusakan]
+- **[LAPORAN KHUSUS / CLUSTERING]** Mengimplementasikan algoritma **Pencocokan Overlap $\ge 2$ Kata Berulang (*Connected Components*)** di Python Analytics Service (`report_clustering.py`) & fallback PHP (`LaporanKhususController.php`), menyatukan laporan berurutan terbalik/sinonim ke dalam kelompok yang sama.
+- **[LAPORAN KHUSUS / NORMALISASI]** Menambahkan pemetaan sinonim teknis otomatis (`termal` $\rightarrow$ `thermal`, `mekanis` $\rightarrow$ `mekanik`, `menua` $\rightarrow$ `aging`, `battery` $\rightarrow$ `baterai`).
+- **[LAPORAN KHUSUS / PENAMAAN]** Memperbaiki logika penamaan kelompok (`_name_from_texts`) dengan melarang duplikasi kata kembar (`w1 == w2`) serta menyaring kata kerja transitif netral (`membaca`, `mendeteksi`, `berfungsi`) dari stopword agar label selalu berformat natural **[Kata Benda / Subjek] + [Kata Keadaan / Kerusakan]** (contoh: *Solder Retak*, *Sensor Error*, *Firmware Crash*, *Stress Thermal*).
+- **[UI/UX DASHBOARD & AUTH]** Menata filter bar di dasbor utama menjadi 2 baris terstruktur serta menerapkan latar belakang kolase foto visual pabrik modern (`bg-collage.png`) pada halaman Login & Register.
 
 ### v0.18 — Opsi "Semua Produk" & Sampling Safety Limit di Laporan Khusus
 - **[LAPORAN KHUSUS]** Menambahkan opsi **"Semua Produk"** (value `all`) pada urutan teratas dropdown Detail per Produk yang ditetapkan sebagai **default terpilih** saat halaman dibuka, menghasilkan analisis gabungan seluruh laporan.
@@ -457,6 +463,11 @@ analytics-service/
 - **[EMBED LOGO & BRANDING]** Setiap sheet export kini dilengkapi header formal perusahaan: embed gambar Logo Hariff Defense (`LOGO LOGO LAGI.png`), nama perusahaan ("HARIFF DEFENSE"), sub-judul ("ManufakTrack — Sistem Pelacakan Manufaktur"), judul laporan, dan informasi tanggal cetak (`now()->translatedFormat('d F Y, H:i')`).
 - **[STYLING RAPI]** Header tabel data diberi warna latar belakang Navy Hariff Defense (`#1A3D63`) dengan teks tebal putih, format kolom ID/SN dipaksa sebagai teks agar tidak berubah menjadi notasi ilmiah, dilengkapi border tipis, *zebra striping* pada baris data, kolom auto-size, dan fitur *freeze pane* pada baris header tabel agar tetap terlihat saat scroll.
 - **[LAPORAN KHUSUS]** Menambahkan class `LaporanKhususExport` yang menghasilkan 2 sheet dalam satu file Excel: Sheet 1 ("Analisis Khusus") berisi tabel KPI, Top Rework Rate, Top Masalah Tersering, dan Top Root Cause Tersering; Sheet 2 ("Daftar Bug Terkait") berisi data mentah laporan bug yang sesuai dengan filter produk yang dipilih. Route `/laporan-khusus/export` dan tombol unduh di UI telah ditambahkan.
+
+### v0.11 — Perbaikan Visual UI Dashboard (Filter Bar, KPI Cards & Tren Chart)
+- **[FILTER BAR TERSTRUKTUR]** Form filter di dashboard disusun ulang menjadi 2 baris terstruktur: baris utama untuk dropdown filter (`import_job_id`, `project_id`, `status`, `severity`, `urgency_sort`), dan baris kedua untuk input tanggal gabungan (1 pill `date_from` - `date_to`) beserta tombol aksi (`Filter` berikon funnel dan `Reset`).
+- **[KPI CARDS ACCENT]** Menambahkan garis border vertikal kiri (`border-l-4`) bernuansa warna khas per kartu (Biru untuk Total Defect, Amber untuk Dalam Perbaikan, Emerald untuk Telah Selesai, Rose untuk Rework Rate) serta mini progress bar persentase pada kartu Open dan Closed.
+- **[TREN CHART INFORMATIF]** Memperbaiki opsi ApexCharts pada grafik volume laporan (`makeVolumeOptions`): gradien area lebih tegas (`opacityFrom: 0.45`), penambahan marker titik di setiap data point, label data di atas titik, warna navy brand (`#1A3D63`), serta format tanggal sumbu X yang lebih pendek dan informatif.
 
 ---
 

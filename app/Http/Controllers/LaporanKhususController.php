@@ -186,14 +186,85 @@ class LaporanKhususController extends Controller
             ]);
 
             if ($response->successful()) {
-                return $response->json('clusters', []);
+                $clusters = $response->json('clusters', []);
+                if (!empty($clusters)) {
+                    return $clusters;
+                }
             }
         } catch (\Exception $e) {
-            // FastAPI tidak tersedia → return kosong (jangan crash halaman)
             Log::warning('Clustering FastAPI gagal: ' . $e->getMessage());
         }
 
-        return [];
+        return $this->fallbackClustering($texts);
+    }
+
+    private function fallbackClustering(array $texts): array
+    {
+        $stopwords = [
+            'di','ke','dari','pada','untuk','dengan','dalam','atas','oleh','saat','ketika',
+            'yang','dan','atau','juga','akan','telah','sudah','ini','itu','ada','adalah',
+            'sebuah','suatu','para','nya','sebagai','karena','agar','supaya','namun','tetapi',
+            'tapi','jika','kalau','maka','bila','terjadi','terdapat','secara','hingga','sampai',
+            'setelah','sebelum','selama','antara','unit','per','tiap','setiap','bisa','dapat',
+            'tidak','bukan','kurang','belum','lagi','akibat','disebabkan','menyebabkan',
+            'mengakibatkan','akibatnya','mengalami','terhadap','berupa',
+            'adanya','terjadinya','penyebab','laporan','dilaporkan','melaporkan',
+            'membaca','terbaca','mendeteksi','terdeteksi','menampilkan','tampil',
+            'mengirim','menerima','berjalan','bekerja','beroperasi','berfungsi',
+            'melakukan','memberikan','menghasilkan','menjadi',
+            'the','a','an','in','on','at','to','for','of','with','and','or','is','are','was',
+            'were','be','been','this','that','it','as','by','from','when','while','after','before',
+            'due','caused','causing','failure','issue','problem','result','resulting','not','no',
+            'read','reading','detect','detecting','display','work','working',
+        ];
+
+        $synonyms = [
+            'termal' => 'thermal',
+            'mekanis' => 'mekanik',
+            'solderan' => 'solder',
+            'retakan' => 'retak',
+            'menua' => 'aging',
+            'korsleting' => 'short',
+            'korslet' => 'short',
+        ];
+
+        $stopMap = array_flip($stopwords);
+        $groups = [];
+
+        foreach ($texts as $text) {
+            $clean = trim($text);
+            if ($clean === '') continue;
+
+            $words = preg_split('/[^\p{L}\p{N}]+/u', mb_strtolower($clean), -1, PREG_SPLIT_NO_EMPTY);
+            $filtered = [];
+            foreach ($words as $w) {
+                $w = $synonyms[$w] ?? $w;
+                if (isset($stopMap[$w])) continue;
+                if (mb_strlen($w) <= 2 && !is_numeric($w)) continue;
+                $filtered[] = $w;
+            }
+
+            $unique = array_values(array_unique($filtered));
+            $label = 'Tanpa Keterangan';
+            if (count($unique) >= 2) {
+                $label = ucwords($unique[0] . ' ' . $unique[1]);
+            } elseif (count($unique) === 1) {
+                $label = ucwords($unique[0]);
+            }
+
+            if (!isset($groups[$label])) {
+                $groups[$label] = 0;
+            }
+            $groups[$label]++;
+        }
+
+        arsort($groups);
+        $result = [];
+        foreach (array_slice($groups, 0, 5, true) as $label => $count) {
+            $result[] = ['label' => $label, 'count' => $count];
+        }
+
+        return $result;
     }
 }
 

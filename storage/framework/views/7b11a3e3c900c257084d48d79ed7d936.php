@@ -111,7 +111,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 relative overflow-x-hidden">
+<body class="min-h-screen bg-white dark:bg-[#081224] text-text-primary flex flex-col lg:flex-row overflow-x-hidden">
     <!-- Theme Auto-Detect Script -->
     <script>
         (function() {
@@ -123,82 +123,94 @@
         })();
     </script>
 
-    <!-- Ambient Modern Background Glows -->
-    <div class="fixed top-[-10%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-blue-500/10 dark:bg-blue-500/15 blur-[120px] pointer-events-none -z-10 animate-pulse" style="animation-duration: 8s;"></div>
-    <div class="fixed bottom-[-10%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-indigo-500/10 dark:bg-indigo-500/15 blur-[120px] pointer-events-none -z-10 animate-pulse" style="animation-duration: 10s;"></div>
+    <!-- LEFT COLUMN: Form & Brand Section (50% Width on Desktop) -->
+    <div class="w-full lg:w-1/2 min-h-screen flex flex-col justify-between p-6 sm:p-12 lg:p-16 relative z-10">
+        <!-- Top Bar: Logo & Brand + Theme Toggle -->
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <img src="<?php echo e(asset('LOGO LOGO LAGI.png')); ?>" alt="Logo Hariff Defense" class="h-9 w-auto object-contain brand-logo-light">
+                <img src="<?php echo e(asset('LOGO LOGO LAGI.png')); ?>" alt="Logo Hariff Defense" class="h-9 w-auto object-contain brand-logo-dark hidden">
+                <div>
+                    <span class="text-lg font-black tracking-tight text-text-primary">ManufakTrack</span>
+                    <span class="block text-[10px] font-mono tracking-widest text-accent font-bold uppercase">Hariff Defense</span>
+                </div>
+            </div>
 
-    <!-- Floating Theme Toggle -->
-    <div class="absolute top-6 right-6 z-50">
-        <button id="theme-toggle" class="w-11 h-11 rounded-xl bg-bg-secondary border border-border-default text-text-secondary hover:text-accent hover:border-accent shadow-sm flex items-center justify-center transition-all duration-200 cursor-pointer transform hover:scale-105 active:scale-95" title="Ubah Tema">
-            <i class="bi bi-moon-stars text-lg"></i>
-        </button>
+            <!-- Theme Toggle Button -->
+            <button id="theme-toggle" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-text-secondary hover:text-accent shadow-sm flex items-center justify-center transition-all cursor-pointer transform hover:scale-105 active:scale-95" title="Ubah Tema">
+                <i class="bi bi-moon-stars text-base"></i>
+            </button>
+        </div>
+
+        <!-- Center: Authentication Form -->
+        <div class="w-full max-w-md mx-auto my-auto py-10">
+            <!-- Header Text -->
+            <div class="mb-8">
+                <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-text-primary mb-2">Masuk Akun</h1>
+                <p class="text-xs sm:text-sm text-text-secondary">Silakan masukkan kredensial staf Anda untuk mengakses portal manajemen pelaporan dan bug.</p>
+            </div>
+
+            <!-- Error Notification Banner -->
+            <?php if($errors->any()): ?>
+                <div class="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs shadow-sm">
+                    <div class="font-bold mb-1.5 flex items-center gap-2 text-sm">
+                        <i class="bi bi-exclamation-triangle-fill text-rose-500"></i> OTENTIKASI GAGAL:
+                    </div>
+                    <ul class="list-disc pl-5 space-y-0.5">
+                        <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <li><?php echo e($error); ?></li>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+
+            <!-- Login Form -->
+            <form action="<?php echo e(route('login')); ?>" method="POST" class="space-y-5">
+                <?php echo csrf_field(); ?>
+                <div>
+                    <label for="email" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">
+                        Alamat Email / ID Staf
+                    </label>
+                    <input type="email" id="email" name="email" class="w-full rounded-xl px-4 py-3.5 bg-gray-50 dark:bg-[#11233F] border border-gray-200 dark:border-gray-700 text-sm font-medium transition-all" placeholder="nama@hariff.co.id" value="<?php echo e(old('email')); ?>" required autofocus>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">
+                        Kata Sandi
+                    </label>
+                    <input type="password" id="password" name="password" class="w-full rounded-xl px-4 py-3.5 bg-gray-50 dark:bg-[#11233F] border border-gray-200 dark:border-gray-700 text-sm font-medium transition-all" placeholder="••••••••" required>
+                </div>
+
+                <div class="flex items-center justify-between pt-1">
+                    <div class="flex items-center gap-2.5">
+                        <input type="checkbox" id="remember" name="remember" class="w-4 h-4 rounded bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-blue-600 focus:ring-0 cursor-pointer">
+                        <label for="remember" class="text-xs text-text-secondary font-medium cursor-pointer select-none">Ingat Sesi Saya</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full flex items-center justify-center gap-2.5 px-6 py-4 bg-[#0046BF] hover:bg-[#003899] text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-600/20 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer mt-4">
+                    MASUK SEKARANG
+                </button>
+            </form>
+
+            <!-- Bottom Link -->
+            <div class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800 text-xs text-text-secondary">
+                Belum memiliki akun staf? 
+                <a href="<?php echo e(route('register')); ?>" class="text-[#0046BF] dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-1 ml-1 transition-colors">
+                    Registrasi Akun Baru <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Left Column Footer -->
+        <div class="text-left text-[11px] text-text-tertiary">
+            &copy; <?php echo e(date('Y')); ?> PT Hariff Daya Tunggal Engineering. All rights reserved.
+        </div>
     </div>
 
-    <!-- Main Authentication Card -->
-    <div class="w-full max-w-md bg-bg-secondary/95 border border-border-default/80 rounded-3xl p-8 sm:p-10 shadow-2xl relative z-10 overflow-hidden backdrop-blur-xl transition-all duration-300">
-        <!-- Modern 3-Color Brand Accent Bar -->
-        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-500"></div>
-
-        <!-- Logo & Header Section -->
-        <div class="text-center mb-8 pt-2">
-            <div class="w-20 h-20 flex items-center justify-center mx-auto mb-3">
-                <img src="<?php echo e(asset('LOGO LOGO LAGI.png')); ?>" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-light">
-                <img src="<?php echo e(asset('LOGO LOGO LAGI.png')); ?>" alt="Logo Hariff Defense" class="w-full h-full object-contain brand-logo-dark hidden">
-            </div>
-            <h1 class="text-2xl font-black tracking-tight text-text-primary">ManufakTrack</h1>
-            <p class="text-xs font-mono tracking-widest text-accent mt-1.5 font-bold">By Hariff Defense</p>
-        </div>
-
-        <!-- Error Notification Banner -->
-        <?php if($errors->any()): ?>
-            <div class="mb-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs shadow-sm">
-                <div class="font-bold mb-1.5 flex items-center gap-2 text-sm">
-                    <i class="bi bi-exclamation-triangle-fill text-rose-500"></i> OTENTIKASI GAGAL:
-                </div>
-                <ul class="list-disc pl-5 space-y-0.5">
-                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <li><?php echo e($error); ?></li>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </ul>
-            </div>
-        <?php endif; ?>
-
-        <!-- Login Form -->
-        <form action="<?php echo e(route('login')); ?>" method="POST" class="space-y-5">
-            <?php echo csrf_field(); ?>
-            <div>
-                <label for="email" class="flex items-center gap-1.5 text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">
-                    <i class="bi bi-person-badge text-accent text-sm"></i> Alamat Email / ID Staf
-                </label>
-                <input type="email" id="email" name="email" class="w-full rounded-xl px-4 py-3 text-sm font-medium transition-all shadow-inner" placeholder="nama@hariff.co.id" value="<?php echo e(old('email')); ?>" required autofocus>
-            </div>
-
-            <div>
-                <label for="password" class="flex items-center gap-1.5 text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">
-                    <i class="bi bi-key-fill text-accent text-sm"></i> Kata Sandi / Security Key
-                </label>
-                <input type="password" id="password" name="password" class="w-full rounded-xl px-4 py-3 text-sm font-medium transition-all shadow-inner" placeholder="••••••••" required>
-            </div>
-
-            <div class="flex items-center justify-between pt-1">
-                <div class="flex items-center gap-2.5">
-                    <input type="checkbox" id="remember" name="remember" class="w-4 h-4 rounded bg-bg-secondary border-border-default text-blue-600 focus:ring-0 focus:ring-offset-0 cursor-pointer">
-                    <label for="remember" class="text-xs text-text-secondary font-medium tracking-wide cursor-pointer select-none">Ingat Sesi Saya</label>
-                </div>
-            </div>
-
-            <button type="submit" class="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer pt-3.5 pb-3.5 mt-2">
-                <i class="bi bi-shield-lock-fill text-base"></i> OTENTIKASI & MASUK
-            </button>
-        </form>
-
-        <!-- Footer Link -->
-        <div class="mt-8 pt-6 border-t border-border-default/60 text-center text-xs text-text-secondary">
-            Belum punya kredensial? 
-            <a href="<?php echo e(route('register')); ?>" class="text-blue-600 hover:text-blue-500 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-1 ml-1 transition-colors">
-                Registrasi Baru <i class="bi bi-arrow-right"></i>
-            </a>
-        </div>
+    <!-- RIGHT COLUMN: Hero Photo Panel (50% Width on Desktop) -->
+    <div class="hidden lg:block lg:w-1/2 min-h-screen relative overflow-hidden bg-gray-100 dark:bg-gray-900">
+        <img src="<?php echo e(asset('images/login/bg-collage.png')); ?>" alt="Hariff Defense Background" class="absolute inset-0 w-full h-full object-cover">
     </div>
 
     <!-- Theme Toggle Script -->

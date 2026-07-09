@@ -259,14 +259,6 @@ class ImportController extends Controller
         return back()->with('success', "Dashboard berhasil dikosongkan. {$count} data bug dikelompokkan dan dipindahkan ke Sampah (Trash).");
     }
 
-    // ----------------------------------------------------------------
-    // View soft-deleted bugs in Trash.
-    // ----------------------------------------------------------------
-    public function trash()
-    {
-        $jobs = ImportJob::onlyTrashed()->orderByDesc('deleted_at')->paginate(15);
-        return view('import.trash', compact('jobs'));
-    }
 
     // ----------------------------------------------------------------
     // Restore a single soft-deleted ImportJob and its bugs.
