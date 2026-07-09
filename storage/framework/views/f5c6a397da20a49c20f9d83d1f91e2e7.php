@@ -59,18 +59,14 @@
                         ?>
                         <div class="flex items-center gap-3">
                             <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                                 style="<?php echo e($isTop ? 'background:#1A3D63;color:#fff' : 'background:#EBF3FB;color:#4A7FA7'); ?>">
+                                 style="background:#EBF3FB;color:#4A7FA7">
                                 <?php echo e($i + 1); ?>
 
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between mb-1.5">
                                     <div class="flex items-center gap-2 min-w-0">
-                                        <?php if($isTop): ?>
-                                            <i class="bi bi-exclamation-triangle-fill text-xs flex-shrink-0" style="color:<?php echo e($barColor); ?>"></i>
-                                        <?php endif; ?>
                                         <span class="text-sm font-semibold text-text-primary truncate"><?php echo e($item->name ?? ($item->id ? 'Project #' . $item->id : 'Tanpa Proyek')); ?></span>
-
                                     </div>
                                     <div class="flex items-center gap-2 flex-shrink-0 ml-2">
                                         <span class="text-xs font-mono text-text-muted"><?php echo e($item->rework_count); ?>/<?php echo e($item->total_bugs); ?></span>
@@ -82,9 +78,6 @@
                                 </div>
                             </div>
                             <div class="flex-shrink-0 flex flex-col items-end gap-1">
-                                <?php if($isTop): ?>
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#1A3D63;color:#fff">Tertinggi</span>
-                                <?php endif; ?>
                                 <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full" style="background:<?php echo e($riskBg); ?>;color:<?php echo e($riskText); ?>"><?php echo e($riskLabel); ?></span>
                             </div>
                         </div>
@@ -192,7 +185,7 @@
                             ?>
                             <div class="flex items-center gap-3">
                                 <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                                     style="<?php echo e($isTop ? 'background:#1A3D63;color:#fff' : 'background:#EBF3FB;color:#4A7FA7'); ?>">
+                                     style="background:#EBF3FB;color:#4A7FA7">
                                     <?php echo e($i + 1); ?>
 
                                 </div>
@@ -205,9 +198,6 @@
                                         <div class="h-full rounded-full transition-all duration-700" style="width:<?php echo e($pct); ?>%;background:<?php echo e($barBg); ?>"></div>
                                     </div>
                                 </div>
-                                <?php if($isTop): ?>
-                                    <span class="flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#1A3D63;color:#fff">Tertinggi</span>
-                                <?php endif; ?>
                             </div>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
@@ -258,7 +248,7 @@
                             ?>
                             <div class="flex items-center gap-3">
                                 <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-                                     style="<?php echo e($isTop ? 'background:#1A3D63;color:#fff' : 'background:#EBF3FB;color:#4A7FA7'); ?>">
+                                     style="background:#EBF3FB;color:#4A7FA7">
                                     <?php echo e($i + 1); ?>
 
                                 </div>
@@ -271,9 +261,6 @@
                                         <div class="h-full rounded-full transition-all duration-700" style="width:<?php echo e($pct); ?>%;background:<?php echo e($barBg); ?>"></div>
                                     </div>
                                 </div>
-                                <?php if($isTop): ?>
-                                    <span class="flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:#1A3D63;color:#fff">Tertinggi</span>
-                                <?php endif; ?>
                             </div>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
