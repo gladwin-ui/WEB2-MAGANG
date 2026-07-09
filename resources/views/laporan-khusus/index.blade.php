@@ -14,7 +14,7 @@
             </div>
             <div>
                 <h1 class="text-xl md:text-2xl font-black text-text-primary tracking-tight">Laporan Khusus</h1>
-                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Analisis Masalah &amp; Root Cause Tersering per Produk</p>
+                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Analisis Gejala Kerusakan &amp; Akar Penyebab Dominan per Produk</p>
             </div>
         </div>
         <div>
@@ -159,16 +159,16 @@
     {{-- GRID: MASALAH + ROOT CAUSE --}}
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
 
-        {{-- Masalah Tersering --}}
+        {{-- Gejala Kerusakan Dominan --}}
         <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card overflow-hidden">
             <div class="flex items-start gap-3 p-5 pb-4 border-b border-border-default">
                 <div class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center shadow-sm" style="background:#EBF3FB">
                     <i class="bi bi-bug-fill text-sm" style="color:#1A3D63"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h3 class="text-sm font-bold text-text-primary">Masalah Tersering <span class="font-normal text-text-muted">(Top 5)</span></h3>
+                    <h3 class="text-sm font-bold text-text-primary">Gejala Kerusakan Dominan <span class="font-normal text-text-muted">(Top 5)</span></h3>
                     <p class="text-xs text-text-muted mt-0.5">
-                        Dikelompokkan dari judul &amp; deskripsi laporan
+                        Dikelompokkan secara analitik dari judul &amp; deskripsi laporan
                         @if($totalLaporan > 0)
                             - dari <span class="font-semibold" style="color:#1A3D63">{{ number_format($totalLaporan) }}</span> @if($selectedProductId === 'all') laporan semua produk @else laporan produk ini @endif
                         @endif
@@ -219,21 +219,20 @@
             </div>
         </div>
 
-        {{-- Root Cause Tersering --}}
+        {{-- Akar Penyebab Kerusakan Dominan --}}
         <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card overflow-hidden">
             <div class="flex items-start gap-3 p-5 pb-4 border-b border-border-default">
                 <div class="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center shadow-sm" style="background:#EBF3FB">
                     <i class="bi bi-search text-sm" style="color:#1A3D63"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h3 class="text-sm font-bold text-text-primary">Root Cause Tersering <span class="font-normal text-text-muted">(Top 5)</span></h3>
+                    <h3 class="text-sm font-bold text-text-primary">Akar Penyebab Kerusakan Dominan <span class="font-normal text-text-muted">(Top 5)</span></h3>
                     <p class="text-xs text-text-muted mt-0.5">
-                        Dikelompokkan dari akar masalah laporan
+                        Dikelompokkan secara analitik dari akar masalah (root cause) laporan
                         @if($totalLaporan > 0)
                             - dari <span class="font-semibold" style="color:#1A3D63">{{ number_format($totalLaporan) }}</span> @if($selectedProductId === 'all') laporan semua produk @else laporan produk ini @endif
                         @endif
                     </p>
-
                 </div>
             </div>
             <div class="p-5">

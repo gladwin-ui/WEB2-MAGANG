@@ -12,7 +12,7 @@
             </div>
             <div>
                 <h1 class="text-xl md:text-2xl font-black text-text-primary tracking-tight">Laporan Khusus</h1>
-                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Analisis Masalah &amp; Root Cause Tersering per Produk</p>
+                <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Analisis Gejala Kerusakan &amp; Akar Penyebab Dominan per Produk</p>
             </div>
         </div>
         <div>
@@ -166,9 +166,9 @@
                     <i class="bi bi-bug-fill text-sm" style="color:#1A3D63"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h3 class="text-sm font-bold text-text-primary">Masalah Tersering <span class="font-normal text-text-muted">(Top 5)</span></h3>
+                    <h3 class="text-sm font-bold text-text-primary">Gejala Kerusakan Dominan <span class="font-normal text-text-muted">(Top 5)</span></h3>
                     <p class="text-xs text-text-muted mt-0.5">
-                        Dikelompokkan dari judul &amp; deskripsi laporan
+                        Dikelompokkan secara analitik dari judul &amp; deskripsi laporan
                         <?php if($totalLaporan > 0): ?>
                             - dari <span class="font-semibold" style="color:#1A3D63"><?php echo e(number_format($totalLaporan)); ?></span> <?php if($selectedProductId === 'all'): ?> laporan semua produk <?php else: ?> laporan produk ini <?php endif; ?>
                         <?php endif; ?>
@@ -227,14 +227,13 @@
                     <i class="bi bi-search text-sm" style="color:#1A3D63"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h3 class="text-sm font-bold text-text-primary">Root Cause Tersering <span class="font-normal text-text-muted">(Top 5)</span></h3>
+                    <h3 class="text-sm font-bold text-text-primary">Akar Penyebab Kerusakan Dominan <span class="font-normal text-text-muted">(Top 5)</span></h3>
                     <p class="text-xs text-text-muted mt-0.5">
-                        Dikelompokkan dari akar masalah laporan
+                        Dikelompokkan secara analitik dari akar masalah (root cause) laporan
                         <?php if($totalLaporan > 0): ?>
                             - dari <span class="font-semibold" style="color:#1A3D63"><?php echo e(number_format($totalLaporan)); ?></span> <?php if($selectedProductId === 'all'): ?> laporan semua produk <?php else: ?> laporan produk ini <?php endif; ?>
                         <?php endif; ?>
                     </p>
-
                 </div>
             </div>
             <div class="p-5">
