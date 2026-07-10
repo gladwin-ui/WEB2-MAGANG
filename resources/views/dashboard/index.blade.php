@@ -414,28 +414,26 @@
                         @endphp
                         <tr class="hover:bg-bg-tertiary transition-colors">
                             <!-- Project & SN -->
-                            <td class="px-4 py-4 align-top">
-                                <div class="flex flex-col gap-1.5">
+                            <td class="px-4 py-3.5 align-top">
+                                <div class="flex flex-col gap-1">
                                     <div class="flex items-center gap-1.5">
-                                        <span class="text-xs font-mono font-extrabold text-blue-600 dark:text-blue-400">#BUG-{{ $b->id }}</span>
+                                        <span class="text-xs font-bold text-accent">#BUG-{{ $b->id }}</span>
                                         <span class="text-xs font-semibold text-text-primary truncate max-w-[150px]">{{ $b->project?->name ?? ($b->project_id ? 'Project #' . $b->project_id : 'Tanpa Proyek') }}</span>
                                     </div>
-
-                                    <div class="flex items-center gap-1.5 flex-wrap">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-[10px] font-mono font-semibold bg-highlight text-highlight-text max-w-max">{{ $b->sn_code_snapshot ?? 'N/A' }}</span>
+                                    <div class="flex items-center gap-1.5 flex-wrap text-[11px] text-text-secondary">
+                                        <span class="font-mono bg-bg-tertiary px-1.5 py-0.5 rounded">{{ $b->sn_code_snapshot ?? 'N/A' }}</span>
                                         @if($b->product_version)
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-bg-tertiary text-text-muted border border-border-default">Ver: {{ $b->product_version }}</span>
+                                            <span class="text-text-muted">v{{ $b->product_version }}</span>
                                         @endif
                                     </div>
-
-                                    <div class="text-[11px] text-text-muted flex items-center gap-1 mt-0.5">
-                                        <i class="bi bi-clock"></i> {{ $b->created_at->format('d M Y, H:i') }}
+                                    <div class="text-[10px] text-text-muted mt-0.5">
+                                        {{ $b->created_at->format('d M Y, H:i') }}
                                     </div>
                                 </div>
                             </td>
 
                             <!-- Bug Title & Severity -->
-                            <td class="px-4 py-4 align-top">
+                            <td class="px-4 py-3.5 align-top">
                                 <div class="flex flex-col gap-1.5 max-w-lg">
                                     <span class="text-sm font-bold text-text-primary">{{ $b->title }}</span>
                                     
@@ -794,7 +792,7 @@
         }
 
         var assemblyStageData = @json($assemblyStageMap ?? []);
-        var stagePalette = ['#1A3D63', '#4A7FA7', '#E8A33D', '#3E9B6F', '#D64550', '#8B5CF6'];
+        var stagePalette = ['#1A3D63', '#4A7FA7', '#2563EB', '#E8A33D', '#3E9B6F', '#D64550'];
 
         function makeAssemblyStageOptions(data, c) {
             var keys = Object.keys(data);

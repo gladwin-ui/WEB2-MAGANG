@@ -45,11 +45,17 @@ class DashboardController extends Controller
                 foreach ($unanalyzedBugs as $bug) {
                     $res1 = $analytics->analyzeBugReport($bug);
                     if (!empty($res1)) {
-                        $bug->sentiment_label                  = $res1['sentiment_label'] ?? null;
-                        $bug->sentiment_score                  = $res1['sentiment_score'] ?? null;
-                        $bug->severity_recommended             = $res1['severity_recommended'] ?? null;
-                        $bug->severity_recommendation_reason   = $res1['severity_recommendation_reason'] ?? null;
-                        $bug->save();
+                        try {
+                            $bug->sentiment_label                  = $res1['sentiment_label'] ?? null;
+                            $bug->sentiment_score                  = $res1['sentiment_score'] ?? null;
+                            $bug->severity_recommended             = $res1['severity_recommended'] ?? null;
+                            $bug->severity_recommendation_reason   = $res1['severity_recommendation_reason'] ?? null;
+                            $bug->save();
+                        } catch (\Exception $e) {
+                            // Skip simpan AI kalau bugs adalah VIEW (read-only)
+                            // Dashboard tetap tampil dengan data dari VIEW
+                            \Log::info('Read-only mode: skip AI save for bug #' . $bug->id);
+                        }
                     }
                 }
             }

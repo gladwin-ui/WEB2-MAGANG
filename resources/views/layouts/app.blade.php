@@ -567,7 +567,7 @@
             </div>
             <div>
                 <span class="font-extrabold text-xs text-text-primary block leading-tight tracking-wide">ManufakTrack</span>
-                <span class="block text-[7px] text-text-secondary font-medium tracking-wider leading-none mt-0.5">By Hariff Defense</span>
+                <span class="block text-[7px] text-text-secondary font-medium tracking-wider leading-none mt-0.5 uppercase">PT HARIFF DIPA PERSADA</span>
             </div>
         </div>
         <button id="mobile-menu-toggle" class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-600 dark:bg-gray-800 dark:border-gray-700 transition-all flex items-center justify-center cursor-pointer shadow-sm">
@@ -590,7 +590,7 @@
                     </div>
                     <div class="sidebar-brand-text min-w-0">
                         <span class="font-extrabold text-sm text-white block leading-tight tracking-wide">ManufakTrack</span>
-                        <span class="block text-[9px] text-slate-200 font-medium tracking-wider mt-0.5">By Hariff Defense</span>
+                        <span class="block text-[9px] text-slate-200 font-medium tracking-wider mt-0.5 uppercase">PT HARIFF DIPA PERSADA</span>
                     </div>
                 </div>
                 <button id="sidebar-toggle-in" class="p-1.5 rounded-lg bg-white/10 border border-white/20 text-white hover:text-white hover:bg-white/20 transition-all flex items-center justify-center cursor-pointer shadow-sm shrink-0 w-8 h-8" title="Sembunyikan Sidebar">

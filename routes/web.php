@@ -9,7 +9,18 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\LaporanKhususController;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return view('landing');
+})->name('landing');
+
+Route::get('/dok/{filename}', function ($filename) {
+    $path = base_path('dok/' . $filename);
+    if (!file_exists($path)) {
+        $path = public_path('dok/' . $filename);
+    }
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path);
 });
 
 Route::get('/login', [LoginController::class, 'showLogin'])->name('login');

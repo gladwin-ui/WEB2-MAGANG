@@ -303,10 +303,14 @@ analytics-service/
 *(Bukan bug yang menghalangi fungsi, tapi perlu diketahui untuk pengembangan lanjutan)*
 
 1. **`severity_recommended` adalah `varchar(50)`, bukan `enum`.** Sengaja dilonggarkan karena Python Analytics Service kadang mengembalikan nilai yang tidak persis cocok dengan 3 pilihan enum, dan `enum` ketat MySQL menolak insert untuk nilai di luar daftar. Trade-off: kode yang MEMBACA kolom ini (badge, filter) harus defensif terhadap nilai yang mungkin tidak persis "Critical"/"Major"/"Minor".
+2. **Dukungan Mode Read-Only (MySQL VIEW pada tabel `bugs`).** Aplikasi mendukung penggunaan MySQL VIEW untuk tabel `bugs` (mode read-only). Jika tabel `bugs` adalah VIEW, proses penyimpanan hasil diagnosis AI otomatis saat memuat dasbor (`DashboardController`) akan di-skip dengan `try-catch` sehingga aplikasi tidak crash (`Column 'sentiment_label' is not updatable`), dengan konsekuensi skor/label AI tidak disimpan secara persisten ke database.
 
 ---
 
 ## 📝 Changelog
+
+### v0.20 — Dukungan Mode Read-Only (VIEW MySQL) pada Dashboard AI Save
+- **[DASHBOARD]** Menambahkan `try-catch` di sekitar `$bug->save()` saat auto-analyze AI di `DashboardController.php`, memungkinkan aplikasi berjalan tanpa crash pada mode read-only (tabel `bugs` berupa MySQL VIEW).
 
 ### v0.19 — Algoritma NLP Clustering Laporan Khusus Overlap Kata Berulang & Penamaan [Kata Benda + Kondisi Kerusakan]
 - **[LAPORAN KHUSUS / CLUSTERING]** Mengimplementasikan algoritma **Pencocokan Overlap $\ge 2$ Kata Berulang (*Connected Components*)** di Python Analytics Service (`report_clustering.py`) & fallback PHP (`LaporanKhususController.php`), menyatukan laporan berurutan terbalik/sinonim ke dalam kelompok yang sama.

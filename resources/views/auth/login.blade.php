@@ -132,7 +132,7 @@
                 <img src="{{ asset('LOGO LOGO LAGI.png') }}" alt="Logo Hariff Defense" class="h-9 w-auto object-contain brand-logo-dark hidden">
                 <div>
                     <span class="text-lg font-black tracking-tight text-text-primary">ManufakTrack</span>
-                    <span class="block text-[10px] font-mono tracking-widest text-accent font-bold uppercase">Hariff Defense</span>
+                    <span class="block text-[10px] font-mono tracking-widest text-accent font-bold uppercase">PT HARIFF DIPA PERSADA</span>
                 </div>
             </div>
 
@@ -204,7 +204,7 @@
 
         <!-- Left Column Footer -->
         <div class="text-left text-[11px] text-text-tertiary">
-            &copy; {{ date('Y') }} PT Hariff Daya Tunggal Engineering. All rights reserved.
+            &copy; {{ date('Y') }} PT Hariff Dipa Persada. All rights reserved.
         </div>
     </div>
 
