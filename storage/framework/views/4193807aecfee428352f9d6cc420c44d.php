@@ -1,10 +1,10 @@
-@extends('layouts.app')
 
-@section('title', 'Laporan Umum — Dashboard Analitik')
 
-@section('content')
-@if(!$hasImportedData)
-{{-- Empty State --}}
+<?php $__env->startSection('title', 'Laporan Umum — Dashboard Analitik'); ?>
+
+<?php $__env->startSection('content'); ?>
+<?php if(!$hasImportedData): ?>
+
 <div class="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
     <div class="w-20 h-20 rounded-3xl bg-highlight flex items-center justify-center mb-6">
         <i class="bi bi-database-slash text-4xl text-blue-400"></i>
@@ -17,12 +17,12 @@
     <p class="text-xs text-text-muted mb-8">
         Pastikan <code class="font-mono bg-bg-tertiary px-1 rounded">php artisan queue:work</code> sudah berjalan.
     </p>
-    <a href="{{ route('import.upload') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold text-white shadow-sm transition-colors" style="background-color: #0046BF;">
+    <a href="<?php echo e(route('import.upload')); ?>" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold text-white shadow-sm transition-colors" style="background-color: #0046BF;">
         <i class="bi bi-cloud-upload"></i> Import Data .sql Sekarang
     </a>
 </div>
-@else
-@php
+<?php else: ?>
+<?php
     // Mapped top projects (existing logic preserved)
     $mappedTopProjects = $topProjects->map(function($tp) {
         return (object)[
@@ -39,7 +39,7 @@
         $dateStr = now()->subDays($i)->format('Y-m-d');
         $trendData[$dateStr] = $trendMap[$dateStr] ?? 0;
     }
-@endphp
+?>
 
 <div class="space-y-6">
 
@@ -54,7 +54,7 @@
                 <p class="text-xs md:text-sm text-text-secondary mt-0.5 font-medium">Quality Control & AI Diagnostics — Hariff Defense</p>
             </div>
         </div>
-        <a href="{{ route('dashboard.export', request()->query()) }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm hover:shadow transition-all shrink-0">
+        <a href="<?php echo e(route('dashboard.export', request()->query())); ?>" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl shadow-sm hover:shadow transition-all shrink-0">
             <i class="bi bi-file-earmark-excel-fill text-base"></i> Export Excel
         </a>
     </div>
@@ -70,7 +70,7 @@
                 </div>
             </div>
             <div>
-                <div class="text-2xl font-black text-text-primary font-mono tracking-tight">{{ number_format($totalBugs) }}</div>
+                <div class="text-2xl font-black text-text-primary font-mono tracking-tight"><?php echo e(number_format($totalBugs)); ?></div>
                 <div class="text-[11px] text-text-muted mt-1">Seluruh laporan tercatat</div>
             </div>
         </div>
@@ -84,13 +84,13 @@
                 </div>
             </div>
             <div>
-                <div class="text-2xl font-black text-amber-500 font-mono tracking-tight">{{ number_format($openBugs) }}</div>
+                <div class="text-2xl font-black text-amber-500 font-mono tracking-tight"><?php echo e(number_format($openBugs)); ?></div>
                 <div class="text-[11px] text-text-muted mt-1">Status Open / Aktif</div>
-                @php $openPct = $totalBugs > 0 ? round($openBugs / $totalBugs * 100) : 0; @endphp
+                <?php $openPct = $totalBugs > 0 ? round($openBugs / $totalBugs * 100) : 0; ?>
                 <div class="mt-3 h-1 rounded-full bg-bg-tertiary overflow-hidden">
-                    <div class="h-full rounded-full bg-amber-500 transition-all" style="width: {{ $openPct }}%"></div>
+                    <div class="h-full rounded-full bg-amber-500 transition-all" style="width: <?php echo e($openPct); ?>%"></div>
                 </div>
-                <div class="text-[10px] text-text-muted mt-1">{{ $openPct }}% dari total</div>
+                <div class="text-[10px] text-text-muted mt-1"><?php echo e($openPct); ?>% dari total</div>
             </div>
         </div>
 
@@ -103,13 +103,13 @@
                 </div>
             </div>
             <div>
-                <div class="text-2xl font-black text-emerald-500 font-mono tracking-tight">{{ number_format($closedBugs) }}</div>
+                <div class="text-2xl font-black text-emerald-500 font-mono tracking-tight"><?php echo e(number_format($closedBugs)); ?></div>
                 <div class="text-[11px] text-text-muted mt-1">Status Closed / Resolved</div>
-                @php $closedPct = $totalBugs > 0 ? round($closedBugs / $totalBugs * 100) : 0; @endphp
+                <?php $closedPct = $totalBugs > 0 ? round($closedBugs / $totalBugs * 100) : 0; ?>
                 <div class="mt-3 h-1 rounded-full bg-bg-tertiary overflow-hidden">
-                    <div class="h-full rounded-full bg-emerald-500 transition-all" style="width: {{ $closedPct }}%"></div>
+                    <div class="h-full rounded-full bg-emerald-500 transition-all" style="width: <?php echo e($closedPct); ?>%"></div>
                 </div>
-                <div class="text-[10px] text-text-muted mt-1">{{ $closedPct }}% dari total</div>
+                <div class="text-[10px] text-text-muted mt-1"><?php echo e($closedPct); ?>% dari total</div>
             </div>
         </div>
 
@@ -125,9 +125,9 @@
                 </div>
             </div>
             <div>
-                <div class="text-2xl font-black text-rose-500 font-mono tracking-tight">{{ $reworkRate }}<span class="text-lg">%</span></div>
+                <div class="text-2xl font-black text-rose-500 font-mono tracking-tight"><?php echo e($reworkRate); ?><span class="text-lg">%</span></div>
                 <div class="text-[11px] text-text-muted mt-1">
-                    <strong class="text-text-secondary">{{ number_format($reworkCount ?? 0) }} dari {{ number_format($totalBugs) }}</strong> kasus butuh perakitan ulang
+                    <strong class="text-text-secondary"><?php echo e(number_format($reworkCount ?? 0)); ?> dari <?php echo e(number_format($totalBugs)); ?></strong> kasus butuh perakitan ulang
                 </div>
             </div>
         </div>
@@ -136,9 +136,9 @@
     <!-- 4-Component Dashboard Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {{-- ============================================================ --}}
-        {{-- [1] Jumlah Bug Terdaftar (Pie Chart: Open vs Close)          --}}
-        {{-- ============================================================ --}}
+        
+        
+        
         <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card p-6">
             <h3 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
                 <i class="bi bi-pie-chart text-accent"></i> Jumlah Bug Terdaftar
@@ -148,26 +148,26 @@
                 <div id="chartJumlahBug" class="w-full h-full"></div>
             </div>
 
-            {{-- Keterangan angka --}}
+            
             <div class="grid grid-cols-3 gap-4 mt-6 pt-5 border-t border-border-strong">
                 <div class="text-center">
-                    <div class="text-2xl font-extrabold text-text-primary">{{ number_format($totalBugs) }}</div>
+                    <div class="text-2xl font-extrabold text-text-primary"><?php echo e(number_format($totalBugs)); ?></div>
                     <div class="text-xs text-text-secondary mt-1 font-medium">Total Bug</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-2xl font-extrabold text-amber-600">{{ number_format($openBugs) }}</div>
+                    <div class="text-2xl font-extrabold text-amber-600"><?php echo e(number_format($openBugs)); ?></div>
                     <div class="text-xs text-text-secondary mt-1 font-medium">Bug Open</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-2xl font-extrabold text-green-600">{{ number_format($closedBugs) }}</div>
+                    <div class="text-2xl font-extrabold text-green-600"><?php echo e(number_format($closedBugs)); ?></div>
                     <div class="text-xs text-text-secondary mt-1 font-medium">Bug Closed</div>
                 </div>
             </div>
         </div>
 
-        {{-- ============================================================ --}}
-        {{-- [3] Top 5 Produk Bermasalah (EXISTING — layout only)         --}}
-        {{-- ============================================================ --}}
+        
+        
+        
         <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card p-6">
             <h3 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
                 <i class="bi bi-trophy text-accent"></i> Proyek Paling Banyak Bug (Top 5)
@@ -182,27 +182,27 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border-default">
-                        @forelse($mappedTopProjects as $idx => $tp)
+                        <?php $__empty_1 = true; $__currentLoopData = $mappedTopProjects; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $idx => $tp): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                             <tr class="hover:bg-bg-tertiary transition-colors">
-                                <td class="px-3 py-3 text-xs text-text-muted font-mono">{{ $idx + 1 }}</td>
-                                <td class="px-3 py-3 font-medium text-text-primary">{{ $tp->project_name }}</td>
-                                <td class="px-3 py-3 text-right font-bold text-accent font-mono">{{ $tp->bug_count }}</td>
+                                <td class="px-3 py-3 text-xs text-text-muted font-mono"><?php echo e($idx + 1); ?></td>
+                                <td class="px-3 py-3 font-medium text-text-primary"><?php echo e($tp->project_name); ?></td>
+                                <td class="px-3 py-3 text-right font-bold text-accent font-mono"><?php echo e($tp->bug_count); ?></td>
                             </tr>
-                        @empty
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr>
                                 <td colspan="3" class="py-12 text-center text-text-muted text-sm">
                                     <i class="bi bi-inbox text-xl block mb-1"></i> Belum ada data proyek
                                 </td>
                             </tr>
-                        @endforelse
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        {{-- ============================================================ --}}
-        {{-- [2] Distribusi Severity (2 Pie Chart: Closed & Open)         --}}
-        {{-- ============================================================ --}}
+        
+        
+        
         <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card p-6">
             <h3 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
                 <i class="bi bi-exclamation-triangle text-accent"></i> Distribusi Bug by Severity
@@ -223,9 +223,9 @@
             </div>
         </div>
 
-        {{-- ============================================================ --}}
-        {{-- [4] Tren Volume Laporan 7 Hari (EXISTING — logic preserved)  --}}
-        {{-- ============================================================ --}}
+        
+        
+        
         <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card p-6">
             <h3 class="text-base font-bold text-text-primary mb-4 flex items-center gap-2">
                 <i class="bi bi-graph-up-arrow text-accent"></i> Tren Volume Laporan (7 Hari)
@@ -235,72 +235,72 @@
             </div>
         </div>
 
-        {{-- ============================================================ --}}
-        {{-- [5] Proporsi Defect by Assembly Stage (Dynamic DB Breakdown) --}}
-        {{-- ============================================================ --}}
+        
+        
+        
         <div class="col-span-1 lg:col-span-2 bg-bg-secondary border border-border-default rounded-xl shadow-card p-6">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-border-strong">
                 <h3 class="text-base font-bold text-text-primary flex items-center gap-2">
                     <i class="bi bi-diagram-3 text-accent"></i> Proporsi Defect (Assembly Stage)
                 </h3>
                 <div class="flex items-center gap-2 text-xs font-semibold text-text-secondary bg-bg-tertiary px-3 py-1.5 rounded-lg shrink-0">
-                    <i class="bi bi-database-check text-accent"></i> {{ count($assemblyStageMap ?? []) }} Kategori
+                    <i class="bi bi-database-check text-accent"></i> <?php echo e(count($assemblyStageMap ?? [])); ?> Kategori
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                {{-- Left: Chart --}}
+                
                 <div class="lg:col-span-5 relative flex items-center justify-center min-h-[260px]">
                     <div id="chartAssemblyStage" class="w-full"></div>
                 </div>
 
-                {{-- Right: Dynamic Breakdown List --}}
+                
                 <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    @php
+                    <?php
                         $totalStageCount = array_sum($assemblyStageMap ?? []) ?: 1;
                         $stageColors = ['#1A3D63', '#4A7FA7', '#E8A33D', '#3E9B6F', '#D64550', '#8B5CF6'];
                         $idxColor = 0;
-                    @endphp
-                    @forelse(($assemblyStageMap ?? []) as $stageName => $stageCount)
-                        @php
+                    ?>
+                    <?php $__empty_1 = true; $__currentLoopData = ($assemblyStageMap ?? []); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $stageName => $stageCount): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <?php
                             $pct = round(($stageCount / $totalStageCount) * 100, 1);
                             $color = $stageColors[$idxColor % count($stageColors)];
                             $idxColor++;
-                        @endphp
+                        ?>
                         <div class="p-4 rounded-xl border border-border-default bg-bg-primary flex flex-col justify-between">
                             <div class="flex items-start justify-between gap-2 mb-3">
                                 <div class="flex items-center gap-2 font-bold text-text-primary text-sm">
-                                    <span class="w-3 h-3 rounded-full shrink-0" style="background-color: {{ $color }};"></span>
-                                    <span class="truncate">{{ $stageName }}</span>
+                                    <span class="w-3 h-3 rounded-full shrink-0" style="background-color: <?php echo e($color); ?>;"></span>
+                                    <span class="truncate"><?php echo e($stageName); ?></span>
                                 </div>
                                 <span class="text-xs font-mono font-extrabold px-2 py-0.5 rounded bg-bg-tertiary text-text-primary">
-                                    {{ $pct }}%
+                                    <?php echo e($pct); ?>%
                                 </span>
                             </div>
                             <div class="flex items-end justify-between mt-2">
                                 <div>
-                                    <span class="text-2xl font-extrabold text-text-primary font-mono">{{ number_format($stageCount) }}</span>
+                                    <span class="text-2xl font-extrabold text-text-primary font-mono"><?php echo e(number_format($stageCount)); ?></span>
                                     <span class="text-xs text-text-muted ml-1 font-medium">Laporan</span>
                                 </div>
                                 <div class="w-24 bg-border-default h-1.5 rounded-full overflow-hidden">
-                                    <div class="h-full rounded-full transition-all duration-500" style="width: {{ $pct }}%; background-color: {{ $color }};"></div>
+                                    <div class="h-full rounded-full transition-all duration-500" style="width: <?php echo e($pct); ?>%; background-color: <?php echo e($color); ?>;"></div>
                                 </div>
                             </div>
                         </div>
-                    @empty
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <div class="col-span-2 py-8 text-center text-text-muted text-sm">
                             Belum ada data kategori perakitan
                         </div>
-                    @endforelse
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
 
     </div>
 
-    {{-- ============================================================ --}}
-    {{-- Filter & Audit Table Section                                 --}}
-    {{-- ============================================================ --}}
+    
+    
+    
     <div class="bg-bg-secondary border border-border-default rounded-xl shadow-card p-6">
         <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6 pb-4 border-b border-border-strong">
             <div>
@@ -311,84 +311,85 @@
             </div>
 
             <!-- Filter Panel -->
-            <form id="dashboard-filter-form" action="{{ route('dashboard') }}" method="GET" class="w-full">
-                {{-- Baris 1: Select filters --}}
+            <form id="dashboard-filter-form" action="<?php echo e(route('dashboard')); ?>" method="GET" class="w-full">
+                
                 <div class="flex flex-wrap gap-2 mb-2">
-                    {{-- File SQL / Sumber Data --}}
+                    
                     <select name="import_job_id"
                         class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border-2 border-accent text-text-primary font-semibold focus:ring-2 focus:ring-accent/50 focus:outline-none transition-all">
-                        <option value="all" {{ $selectedJobId === 'all' ? 'selected' : '' }}>Semua Sumber Data (SQL & DB Lokal)</option>
-                        <option value="local" {{ $selectedJobId === 'local' ? 'selected' : '' }}>Data Database Lokal Langsung</option>
-                        @foreach($sqlFiles as $file)
-                            <option value="{{ $file->id }}" {{ $selectedJobId == $file->id ? 'selected' : '' }}>
-                                {{ $file->filename }}
+                        <option value="all" <?php echo e($selectedJobId === 'all' ? 'selected' : ''); ?>>Semua Sumber Data (SQL & DB Lokal)</option>
+                        <option value="local" <?php echo e($selectedJobId === 'local' ? 'selected' : ''); ?>>Data Database Lokal Langsung</option>
+                        <?php $__currentLoopData = $sqlFiles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $file): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($file->id); ?>" <?php echo e($selectedJobId == $file->id ? 'selected' : ''); ?>>
+                                <?php echo e($file->filename); ?>
+
                             </option>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
 
-                    {{-- Semua Proyek --}}
+                    
                     <select name="project_id" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary focus:ring-1 focus:ring-accent focus:outline-none transition-all">
                         <option value="">Semua Proyek</option>
-                        @foreach($projects as $p)
-                            <option value="{{ $p->id }}" {{ request('project_id') == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
-                        @endforeach
+                        <?php $__currentLoopData = $projects; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($p->id); ?>" <?php echo e(request('project_id') == $p->id ? 'selected' : ''); ?>><?php echo e($p->name); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
 
-                    {{-- Semua Status --}}
+                    
                     <select name="status" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary focus:ring-1 focus:ring-accent focus:outline-none transition-all">
                         <option value="">Semua Status</option>
-                        <option value="OPEN"   {{ request('status') === 'OPEN'   ? 'selected' : '' }}>Open</option>
-                        <option value="CLOSED" {{ request('status') === 'CLOSED' ? 'selected' : '' }}>Closed</option>
+                        <option value="OPEN"   <?php echo e(request('status') === 'OPEN'   ? 'selected' : ''); ?>>Open</option>
+                        <option value="CLOSED" <?php echo e(request('status') === 'CLOSED' ? 'selected' : ''); ?>>Closed</option>
                     </select>
 
-                    {{-- Semua Severity --}}
+                    
                     <select name="severity" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary focus:ring-1 focus:ring-accent focus:outline-none transition-all">
                         <option value="">Semua Severity</option>
-                        <option value="Critical" {{ request('severity') === 'Critical' ? 'selected' : '' }}>Critical</option>
-                        <option value="Major"    {{ request('severity') === 'Major'    ? 'selected' : '' }}>Major</option>
-                        <option value="Minor"    {{ request('severity') === 'Minor'    ? 'selected' : '' }}>Minor</option>
+                        <option value="Critical" <?php echo e(request('severity') === 'Critical' ? 'selected' : ''); ?>>Critical</option>
+                        <option value="Major"    <?php echo e(request('severity') === 'Major'    ? 'selected' : ''); ?>>Major</option>
+                        <option value="Minor"    <?php echo e(request('severity') === 'Minor'    ? 'selected' : ''); ?>>Minor</option>
                     </select>
 
-                    {{-- Urutan --}}
+                    
                     <select name="urgency_sort" class="rounded-lg px-3 py-2 text-sm bg-bg-secondary border border-border-default text-text-primary focus:ring-1 focus:ring-accent focus:outline-none transition-all">
                         <option value="">Terbaru</option>
-                        <option value="desc" {{ request('urgency_sort') === 'desc' ? 'selected' : '' }}>Urgency ↓</option>
-                        <option value="asc"  {{ request('urgency_sort') === 'asc'  ? 'selected' : '' }}>Urgency ↑</option>
+                        <option value="desc" <?php echo e(request('urgency_sort') === 'desc' ? 'selected' : ''); ?>>Urgency ↓</option>
+                        <option value="asc"  <?php echo e(request('urgency_sort') === 'asc'  ? 'selected' : ''); ?>>Urgency ↑</option>
                     </select>
                 </div>
 
-                {{-- Baris 2: Date filter + tombol aksi --}}
+                
                 <div class="flex flex-wrap items-center gap-2">
-                    {{-- Date range --}}
+                    
                     <div class="flex items-center gap-2 rounded-lg px-3 py-2 bg-bg-secondary border border-border-default text-sm">
                         <i class="bi bi-calendar3 text-text-muted text-xs"></i>
                         <span class="text-text-muted text-xs">Dari</span>
-                        <input type="date" name="date_from" value="{{ request('date_from') }}"
+                        <input type="date" name="date_from" value="<?php echo e(request('date_from')); ?>"
                             class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-28">
                         <span class="text-text-muted text-xs">—</span>
                         <span class="text-text-muted text-xs">Sampai</span>
-                        <input type="date" name="date_to" value="{{ request('date_to') }}"
+                        <input type="date" name="date_to" value="<?php echo e(request('date_to')); ?>"
                             class="bg-transparent border-none text-sm text-text-primary focus:outline-none focus:ring-0 p-0 w-28">
                     </div>
 
-                    {{-- Tombol Filter --}}
+                    
                     <button type="submit"
                         class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white bg-accent hover:bg-accent-hover transition-colors shadow-sm">
                         <i class="bi bi-funnel-fill text-[11px]"></i> Filter
                     </button>
 
-                    {{-- Tombol Reset --}}
-                    <a href="{{ route('dashboard') }}"
+                    
+                    <a href="<?php echo e(route('dashboard')); ?>"
                         class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-text-muted border border-border-default hover:bg-bg-tertiary transition-colors">
                         <i class="bi bi-x-circle text-[11px]"></i> Reset
                     </a>
 
-                    {{-- Indikator filter aktif --}}
-                    @if(request()->hasAny(['project_id', 'status', 'severity', 'urgency_sort', 'date_from', 'date_to']) && $selectedJobId !== 'all')
+                    
+                    <?php if(request()->hasAny(['project_id', 'status', 'severity', 'urgency_sort', 'date_from', 'date_to']) && $selectedJobId !== 'all'): ?>
                     <span class="text-[11px] text-accent font-medium ml-1">
                         <i class="bi bi-funnel-fill"></i> Filter aktif
                     </span>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </form>
 
@@ -406,29 +407,30 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-border-default">
-                    @forelse($auditBugs as $b)
-                        @php
+                    <?php $__empty_1 = true; $__currentLoopData = $auditBugs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $b): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <?php
                             $sevWeight = $b->severity === 'Critical' ? 0.8 : ($b->severity === 'Major' ? 0.5 : 0.2);
                             $sentScore = $b->sentiment_score !== null ? $b->sentiment_score : 0.5;
                             $urgencyScore = round(($sevWeight + (1.0 - $sentScore)) / 2.0, 2);
                             $urgencyScore = min(1.0, max(0.0, $urgencyScore));
-                        @endphp
+                        ?>
                         <tr class="hover:bg-bg-tertiary transition-colors">
                             <!-- Project & SN -->
                             <td class="px-4 py-3.5 align-top">
                                 <div class="flex flex-col gap-1">
                                     <div class="flex items-center gap-1.5">
-                                        <span class="text-xs font-bold text-accent">#BUG-{{ $b->id }}</span>
-                                        <span class="text-xs font-semibold text-text-primary truncate max-w-[150px]">{{ $b->project?->name ?? ($b->project_id ? 'Project #' . $b->project_id : 'Tanpa Proyek') }}</span>
+                                        <span class="text-xs font-bold text-accent">#BUG-<?php echo e($b->id); ?></span>
+                                        <span class="text-xs font-semibold text-text-primary truncate max-w-[150px]"><?php echo e($b->project?->name ?? ($b->project_id ? 'Project #' . $b->project_id : 'Tanpa Proyek')); ?></span>
                                     </div>
                                     <div class="flex items-center gap-1.5 flex-wrap text-[11px] text-text-secondary">
-                                        <span class="font-mono bg-bg-tertiary px-1.5 py-0.5 rounded">{{ $b->sn_code_snapshot ?? 'N/A' }}</span>
-                                        @if($b->product_version)
-                                            <span class="text-text-muted">v{{ $b->product_version }}</span>
-                                        @endif
+                                        <span class="font-mono bg-bg-tertiary px-1.5 py-0.5 rounded"><?php echo e($b->sn_code_snapshot ?? 'N/A'); ?></span>
+                                        <?php if($b->product_version): ?>
+                                            <span class="text-text-muted">v<?php echo e($b->product_version); ?></span>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="text-[10px] text-text-muted mt-0.5">
-                                        {{ $b->created_at->format('d M Y, H:i') }}
+                                        <?php echo e($b->created_at->format('d M Y, H:i')); ?>
+
                                     </div>
                                 </div>
                             </td>
@@ -436,36 +438,37 @@
                             <!-- Bug Title & Severity -->
                             <td class="px-4 py-3.5 align-top">
                                 <div class="flex flex-col gap-1.5 max-w-lg">
-                                    <span class="text-sm font-bold text-text-primary">{{ $b->title }}</span>
+                                    <span class="text-sm font-bold text-text-primary"><?php echo e($b->title); ?></span>
                                     
                                     <div class="flex flex-wrap items-center gap-1.5">
-                                        @if($b->reporter_type === 'produk')
+                                        <?php if($b->reporter_type === 'produk'): ?>
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-highlight text-highlight-text">Produk</span>
-                                        @else
+                                        <?php else: ?>
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-bg-tertiary text-text-muted">Sub-PCB</span>
-                                        @endif
+                                        <?php endif; ?>
 
-                                        @if($b->severity === 'Critical')
+                                        <?php if($b->severity === 'Critical'): ?>
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-red-50 text-red-700 border border-red-200">Critical</span>
-                                        @elseif($b->severity === 'Major')
+                                        <?php elseif($b->severity === 'Major'): ?>
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-yellow-50 text-yellow-700 border border-yellow-200">Major</span>
-                                        @else
+                                        <?php else: ?>
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-green-50 text-green-700 border border-green-200">Minor</span>
-                                        @endif
+                                        <?php endif; ?>
 
-                                        @if($b->environment)
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-bg-tertiary text-text-secondary"><i class="bi bi-geo-alt mr-1"></i>{{ $b->environment }}</span>
-                                        @endif
+                                        <?php if($b->environment): ?>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-bg-tertiary text-text-secondary"><i class="bi bi-geo-alt mr-1"></i><?php echo e($b->environment); ?></span>
+                                        <?php endif; ?>
                                     </div>
 
-                                    @if($b->description)
+                                    <?php if($b->description): ?>
                                         <p class="text-xs text-text-secondary line-clamp-2 mt-0.5 leading-relaxed font-normal bg-bg-secondary/60 p-2 rounded-lg border border-border-default/50">
-                                            {{ $b->description }}
+                                            <?php echo e($b->description); ?>
+
                                         </p>
-                                    @endif
+                                    <?php endif; ?>
 
                                     <div class="text-[11px] text-text-muted flex items-center gap-1.5 mt-0.5">
-                                        <span class="inline-flex items-center gap-1"><i class="bi bi-person-circle"></i> Pelapor: <strong class="text-text-secondary font-semibold">{{ $b->reported_by ?: 'Sistem' }}</strong></span>
+                                        <span class="inline-flex items-center gap-1"><i class="bi bi-person-circle"></i> Pelapor: <strong class="text-text-secondary font-semibold"><?php echo e($b->reported_by ?: 'Sistem'); ?></strong></span>
                                     </div>
                                 </div>
                             </td>
@@ -475,14 +478,14 @@
                                 <div class="space-y-2 max-w-xs">
                                     <div class="flex items-center gap-2">
                                         <span class="text-xs text-text-muted font-medium">Urgency:</span>
-                                        @php
+                                        <?php
                                             $urgColor = '#2563EB';
                                             if ($urgencyScore >= 0.75) $urgColor = '#DC2626';
                                             elseif ($urgencyScore >= 0.45) $urgColor = '#CA8A04';
-                                        @endphp
-                                        <span class="text-xs font-bold font-mono" style="color: {{ $urgColor }};">{{ number_format($urgencyScore, 2) }}</span>
+                                        ?>
+                                        <span class="text-xs font-bold font-mono" style="color: <?php echo e($urgColor); ?>;"><?php echo e(number_format($urgencyScore, 2)); ?></span>
                                         <div class="h-1.5 w-20 rounded-full overflow-hidden bg-bg-tertiary">
-                                            <div class="h-full rounded-full" style="width: {{ $urgencyScore * 100 }}%; background-color: {{ $urgColor }};"></div>
+                                            <div class="h-full rounded-full" style="width: <?php echo e($urgencyScore * 100); ?>%; background-color: <?php echo e($urgColor); ?>;"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -492,33 +495,33 @@
                             <td class="px-4 py-4 text-right align-top">
                                 <div class="flex flex-col items-end gap-2">
                                     <div class="flex items-center gap-1.5 flex-wrap justify-end">
-                                        @if($b->is_rework)
+                                        <?php if($b->is_rework): ?>
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-pill text-xs font-semibold bg-red-50 text-red-700 border border-red-200"><i class="bi bi-arrow-repeat mr-1"></i>Rework</span>
-                                        @endif
+                                        <?php endif; ?>
 
-                                        @if($b->status === 'CLOSED')
+                                        <?php if($b->status === 'CLOSED'): ?>
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-pill text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
                                                 <i class="bi bi-check-circle-fill mr-1"></i> Closed
                                             </span>
-                                        @else
+                                        <?php else: ?>
                                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-pill text-xs font-semibold bg-yellow-50 text-yellow-700 border border-yellow-200">
                                                 <span class="h-1.5 w-1.5 rounded-full bg-yellow-500 inline-block animate-pulse"></span> Open
                                             </span>
-                                        @endif
+                                        <?php endif; ?>
                                     </div>
 
-                                    @if($b->status === 'CLOSED' && ($b->fixed_by || $b->repair_action))
+                                    <?php if($b->status === 'CLOSED' && ($b->fixed_by || $b->repair_action)): ?>
                                         <div class="text-[11px] text-text-secondary text-right max-w-[200px] bg-bg-tertiary/70 px-2.5 py-1.5 rounded-lg border border-border-default/60">
-                                            @if($b->fixed_by)
-                                                <div class="font-semibold text-text-primary flex items-center justify-end gap-1"><i class="bi bi-person-check-fill text-green-600"></i> {{ $b->fixed_by }}</div>
-                                            @endif
-                                            @if($b->repair_action)
-                                                <div class="text-[10px] text-text-muted truncate mt-0.5" title="{{ $b->repair_action }}"><i class="bi bi-wrench mr-0.5"></i> {{ $b->repair_action }}</div>
-                                            @endif
+                                            <?php if($b->fixed_by): ?>
+                                                <div class="font-semibold text-text-primary flex items-center justify-end gap-1"><i class="bi bi-person-check-fill text-green-600"></i> <?php echo e($b->fixed_by); ?></div>
+                                            <?php endif; ?>
+                                            <?php if($b->repair_action): ?>
+                                                <div class="text-[10px] text-text-muted truncate mt-0.5" title="<?php echo e($b->repair_action); ?>"><i class="bi bi-wrench mr-0.5"></i> <?php echo e($b->repair_action); ?></div>
+                                            <?php endif; ?>
                                         </div>
-                                    @endif
+                                    <?php endif; ?>
 
-                                    <button onclick="reprocessAI({{ $b->id }}, this)" class="text-[10px] text-accent hover:text-highlight-text font-semibold py-1 px-2.5 rounded-lg border border-border-default hover:bg-bg-tertiary transition-colors flex items-center gap-1 shadow-sm">
+                                    <button onclick="reprocessAI(<?php echo e($b->id); ?>, this)" class="text-[10px] text-accent hover:text-highlight-text font-semibold py-1 px-2.5 rounded-lg border border-border-default hover:bg-bg-tertiary transition-colors flex items-center gap-1 shadow-sm">
                                         <i class="bi bi-arrow-clockwise"></i> Reprocess AI
                                     </button>
                                 </div>
@@ -531,7 +534,7 @@
                                 <details class="group py-2">
                                     <summary class="flex items-center gap-2 text-xs font-medium cursor-pointer select-none focus:outline-none text-accent">
                                         <i class="bi bi-journal-text"></i> Log Aktivitas
-                                        <span class="text-text-muted font-normal">— {{ $b->title }}</span>
+                                        <span class="text-text-muted font-normal">— <?php echo e($b->title); ?></span>
                                     </summary>
                                     <div class="pl-6 pr-2 py-3">
                                         <div class="relative">
@@ -543,60 +546,63 @@
                                                     </div>
                                                     <div class="text-xs font-semibold text-accent">Laporan Masuk</div>
                                                     <div class="text-xs text-text-secondary mt-0.5">
-                                                        Oleh <span class="font-semibold text-text-primary">{{ $b->reported_by ?: 'Tidak diketahui' }}</span>
-                                                        pada <span class="font-semibold text-text-primary">{{ $b->created_at->format('d M Y H:i') }}</span>
+                                                        Oleh <span class="font-semibold text-text-primary"><?php echo e($b->reported_by ?: 'Tidak diketahui'); ?></span>
+                                                        pada <span class="font-semibold text-text-primary"><?php echo e($b->created_at->format('d M Y H:i')); ?></span>
                                                     </div>
                                                 </div>
 
-                                                @if($b->status === 'CLOSED' && $b->closed_at)
+                                                <?php if($b->status === 'CLOSED' && $b->closed_at): ?>
                                                     <div class="relative pl-7">
                                                         <div class="absolute left-0 top-0.5 h-4 w-4 rounded-full bg-green-50 border border-green-400 flex items-center justify-center">
                                                             <i class="bi bi-check-lg text-[8px] text-green-600"></i>
                                                         </div>
                                                         <div class="text-xs font-semibold text-green-600">Pengerjaan Selesai</div>
                                                         <div class="text-xs text-text-secondary mt-0.5">
-                                                            Oleh <span class="font-semibold text-text-primary">{{ $b->fixed_by ?: 'Tidak diketahui' }}</span>
-                                                            pada <span class="font-semibold text-text-primary">{{ \Carbon\Carbon::parse($b->closed_at)->format('d M Y H:i') }}</span>
+                                                            Oleh <span class="font-semibold text-text-primary"><?php echo e($b->fixed_by ?: 'Tidak diketahui'); ?></span>
+                                                            pada <span class="font-semibold text-text-primary"><?php echo e(\Carbon\Carbon::parse($b->closed_at)->format('d M Y H:i')); ?></span>
                                                         </div>
-                                                        @if($b->root_cause || $b->repair_action)
+                                                        <?php if($b->root_cause || $b->repair_action): ?>
                                                             <div class="mt-1.5 text-xs text-text-secondary">
-                                                                <span class="text-yellow-600 font-semibold">Root Cause:</span> {{ $b->root_cause ?: '-' }}
+                                                                <span class="text-yellow-600 font-semibold">Root Cause:</span> <?php echo e($b->root_cause ?: '-'); ?>
+
                                                                 <span class="mx-1.5 text-slate-300">|</span>
-                                                                <span class="text-green-600 font-semibold">Repair:</span> {{ $b->repair_action ?: '-' }}
+                                                                <span class="text-green-600 font-semibold">Repair:</span> <?php echo e($b->repair_action ?: '-'); ?>
+
                                                             </div>
-                                                        @endif
+                                                        <?php endif; ?>
                                                     </div>
-                                                @endif
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                     </div>
                                 </details>
                             </td>
                         </tr>
-                    @empty
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <tr>
                             <td colspan="4" class="py-12 text-center text-text-muted">
                                 <i class="bi bi-inbox text-3xl block mb-2"></i>
                                 Tidak ada data log yang ditemukan
                             </td>
                         </tr>
-                    @endforelse
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
 
         <!-- Pagination -->
         <div class="mt-6 pt-4 border-t border-border-strong text-text-muted">
-            {{ $auditBugs->links() }}
+            <?php echo e($auditBugs->links()); ?>
+
         </div>
     </div>
 
 </div>
-@endif
-@endsection
+<?php endif; ?>
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
-@if($hasImportedData)
+<?php $__env->startSection('scripts'); ?>
+<?php if($hasImportedData): ?>
 <script>
     async function reprocessAI(bugId, btnElement) {
         const icon = btnElement.querySelector('i');
@@ -652,7 +658,7 @@
 
         function makeJumlahBugOptions(c) {
             return {
-                series: [{{ $openBugs }}, {{ $closedBugs }}],
+                series: [<?php echo e($openBugs); ?>, <?php echo e($closedBugs); ?>],
                 chart: { type: 'donut', height: 260, background: 'transparent', foreColor: c.textMuted },
                 labels: ['Open', 'Closed'],
                 colors: [colorOpen, colorClosed],
@@ -792,7 +798,7 @@
             };
         }
 
-        var assemblyStageData = @json($assemblyStageMap ?? []);
+        var assemblyStageData = <?php echo json_encode($assemblyStageMap ?? [], 15, 512) ?>;
         var stagePalette = ['#1A3D63', '#4A7FA7', '#2563EB', '#E8A33D', '#3E9B6F', '#D64550'];
 
         function makeAssemblyStageOptions(data, c) {
@@ -831,11 +837,11 @@
 
         // Initial render
         var c = getChartColors();
-        var trendData = {!! json_encode($trendData) !!};
+        var trendData = <?php echo json_encode($trendData); ?>;
         var trendKeys = Object.keys(trendData).map(d => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
         var trendValues = Object.values(trendData);
-        var severityClosedData = @json($severityClosed);
-        var severityOpenData   = @json($severityOpen);
+        var severityClosedData = <?php echo json_encode($severityClosed, 15, 512) ?>;
+        var severityOpenData   = <?php echo json_encode($severityOpen, 15, 512) ?>;
 
         chartJumlahBug = new ApexCharts(document.querySelector("#chartJumlahBug"), makeJumlahBugOptions(c));
         chartJumlahBug.render();
@@ -877,5 +883,7 @@
         });
     });
 </script>
-@endif
-@endsection
+<?php endif; ?>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\MAGANG\WEB2-MAGANG\resources\views/dashboard/index.blade.php ENDPATH**/ ?>

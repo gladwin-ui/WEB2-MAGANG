@@ -28,7 +28,7 @@ class DashboardController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        $hasImportedData = $sqlFiles->isNotEmpty();
+        $hasImportedData = $sqlFiles->isNotEmpty() || Bug::exists();
 
         if ($hasImportedData) {
             $analytics = app(BugAnalyticsService::class);
@@ -86,27 +86,20 @@ class DashboardController extends Controller
             ]);
         }
 
-        // Determine selected SQL file
-        $selectedJobId = $request->input('import_job_id');
-        if ($selectedJobId === null) {
-            $latestJob = $sqlFiles->first();
-            $selectedJobId = $latestJob ? (string)$latestJob->id : 'all';
-        }
-
-        // IDs of all active (non-deleted) completed jobs — used when filter is 'all'
-        // This ensures 'all' means "all ACTIVE files combined", not "every bug in DB"
-        $activeJobIds = $sqlFiles->pluck('id');
+        // Default ke 'all' (Semua Sumber Data: baik SQL maupun DB lokal)
+        $selectedJobId = $request->input('import_job_id', 'all');
 
         /**
          * Helper: apply import_job_id scope to a query builder.
          * - specific job  → WHERE import_job_id = $selectedJobId
-         * - 'all'         → WHERE import_job_id IN ($activeJobIds)
+         * - 'local'       → WHERE import_job_id IS NULL (khusus data database lokal)
+         * - 'all'         → Semua data di tabel bugs (tanpa filter import_job_id)
          */
-        $applyJobFilter = function ($query) use ($selectedJobId, $activeJobIds) {
-            if ($selectedJobId !== 'all') {
+        $applyJobFilter = function ($query) use ($selectedJobId) {
+            if ($selectedJobId !== 'all' && $selectedJobId !== 'local') {
                 $query->where('import_job_id', $selectedJobId);
-            } else {
-                $query->whereIn('import_job_id', $activeJobIds);
+            } elseif ($selectedJobId === 'local') {
+                $query->whereNull('import_job_id');
             }
             return $query;
         };
@@ -262,15 +255,13 @@ class DashboardController extends Controller
      */
     public function exportExcel(Request $request)
     {
-        $selectedJobId = $request->input('import_job_id');
-        if ($selectedJobId === null) {
-            $latestJob = ImportJob::where('status', 'completed')->whereNull('deleted_at')->orderByDesc('created_at')->first();
-            $selectedJobId = $latestJob ? (string)$latestJob->id : 'all';
-        }
+        $selectedJobId = $request->input('import_job_id', 'all');
 
         $auditQuery = Bug::with(['project', 'serialNumber']);
-        if ($selectedJobId !== 'all') {
+        if ($selectedJobId !== 'all' && $selectedJobId !== 'local') {
             $auditQuery->where('import_job_id', $selectedJobId);
+        } elseif ($selectedJobId === 'local') {
+            $auditQuery->whereNull('import_job_id');
         }
 
         // Apply same filters as dashboard
