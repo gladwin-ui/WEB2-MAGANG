@@ -498,3 +498,6 @@ uvicorn main:app --reload --port 8001
 ```
 
 Akses aplikasi di `http://127.0.0.1:8000` (Laravel). Analytics Service berjalan di port `http://127.0.0.1:8001`.
+
+
+testestes
