@@ -312,7 +312,7 @@
                     <div class="p-6 rounded-2xl bg-bg-secondary border border-border-default shadow-lg space-y-4">
                         <div class="flex items-center justify-between border-b border-border-default pb-3">
                             <span class="text-xs font-bold text-text-primary"><i class="bi bi-terminal mr-1"></i> Arsitektur Mikroservis</span>
-                            <span class="text-[10px] font-mono text-text-muted">Laravel 11 + FastAPI Python</span>
+                            <span class="text-[10px] font-mono text-text-muted">Laravel 13 + FastAPI Python</span>
                         </div>
                         <div class="grid grid-cols-2 gap-3 text-center">
                             <div class="p-4 rounded-xl bg-bg-tertiary border border-border-default">

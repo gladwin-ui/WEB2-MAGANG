@@ -35,3 +35,7 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Dokumentasi Internal
+/PANDUAN SETUP.md
+/memory.md
