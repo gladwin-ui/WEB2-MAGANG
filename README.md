@@ -66,7 +66,7 @@ ManufakTrack dibangun menggunakan arsitektur mikroservis terpisah (Laravel Web &
 
 ManufakTrack mendukung 2 mode operasi yang dapat diatur via variabel `APP_MODE` pada file `.env`:
 
-- **`APP_MODE=readonly`**: Membaca langsung tabel `bug` milik database produksi kantor (menggunakan skema nama kolom asli `idbug`, `bug_title`, `bugdesc`, dll.) secara *read-only*. Hasil analisis AI dari FastAPI akan disimpan secara eksternal ke dalam tabel cache lokal **`bug_ai_cache`** agar tidak mengotori/menulis database kantor.
+- **`APP_MODE=readonly`**: Membaca langsung tabel `bug` milik database produksi kantor (menggunakan skema nama kolom asli `idbug`, `bug_title`, `bugdesc`, dll.) secara *read-only*. Hasil analisis AI dari FastAPI disimpan eksternal pada tabel **`bug_ai_cache`**. Logika kueri di `DashboardController` secara dinamis memetakan kolom fisik dan melakukan gabungan (*join*) ke tabel cache untuk visualisasi AI dan pengurutan tingkat urgensi.
 - **`APP_MODE=import`** *(Default)*: Mode standar menggunakan tabel `bugs` lokal yang diisi via fitur impor file `.sql` di latar belakang.
 
 ## 📁 Project Structure
