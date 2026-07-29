@@ -56,12 +56,18 @@ ManufakTrack dibangun menggunakan arsitektur mikroservis terpisah (Laravel Web &
 
 | Fitur Utama | Deskripsi |
 | --- | --- |
-| **Dasbor Analitik Eksekutif** | Pantau KPI utama (Total Defect, Rework Rate), grafik persebaran severity, assembly stage, dan tren harian dalam satu layar. |
+| **Dasbor Analitik Eksekutif** | Pantau KPI utama (Total Defect, Rework Rate), grafik persebaran severity, dan tren harian dalam satu layar. |
 | **Laporan Khusus & Clustering** | Pengelompokan otomatis laporan bug menggunakan algoritma *NLP Similarity* untuk mendeteksi *Top 5 Masalah* dan *Root Cause* tersering. |
-| **Deteksi Spam Hibrida (ML Lokal)** | Mencegah laporan palsu/sampah dengan sistem 4-tier berbasis konteks dan ML ensemble lokal, berjalan 100% *offline*. |
 | **Sistem Import Asinkron (Queue)** | Impor file SQL ribuan baris dengan lancar di latar belakang tanpa risiko jeda *timeout* pada browser. |
 | **Export Excel Formal Berlogo** | Unduh hasil analisis dasbor dan data tabel mentah ke dalam format Excel (XLSX) terstandarisasi dengan branding perusahaan. |
 | **Deteksi Sentimen & Severity** | *Analytics Engine* memberikan diagnosis sekunder untuk skor urgensi, tingkat keparahan yang direkomendasikan, dan sentimen laporan. |
+
+## 🔀 Mode Aplikasi
+
+ManufakTrack mendukung 2 mode operasi yang dapat diatur via variabel `APP_MODE` pada file `.env`:
+
+- **`APP_MODE=readonly`**: Membaca langsung tabel `bug` milik database produksi kantor (menggunakan skema nama kolom asli `idbug`, `bug_title`, `bugdesc`, dll.) secara *read-only*.
+- **`APP_MODE=import`** *(Default)*: Mode standar menggunakan tabel `bugs` lokal yang diisi via fitur impor file `.sql` di latar belakang.
 
 ## 📁 Project Structure
 
@@ -71,7 +77,7 @@ Struktur direktori utama terbagi atas aplikasi web Laravel dan *service* analiti
 - `app/Jobs/` : Mengelola *queue* latar belakang (seperti `ProcessImportChunkJob` dan `ReanalyzeBugsJob`).
 - `app/Services/` : Integrasi eksternal (`BugAnalyticsService`) dan pemrosesan file SQL.
 - `database/migrations/` & `seeders/` : Skema *database* berorientasi *forward-only* beserta data awalan *dummy*.
-- `analytics-service/` : Proyek independen FastAPI untuk model klasifikasi Spam, Sentimen, Severity, dan Clustering NLP.
+- `analytics-service/` : Proyek independen FastAPI untuk model Sentimen, Severity, dan Clustering NLP.
 
 *(Catatan lengkap terkait keputusan desain, changelog, dan teknis detail proyek ini telah dipisahkan ke dalam file `memory.md`.)*
 
