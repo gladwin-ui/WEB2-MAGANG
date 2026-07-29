@@ -64,10 +64,47 @@ ManufakTrack dibangun menggunakan arsitektur mikroservis terpisah (Laravel Web &
 
 ## 🔀 Mode Aplikasi
 
-ManufakTrack mendukung 2 mode operasi yang dapat diatur via variabel `APP_MODE` pada file `.env`:
+ManufakTrack dapat dijalankan dalam 2 mode operasi melalui pengaturan variabel `APP_MODE` di file `.env`:
 
-- **`APP_MODE=readonly`**: Membaca langsung tabel `bug` milik database produksi kantor (menggunakan skema nama kolom asli `idbug`, `bug_title`, `bugdesc`, dll.) secara *read-only*. Hasil analisis AI dari FastAPI disimpan eksternal pada tabel **`bug_ai_cache`**. Logika kueri di `DashboardController` dan `LaporanKhususController` secara dinamis memetakan kolom fisik, mem-bypass kueri JOIN tabel `projects` kosong, dan mengambil data produk/proyek secara *real-time* langsung dari tabel bug kantor.
-- **`APP_MODE=import`** *(Default)*: Mode standar menggunakan tabel `bugs` lokal yang diisi via fitur impor file `.sql` di latar belakang.
+### 1. Mode Import (`APP_MODE=import` - Default)
+- **Fungsi**: Mode standar untuk portofolio/cadangan. Mengimpor file `.sql` berukuran besar secara asinkron (menggunakan antrean antarmuka Laravel Queue) ke dalam tabel lokal `bugs`.
+- **Fitur**: Seluruh menu impor di sidebar dan dasbor aktif sepenuhnya.
+
+### 2. Mode Read-Only (`APP_MODE=readonly` - Utama Kantor)
+- **Fungsi**: Membaca data langsung (*real-time*) dari tabel `bug` milik database produksi kantor (tanpa proses impor SQL dan tanpa VIEW database).
+- **Logika Adaptif**: Logika kueri pada `DashboardController` dan `LaporanKhususController` secara dinamis memetakan nama kolom fisik (`idbug`, `bug_title`, `bugdesc`, dll.) dan mem-bypass JOIN ke tabel `projects` yang kosong.
+- **AI Cache**: Hasil analisis AI (sentimen & tingkat keparahan direkomendasikan) dari FastAPI disimpan secara eksternal ke dalam tabel lokal **`bug_ai_cache`** (tabel asli kantor tidak pernah ditulisi).
+- **UI Bersih**: Seluruh menu impor data `.sql` dan riwayat impor di sidebar otomatis disembunyikan.
+
+#### Langkah Setup Mode Read-Only:
+1. Atur mode di file `.env`:
+   ```env
+   APP_MODE=readonly
+   ```
+2. Atur kredensial koneksi database kantor (yang memuat tabel `bug`) di `.env`:
+   ```env
+   DB_DATABASE=nama_database_kantor
+   ```
+3. Bersihkan cache konfigurasi Laravel:
+   ```bash
+   php artisan config:clear
+   ```
+4. Jalankan migrasi database untuk membuat tabel sistem Laravel dan tabel cache AI (tabel `bug` kantor tidak akan tersentuh):
+   ```bash
+   php artisan migrate
+   ```
+5. Buat akun login admin via `php artisan tinker`:
+   ```php
+   App\Models\User::create(['name' => 'Admin', 'email' => 'admin@bugtrack.test', 'password' => Hash::make('password123'), 'role' => 'admin']);
+   ```
+6. Pastikan Python Analytics Service berjalan di port 8001 dan server Laravel aktif:
+   ```bash
+   # Terminal 1
+   php artisan serve
+   # Terminal 2 (FastAPI)
+   cd analytics-service && uvicorn main:app --reload --port 8001
+   ```
+7. Buka web di browser dan login dengan akun admin di atas. Data live dari database kantor langsung tampil di dashboard.
 
 ## 📁 Project Structure
 

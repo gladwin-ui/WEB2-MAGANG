@@ -10,16 +10,23 @@
         <i class="bi bi-database-slash text-4xl text-blue-400"></i>
     </div>
     <h2 class="text-xl font-extrabold text-text-primary mb-2">Dashboard Belum Ada Data</h2>
-    <p class="text-sm text-text-secondary max-w-sm mb-2">
-        Belum ada file <code class="font-mono bg-bg-tertiary px-1.5 py-0.5 rounded text-slate-700">.sql</code> yang berhasil diimport.
-        Dashboard analitik akan tampil setelah proses import pertama selesai.
-    </p>
-    <p class="text-xs text-text-muted mb-8">
-        Pastikan <code class="font-mono bg-bg-tertiary px-1 rounded">php artisan queue:work</code> sudah berjalan.
-    </p>
-    <a href="{{ route('import.upload') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold text-white shadow-sm transition-colors" style="background-color: #0046BF;">
-        <i class="bi bi-cloud-upload"></i> Import Data .sql Sekarang
-    </a>
+    @if(config('app.mode') === 'readonly')
+        <p class="text-sm text-text-secondary max-w-sm mb-8">
+            Belum ada data pada database kantor yang terhubung.
+            Pastikan konfigurasi koneksi database Anda di file <code class="font-mono bg-bg-tertiary px-1.5 py-0.5 rounded text-slate-700">.env</code> sudah benar.
+        </p>
+    @else
+        <p class="text-sm text-text-secondary max-w-sm mb-2">
+            Belum ada file <code class="font-mono bg-bg-tertiary px-1.5 py-0.5 rounded text-slate-700">.sql</code> yang berhasil diimport.
+            Dashboard analitik akan tampil setelah proses import pertama selesai.
+        </p>
+        <p class="text-xs text-text-muted mb-8">
+            Pastikan <code class="font-mono bg-bg-tertiary px-1 rounded">php artisan queue:work</code> sudah berjalan.
+        </p>
+        <a href="{{ route('import.upload') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold text-white shadow-sm transition-colors" style="background-color: #0046BF;">
+            <i class="bi bi-cloud-upload"></i> Import Data .sql Sekarang
+        </a>
+    @endif
 </div>
 @else
 @php

@@ -612,19 +612,21 @@
                         <span class="sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 rounded-md bg-[#0A1931] text-white text-xs font-semibold whitespace-nowrap z-50 shadow-lg border border-[#1E3A5C] pointer-events-none">Laporan Khusus</span>
                     </a>
 
-                    {{-- Divider --}}
-                    <div class="my-2 border-t border-[#0A1931]"></div>
+                    @if(config('app.mode') !== 'readonly')
+                        {{-- Divider --}}
+                        <div class="my-2 border-t border-[#0A1931]"></div>
 
-                    <a href="{{ route('import.upload') }}" class="nav-item group relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.upload') || request()->routeIs('import.progress') ? 'bg-[#0A1931] text-white border-l-2 border-[#4A7FA7] font-bold' : 'text-white hover:bg-[#0A1931] hover:text-white' }}">
-                        <i class="bi bi-cloud-upload text-base shrink-0"></i>
-                        <span class="sidebar-label whitespace-nowrap">Import Data .sql</span>
-                        <span class="sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 rounded-md bg-[#0A1931] text-white text-xs font-semibold whitespace-nowrap z-50 shadow-lg border border-[#1E3A5C] pointer-events-none">Import Data .sql</span>
-                    </a>
-                    <a href="{{ route('import.history') }}" class="nav-item group relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.history') ? 'bg-[#0A1931] text-white border-l-2 border-[#4A7FA7] font-bold' : 'text-white hover:bg-[#0A1931] hover:text-white' }}">
-                        <i class="bi bi-clock-history text-base shrink-0"></i>
-                        <span class="sidebar-label whitespace-nowrap">Riwayat Import</span>
-                        <span class="sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 rounded-md bg-[#0A1931] text-white text-xs font-semibold whitespace-nowrap z-50 shadow-lg border border-[#1E3A5C] pointer-events-none">Riwayat Import</span>
-                    </a>
+                        <a href="{{ route('import.upload') }}" class="nav-item group relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.upload') || request()->routeIs('import.progress') ? 'bg-[#0A1931] text-white border-l-2 border-[#4A7FA7] font-bold' : 'text-white hover:bg-[#0A1931] hover:text-white' }}">
+                            <i class="bi bi-cloud-upload text-base shrink-0"></i>
+                            <span class="sidebar-label whitespace-nowrap">Import Data .sql</span>
+                            <span class="sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 rounded-md bg-[#0A1931] text-white text-xs font-semibold whitespace-nowrap z-50 shadow-lg border border-[#1E3A5C] pointer-events-none">Import Data .sql</span>
+                        </a>
+                        <a href="{{ route('import.history') }}" class="nav-item group relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all {{ request()->routeIs('import.history') ? 'bg-[#0A1931] text-white border-l-2 border-[#4A7FA7] font-bold' : 'text-white hover:bg-[#0A1931] hover:text-white' }}">
+                            <i class="bi bi-clock-history text-base shrink-0"></i>
+                            <span class="sidebar-label whitespace-nowrap">Riwayat Import</span>
+                            <span class="sidebar-tooltip absolute left-full ml-3 px-2.5 py-1.5 rounded-md bg-[#0A1931] text-white text-xs font-semibold whitespace-nowrap z-50 shadow-lg border border-[#1E3A5C] pointer-events-none">Riwayat Import</span>
+                        </a>
+                    @endif
                 @endauth
             </nav>
         </div>
