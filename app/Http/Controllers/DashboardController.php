@@ -185,7 +185,7 @@ class DashboardController extends Controller
         }
         $topProjects = $applyJobFilter($topProjectsQuery)
             ->groupBy($projectCol)
-            ->selectRaw("$projectCol as project_id, count(*) as total")
+            ->selectRaw("$projectCol as pid, count(*) as total")
             ->orderByDesc('total')
             ->limit(5)
             ->get();

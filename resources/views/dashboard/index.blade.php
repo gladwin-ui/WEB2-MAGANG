@@ -26,8 +26,7 @@
     // Mapped top projects (existing logic preserved)
     $mappedTopProjects = $topProjects->map(function($tp) {
         return (object)[
-            'project_name' => $tp->project?->name ?? ($tp->project_id ? 'Project #' . $tp->project_id : 'Project #N/A'),
-
+            'project_name' => $tp->pid ? 'Project #' . $tp->pid : 'Project #N/A',
             'bug_count'    => $tp->total,
         ];
     });

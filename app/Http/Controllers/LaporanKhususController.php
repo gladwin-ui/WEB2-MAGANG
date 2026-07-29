@@ -13,45 +13,104 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class LaporanKhususController extends Controller
 {
+    private function isReadonly(): bool
+    {
+        return config('app.mode') === 'readonly';
+    }
+
+    private function bugTable(): string
+    {
+        return $this->isReadonly() ? 'bug' : 'bugs';
+    }
+
+    private function col(string $logical): string
+    {
+        if (!$this->isReadonly()) {
+            return $logical;
+        }
+        $map = [
+            'id'          => 'idbug',
+            'project_id'  => 'idproject',
+            'status'      => 'bugstatus',
+        ];
+        return $map[$logical] ?? $logical;
+    }
+
     public function index(Request $request)
     {
         // Konstanta sampling — MUDAH disetel
         $SAMPLING_LIMIT = 2000;
 
         // Daftar produk untuk dropdown (hanya yang punya minimal 1 bug aktif)
-        $products = Project::whereIn('id', function ($q) {
-            $q->select('project_id')->from('bugs')
-              ->whereNull('deleted_at')
-              ->whereNotNull('project_id')
-              ->distinct();
-        })->orderBy('id')->get();
+        if ($this->isReadonly()) {
+            // Ambil idproject unik dari tabel bug, buat objek {id, name}
+            $productIds = DB::table('bug')
+                ->select('idproject')
+                ->whereNotNull('idproject')
+                ->distinct()
+                ->orderBy('idproject')
+                ->pluck('idproject');
+
+            $products = $productIds->map(function ($pid) {
+                return (object)[
+                    'id'   => $pid,
+                    'name' => 'Project #' . $pid,
+                ];
+            });
+        } else {
+            $products = Project::whereIn('id', function ($q) {
+                $q->select('project_id')->from('bugs')
+                  ->whereNull('deleted_at')
+                  ->whereNotNull('project_id')
+                  ->distinct();
+            })->orderBy('id')->get();
+        }
 
         // Default "all" (Semua Produk)
         $selectedProductId = $request->query('product_id', 'all');
 
         // BAGIAN 1: Rework rate antar produk (top 5) — independent dari dropdown.
-        // Minimal 3 bug agar rate tidak menyesatkan (1 bug rework = 100%).
-        $reworkRates = DB::table('bugs')
-            ->join('projects', 'bugs.project_id', '=', 'projects.id')
-            ->whereNull('bugs.deleted_at')
-            ->groupBy('projects.id', 'projects.name')
-            ->select(
-                'projects.id',
-                'projects.name',
-                DB::raw('COUNT(*) as total_bugs'),
-                DB::raw('SUM(CASE WHEN bugs.is_rework = 1 THEN 1 ELSE 0 END) as rework_count'),
-                DB::raw('ROUND(SUM(CASE WHEN bugs.is_rework = 1 THEN 1 ELSE 0 END) / COUNT(*) * 100, 1) as rework_rate')
-            )
-            ->havingRaw('COUNT(*) >= 3')
-            ->orderByDesc('rework_rate')
-            ->orderByDesc('rework_count')
-            ->limit(5)
-            ->get();
+        if ($this->isReadonly()) {
+            $reworkRates = DB::table('bug')
+                ->groupBy('idproject')
+                ->select(
+                    'idproject as id',
+                    DB::raw("CONCAT('Project #', idproject) as name"),
+                    DB::raw('COUNT(*) as total_bugs'),
+                    DB::raw('SUM(CASE WHEN is_rework = 1 THEN 1 ELSE 0 END) as rework_count'),
+                    DB::raw('ROUND(SUM(CASE WHEN is_rework = 1 THEN 1 ELSE 0 END) / COUNT(*) * 100, 1) as rework_rate')
+                )
+                ->havingRaw('COUNT(*) >= 3')
+                ->orderByDesc('rework_rate')
+                ->orderByDesc('rework_count')
+                ->limit(5)
+                ->get();
+        } else {
+            $reworkRates = DB::table('bugs')
+                ->join('projects', 'bugs.project_id', '=', 'projects.id')
+                ->whereNull('bugs.deleted_at')
+                ->groupBy('projects.id', 'projects.name')
+                ->select(
+                    'projects.id',
+                    'projects.name',
+                    DB::raw('COUNT(*) as total_bugs'),
+                    DB::raw('SUM(CASE WHEN bugs.is_rework = 1 THEN 1 ELSE 0 END) as rework_count'),
+                    DB::raw('ROUND(SUM(CASE WHEN bugs.is_rework = 1 THEN 1 ELSE 0 END) / COUNT(*) * 100, 1) as rework_rate')
+                )
+                ->havingRaw('COUNT(*) >= 3')
+                ->orderByDesc('rework_rate')
+                ->orderByDesc('rework_count')
+                ->limit(5)
+                ->get();
+        }
 
         // Ambil laporan sesuai pilihan
-        $bugsQuery = Bug::whereNull('deleted_at');
+        $bugsQuery = Bug::query();
+        if (!$this->isReadonly()) {
+            $bugsQuery->whereNull('deleted_at');
+        }
         if ($selectedProductId !== 'all') {
-            $bugsQuery->where('project_id', $selectedProductId);
+            $bugsQuery->where($this->col('project_id'), $selectedProductId);
         }
 
         $totalLaporan = (clone $bugsQuery)->count();
@@ -62,8 +121,6 @@ class LaporanKhususController extends Controller
         $sampleSize = $totalLaporan;
 
         if ($totalLaporan > $SAMPLING_LIMIT) {
-            // Catatan: inRandomOrder()->limit() di MySQL untuk data sangat besar bisa lambat (karena random sort).
-            // Untuk sekarang cukup, tapi jika nanti data puluhan ribu & terasa lambat, bisa dioptimasi (misal random via ID range).
             $bugs = (clone $bugsQuery)->inRandomOrder()->limit($SAMPLING_LIMIT)->get();
             $isSampled = true;
             $sampleSize = $SAMPLING_LIMIT;
@@ -81,7 +138,7 @@ class LaporanKhususController extends Controller
                                ->values()
                                ->toArray();
 
-        // Clustering via FastAPI (fungsi existing)
+        // Clustering via FastAPI
         $masalahTop5 = $this->clusterViaFastApi($masalahTexts);
         $rootCauseTop5 = $this->clusterViaFastApi($rootCauseTexts);
 
@@ -108,26 +165,46 @@ class LaporanKhususController extends Controller
         $SAMPLING_LIMIT = 2000;
         $selectedProductId = $request->query('product_id', 'all');
 
-        $reworkRates = DB::table('bugs')
-            ->join('projects', 'bugs.project_id', '=', 'projects.id')
-            ->whereNull('bugs.deleted_at')
-            ->groupBy('projects.id', 'projects.name')
-            ->select(
-                'projects.id',
-                'projects.name',
-                DB::raw('COUNT(*) as total_bugs'),
-                DB::raw('SUM(CASE WHEN bugs.is_rework = 1 THEN 1 ELSE 0 END) as rework_count'),
-                DB::raw('ROUND(SUM(CASE WHEN bugs.is_rework = 1 THEN 1 ELSE 0 END) / COUNT(*) * 100, 1) as rework_rate')
-            )
-            ->havingRaw('COUNT(*) >= 3')
-            ->orderByDesc('rework_rate')
-            ->orderByDesc('rework_count')
-            ->limit(5)
-            ->get();
+        if ($this->isReadonly()) {
+            $reworkRates = DB::table('bug')
+                ->groupBy('idproject')
+                ->select(
+                    'idproject as id',
+                    DB::raw("CONCAT('Project #', idproject) as name"),
+                    DB::raw('COUNT(*) as total_bugs'),
+                    DB::raw('SUM(CASE WHEN is_rework = 1 THEN 1 ELSE 0 END) as rework_count'),
+                    DB::raw('ROUND(SUM(CASE WHEN is_rework = 1 THEN 1 ELSE 0 END) / COUNT(*) * 100, 1) as rework_rate')
+                )
+                ->havingRaw('COUNT(*) >= 3')
+                ->orderByDesc('rework_rate')
+                ->orderByDesc('rework_count')
+                ->limit(5)
+                ->get();
+        } else {
+            $reworkRates = DB::table('bugs')
+                ->join('projects', 'bugs.project_id', '=', 'projects.id')
+                ->whereNull('bugs.deleted_at')
+                ->groupBy('projects.id', 'projects.name')
+                ->select(
+                    'projects.id',
+                    'projects.name',
+                    DB::raw('COUNT(*) as total_bugs'),
+                    DB::raw('SUM(CASE WHEN bugs.is_rework = 1 THEN 1 ELSE 0 END) as rework_count'),
+                    DB::raw('ROUND(SUM(CASE WHEN bugs.is_rework = 1 THEN 1 ELSE 0 END) / COUNT(*) * 100, 1) as rework_rate')
+                )
+                ->havingRaw('COUNT(*) >= 3')
+                ->orderByDesc('rework_rate')
+                ->orderByDesc('rework_count')
+                ->limit(5)
+                ->get();
+        }
 
-        $bugsQuery = Bug::with(['project', 'serialNumber'])->whereNull('deleted_at');
+        $bugsQuery = Bug::with(['project', 'serialNumber']);
+        if (!$this->isReadonly()) {
+            $bugsQuery->whereNull('deleted_at');
+        }
         if ($selectedProductId !== 'all') {
-            $bugsQuery->where('project_id', $selectedProductId);
+            $bugsQuery->where($this->col('project_id'), $selectedProductId);
         }
 
         $totalLaporan = (clone $bugsQuery)->count();
@@ -135,7 +212,11 @@ class LaporanKhususController extends Controller
         if ($totalLaporan > $SAMPLING_LIMIT) {
             $bugs = (clone $bugsQuery)->inRandomOrder()->limit($SAMPLING_LIMIT)->get();
         } else {
-            $bugs = $bugsQuery->orderBy('created_at', 'desc')->get();
+            if ($this->isReadonly()) {
+                $bugs = $bugsQuery->orderBy('idbug', 'desc')->get();
+            } else {
+                $bugs = $bugsQuery->orderBy('created_at', 'desc')->get();
+            }
         }
 
         $masalahTexts = $bugs->map(fn($b) => trim(($b->title ?? '') . ' ' . ($b->description ?? '')))->filter()->values()->toArray();
@@ -155,8 +236,12 @@ class LaporanKhususController extends Controller
 
         $productName = 'Semua Produk';
         if ($selectedProductId !== 'all') {
-            $proj = Project::find($selectedProductId);
-            $productName = $proj ? $proj->name : "Project #{$selectedProductId}";
+            if ($this->isReadonly()) {
+                $productName = "Project #{$selectedProductId}";
+            } else {
+                $proj = Project::find($selectedProductId);
+                $productName = $proj ? $proj->name : "Project #{$selectedProductId}";
+            }
         }
 
         $export = new LaporanKhususExport($bugs, $reworkRates, $severityMix, $avgRework, $masalahTop5, $rootCauseTop5, $selectedProductId, $productName);
@@ -267,4 +352,3 @@ class LaporanKhususController extends Controller
         return $result;
     }
 }
-
