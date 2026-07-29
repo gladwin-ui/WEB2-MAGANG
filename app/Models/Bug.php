@@ -28,14 +28,16 @@ class Bug extends Model
         }
     }
 
-    protected static function booted()
+    public static function bootSoftDeletes()
     {
+        // Saat readonly, JANGAN daftarkan SoftDeletingScope
+        // (tabel bug kantor tidak punya kolom deleted_at)
         if (config('app.mode') === 'readonly') {
-            // Nonaktifkan soft-delete scope karena tabel bug kantor tidak punya kolom deleted_at
-            static::addGlobalScope('withoutSoftDeleteReadonly', function ($builder) {
-                $builder->withoutGlobalScope(\Illuminate\Database\Eloquent\SoftDeletingScope::class);
-            });
+            return;
         }
+
+        // Mode import: jalankan boot SoftDeletes normal
+        static::addGlobalScope(new \Illuminate\Database\Eloquent\SoftDeletingScope);
     }
 
     /*
@@ -182,14 +184,14 @@ class Bug extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | AI Column Guard Accessors (Return null in Read-Only Mode)
+    | AI Column Guard Accessors (Read from cache in Read-Only Mode)
     |--------------------------------------------------------------------------
     */
 
     public function getSentimentScoreAttribute($value)
     {
         if (config('app.mode') === 'readonly') {
-            return null;
+            return $this->aiCache?->sentiment_score;
         }
         return $value;
     }
@@ -197,7 +199,7 @@ class Bug extends Model
     public function getSentimentLabelAttribute($value)
     {
         if (config('app.mode') === 'readonly') {
-            return null;
+            return $this->aiCache?->sentiment_label;
         }
         return $value;
     }
@@ -205,7 +207,7 @@ class Bug extends Model
     public function getSeverityRecommendedAttribute($value)
     {
         if (config('app.mode') === 'readonly') {
-            return null;
+            return $this->aiCache?->severity_recommended;
         }
         return $value;
     }
@@ -223,6 +225,12 @@ class Bug extends Model
     | Relationships
     |--------------------------------------------------------------------------
     */
+
+    public function aiCache()
+    {
+        $localKey = config('app.mode') === 'readonly' ? 'idbug' : 'id';
+        return $this->hasOne(\App\Models\BugAiCache::class, 'bug_id', $localKey);
+    }
 
     public function project()
     {
