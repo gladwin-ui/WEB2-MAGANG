@@ -78,7 +78,7 @@ def health_check():
         "version": "2.0.0",
         "models": {
             "sentiment": "keyword-based",
-            "clustering": "tfidf-agglomerative"
+            "clustering": "overlap-connected-components"
         },
     }
 
